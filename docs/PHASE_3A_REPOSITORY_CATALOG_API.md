@@ -218,6 +218,12 @@ Phase 3A does not add:
 
 Avoiding total counts is intentional: the first read API does not need an extra aggregate query for every catalog request.
 
+## Status
+
+Complete.
+
+The Phase 3A branch passed the complete application, migration, persistence, ingestion, catalog, and PostgreSQL CI gates.
+
 ## Next checkpoint
 
 Phase 3B should build the smallest **catalog web UI** against this API, including:
