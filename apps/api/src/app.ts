@@ -28,8 +28,10 @@ export function createApp() {
       error: unknown,
       _request: Request,
       response: Response,
-      _next: NextFunction,
+      next: NextFunction,
     ) => {
+      void next;
+
       logger.error('http.unhandled_error', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
