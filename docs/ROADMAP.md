@@ -15,14 +15,13 @@ Status: complete
 - establish contribution workflow;
 - define initial brand guidance.
 
-Exit criteria met:
-implementation can begin without major ambiguity about the first product loop.
-
 ## Phase 1 — Project skeleton
 
 Status: in progress
 
 ### Phase 1A — Application foundation
+
+Status: complete
 
 - TypeScript project structure;
 - frontend/backend boundaries;
@@ -34,13 +33,28 @@ Status: in progress
 
 ### Phase 1B — Persistence foundation
 
-- PostgreSQL connection;
-- migration tooling;
-- initial canonical repository schema;
-- local database configuration;
-- database health verification.
+#### Phase 1B.1 — Connection and migration infrastructure
 
-No discovery sophistication yet.
+Status: complete after PR verification
+
+- PostgreSQL connection pool;
+- database configuration validation;
+- fail-fast startup;
+- liveness/readiness separation;
+- migration tooling;
+- root lockfile and frozen CI installs;
+- PostgreSQL-backed integration tests.
+
+#### Phase 1B.2 — Canonical repository persistence
+
+Next:
+- first `repositories` migration;
+- GitHub repository ID uniqueness;
+- repository persistence layer;
+- rename/transfer-safe identity;
+- persistence integration tests.
+
+No ingestion or discovery sophistication yet.
 
 ## Phase 2 — Repository ingestion
 
