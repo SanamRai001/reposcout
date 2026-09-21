@@ -2,8 +2,13 @@ import express, { type NextFunction, type Request, type Response } from 'express
 
 import { logger } from './logger.js';
 
-export function createApp() {
+export type AppDependencies = Readonly<{
+  checkReadiness?: () => Promise<void>;
+}>;
+
+export function createApp(dependencies: AppDependencies = {}) {
   const app = express();
+  const checkReadiness = dependencies.checkReadiness ?? (async () => undefined);
 
   app.disable('x-powered-by');
   app.use(express.json({ limit: '100kb' }));
@@ -14,6 +19,27 @@ export function createApp() {
       service: 'reposcout-api',
       timestamp: new Date().toISOString(),
     });
+  });
+
+  app.get('/ready', async (_request, response) => {
+    try {
+      await checkReadiness();
+
+      response.status(200).json({
+        status: 'ready',
+        service: 'reposcout-api',
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.error('health.readiness_failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+
+      response.status(503).json({
+        status: 'unavailable',
+        service: 'reposcout-api',
+      });
+    }
   });
 
   app.use((request, response) => {
