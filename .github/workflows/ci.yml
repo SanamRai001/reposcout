@@ -62,5 +62,8 @@ jobs:
       - name: Reapply migrations
         run: npm run db:migrate -w @reposcout/api
 
+      - name: Verify repository persistence
+        run: npm run test:persistence -w @reposcout/api
+
       - name: Verify PostgreSQL connection
         run: npm run test:db -w @reposcout/api
