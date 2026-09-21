@@ -14,7 +14,7 @@
 
 Canonical indexed project.
 
-Suggested fields:
+Implemented canonical fields as of Phase 1B.2A:
 
 ```text
 id                       internal UUID
@@ -23,25 +23,19 @@ owner
 name
 full_name
 description
-homepage_url
 github_url
 default_branch
 is_fork
 is_archived
-is_template
-visibility
-primary_language
-license_spdx
 created_at_github
 updated_at_github
 pushed_at_github
 last_synced_at
-sync_status
 created_at
 updated_at
 ```
 
-Do not use `full_name` as the only unique identity because repositories can be renamed or transferred.
+Do not use `full_name` as the unique identity because repositories can be renamed or transferred. The database enforces uniqueness on `github_repository_id`; `full_name` is a mutable, indexed lookup attribute.
 
 ### RepositoryMetrics
 

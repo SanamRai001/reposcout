@@ -17,6 +17,7 @@ Start here if you are contributing to the project.
 - [DECISIONS.md](DECISIONS.md) — project decision log.
 - [PHASE_1A_PROJECT_SKELETON.md](PHASE_1A_PROJECT_SKELETON.md) — application foundation checkpoint.
 - [PHASE_1B1_PERSISTENCE_FOUNDATION.md](PHASE_1B1_PERSISTENCE_FOUNDATION.md) — PostgreSQL connection, migrations, readiness, and reproducible installs.
+- [PHASE_1B2A_REPOSITORIES_SCHEMA.md](PHASE_1B2A_REPOSITORIES_SCHEMA.md) — canonical repository identity schema and migration verification.
 
 ## Community
 

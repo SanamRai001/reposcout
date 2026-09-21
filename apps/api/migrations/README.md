@@ -2,7 +2,7 @@
 
 RepoScout uses **node-pg-migrate** for explicit PostgreSQL migrations.
 
-No application tables are created in Phase 1B.1. The first canonical repository schema belongs to Phase 1B.2.
+The first application table, `repositories`, was introduced in Phase 1B.2A. New schema changes must continue to use explicit migrations.
 
 ## Commands
 
@@ -26,3 +26,10 @@ Migration rules:
 - destructive migrations require explicit review;
 - never place secrets or environment-specific values in migration files;
 - database constraints are preferred over application-only assumptions for data integrity.
+
+
+## Current migrations
+
+- `1790008200000_create_repositories.ts` — canonical repository identity and basic GitHub state.
+
+Phase 1B.2A verifies both the up and down paths in CI.
