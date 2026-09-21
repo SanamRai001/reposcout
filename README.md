@@ -85,7 +85,7 @@ The backend now uses PostgreSQL through node-postgres with explicit migration to
 
 **Phase 2 — repository ingestion:** complete.
 
-**Phase 3A — repository catalog/read API:** implemented and under verification.
+**Phase 3A — repository catalog/read API:** complete.
 
 The next checkpoint after verification is **Phase 3B: the smallest catalog web UI**. Background scheduling remains deliberately deferred until real usage requires it.
 
