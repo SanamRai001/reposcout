@@ -59,11 +59,14 @@ Status: complete
 
 ##### Phase 1B.2B — Repository persistence layer
 
-Next:
-- repository persistence methods;
-- create/upsert by GitHub repository ID;
-- find-by-ID/current-name lookup;
+Status: complete after PR verification
+
+- explicit repository persistence model;
+- idempotent upsert by GitHub repository ID;
+- stable internal UUID across syncs;
+- find-by-GitHub-ID/current-name lookup;
 - rename/transfer-safe updates;
+- stale-sync overwrite protection;
 - persistence integration tests.
 
 No ingestion or discovery sophistication yet.
