@@ -7,6 +7,7 @@ Start here if you are contributing to the project.
 - [PRODUCT.md](PRODUCT.md) — problem, users, differentiation, principles.
 - [MVP_SCOPE.md](MVP_SCOPE.md) — what the first release includes and excludes.
 - [ROADMAP.md](ROADMAP.md) — phased delivery plan.
+- [BRAND_GUIDE.md](BRAND_GUIDE.md) — visual identity, voice, color, motion, and UI guardrails.
 
 ## Engineering
 
@@ -14,6 +15,7 @@ Start here if you are contributing to the project.
 - [DATA_MODEL.md](DATA_MODEL.md) — canonical repository, snapshot, submission, and moderation model.
 - [DISCOVERY_RANKING.md](DISCOVERY_RANKING.md) — discovery modes, explainability, and scoring constraints.
 - [DECISIONS.md](DECISIONS.md) — project decision log.
+- [PHASE_1A_PROJECT_SKELETON.md](PHASE_1A_PROJECT_SKELETON.md) — current implementation checkpoint.
 
 ## Community
 

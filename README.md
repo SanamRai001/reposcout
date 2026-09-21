@@ -67,11 +67,21 @@ AI chat, social feeds, browser extensions, large-scale GitHub crawling, and comp
 
 ## Repository status
 
-RepoScout is currently in the **product and architecture foundation** stage.
+**Phase 0 — product/architecture foundation:** complete.
 
-Documentation is being written before implementation so that the project has a stable scope, contribution model, and technical direction before code begins.
+**Phase 1 — project skeleton:** in progress.
 
-See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, ranking principles, roadmap, and decisions.
+Phase 1A establishes:
+- npm workspaces;
+- React/Vite/Tailwind web application;
+- Express/TypeScript API;
+- configuration validation;
+- tests, linting, type checks, builds, and CI;
+- initial “Scout Signal” brand tokens.
+
+PostgreSQL and migrations are intentionally deferred to Phase 1B.
+
+See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, ranking principles, roadmap, and decisions.
 
 ## Contributing
 
