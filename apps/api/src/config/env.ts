@@ -10,10 +10,16 @@ export type DatabaseEnvironment = Readonly<{
   idleTimeoutMs: number;
 }>;
 
+export type GithubEnvironment = Readonly<{
+  token?: string;
+  requestTimeoutMs: number;
+}>;
+
 export type AppEnvironment = Readonly<{
   nodeEnv: NodeEnvironment;
   port: number;
   database: DatabaseEnvironment;
+  github: GithubEnvironment;
 }>;
 
 function parseInteger(
@@ -92,6 +98,11 @@ function requireDatabaseUrl(value: string | undefined): string {
   return candidate;
 }
 
+function optionalSecret(value: string | undefined): string | undefined {
+  const candidate = value?.trim();
+  return candidate ? candidate : undefined;
+}
+
 export function loadEnvironment(
   source: NodeJS.ProcessEnv = process.env,
 ): AppEnvironment {
@@ -121,6 +132,16 @@ export function loadEnvironment(
         10_000,
         1_000,
         300_000,
+      ),
+    }),
+    github: Object.freeze({
+      token: optionalSecret(source.GITHUB_TOKEN),
+      requestTimeoutMs: parseInteger(
+        'GITHUB_REQUEST_TIMEOUT_MS',
+        source.GITHUB_REQUEST_TIMEOUT_MS,
+        8_000,
+        500,
+        60_000,
       ),
     }),
   });
