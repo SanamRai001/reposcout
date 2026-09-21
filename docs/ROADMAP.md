@@ -17,7 +17,7 @@ Status: complete
 
 ## Phase 1 — Project skeleton
 
-Status: in progress
+Status: complete
 
 ### Phase 1A — Application foundation
 
