@@ -9,7 +9,7 @@ const BASE_ENV: NodeJS.ProcessEnv = {
 };
 
 describe('loadEnvironment', () => {
-  it('loads database defaults', () => {
+  it('loads database and GitHub defaults', () => {
     const environment = loadEnvironment(BASE_ENV);
 
     expect(environment.nodeEnv).toBe('test');
@@ -17,6 +17,19 @@ describe('loadEnvironment', () => {
     expect(environment.database.poolMax).toBe(10);
     expect(environment.database.connectionTimeoutMs).toBe(5_000);
     expect(environment.database.idleTimeoutMs).toBe(10_000);
+    expect(environment.github.token).toBeUndefined();
+    expect(environment.github.requestTimeoutMs).toBe(8_000);
+  });
+
+  it('loads an optional GitHub token without requiring one for public data', () => {
+    const environment = loadEnvironment({
+      ...BASE_ENV,
+      GITHUB_TOKEN: '  example-token  ',
+      GITHUB_REQUEST_TIMEOUT_MS: '12000',
+    });
+
+    expect(environment.github.token).toBe('example-token');
+    expect(environment.github.requestTimeoutMs).toBe(12_000);
   });
 
   it('rejects a missing database URL', () => {
@@ -52,5 +65,16 @@ describe('loadEnvironment', () => {
         DATABASE_POOL_MAX: '0',
       }),
     ).toThrow('DATABASE_POOL_MAX must be an integer between 1 and 100.');
+  });
+
+  it('rejects invalid GitHub request timeouts', () => {
+    expect(() =>
+      loadEnvironment({
+        ...BASE_ENV,
+        GITHUB_REQUEST_TIMEOUT_MS: '100',
+      }),
+    ).toThrow(
+      'GITHUB_REQUEST_TIMEOUT_MS must be an integer between 500 and 60000.',
+    );
   });
 });
