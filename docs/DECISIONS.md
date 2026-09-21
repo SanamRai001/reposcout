@@ -48,13 +48,11 @@ Stars remain visible and sortable, but discovery modes can use activity, mainten
 
 RepoScout will prefer named, explainable rankings such as Hidden Gems, Rising, Recently Active, or Contribution Friendly.
 
-## D-007 — PostgreSQL is the default persistence choice
+## D-007 — PostgreSQL is the persistence database
 
-**Status:** Proposed/initial
+**Status:** Accepted
 
 PostgreSQL fits normalized repository data, filters, historical snapshots, full-text search, and later pgvector if semantic search becomes justified.
-
-Revisit only with concrete evidence.
 
 ## D-008 — AI must not fabricate repository metrics
 
@@ -90,11 +88,6 @@ Phase 1A uses:
 
 No shared package is created until stable shared code actually exists.
 
-Reason:
-- keeps frontend/backend boundaries explicit;
-- matches the current product needs without a heavy monorepo framework;
-- keeps local development approachable for new contributors.
-
 ## D-012 — Adopt the “Scout Signal” brand direction
 
 **Status:** Accepted for foundation; logo remains open
@@ -102,3 +95,40 @@ Reason:
 The first visual direction uses a calm dark developer interface with Scout Mint as the primary signal color and restrained radar/navigation motifs.
 
 The temporary Phase 1A mark is not the final logo.
+
+## D-013 — Start with node-postgres instead of an ORM
+
+**Status:** Accepted
+
+Runtime persistence begins with `pg` / node-postgres.
+
+Reason:
+- parameterized SQL and transactions remain explicit;
+- the application does not yet have enough real queries to justify an ORM;
+- adding an ORM now would create abstraction cost before demonstrating value.
+
+This can be revisited later if real query complexity justifies a typed query builder or ORM.
+
+## D-014 — Use node-pg-migrate for schema migrations
+
+**Status:** Accepted
+
+Migrations use `node-pg-migrate` and are validated against PostgreSQL in CI.
+
+Schema changes should not be performed implicitly by application startup.
+
+## D-015 — Dependency installations are lockfile-driven
+
+**Status:** Accepted
+
+The repository commits a root `package-lock.json`.
+
+CI and deployment-oriented installation should use `npm ci` so dependency drift causes a failure rather than silently rewriting the dependency graph.
+
+## D-016 — Separate liveness from readiness
+
+**Status:** Accepted
+
+`/health` reports process liveness.
+
+`/ready` verifies required runtime dependencies, starting with PostgreSQL, and reports HTTP 503 when they are unavailable.

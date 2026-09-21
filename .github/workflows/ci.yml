@@ -11,7 +11,22 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: reposcout
+          POSTGRES_PASSWORD: reposcout
+          POSTGRES_DB: reposcout_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U reposcout -d reposcout_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - name: Checkout
@@ -21,9 +36,20 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
+          cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Verify
+      - name: Verify application
         run: npm run verify
+
+      - name: Verify migration runner
+        env:
+          DATABASE_URL: postgresql://reposcout:reposcout@127.0.0.1:5432/reposcout_test
+        run: npm run db:migrate -w @reposcout/api
+
+      - name: Verify PostgreSQL connection
+        env:
+          DATABASE_URL: postgresql://reposcout:reposcout@127.0.0.1:5432/reposcout_test
+        run: npm run test:db -w @reposcout/api

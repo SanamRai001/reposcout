@@ -8,37 +8,44 @@ This is the starting architecture, not a permanent commitment. Changes should be
 
 Keep RepoScout simple enough to build and operate while leaving a clean path for background ingestion, historical snapshots, search, and later semantic discovery.
 
-## Recommended starting shape
-
-A modular web application with a relational database and background jobs.
+## Current shape
 
 ```text
 Browser
    ↓
-Web/API application
-   ├── Discovery
-   ├── Repository catalog
-   ├── Submission/moderation
-   ├── Auth/authorization
-   └── Admin tools
+React / Vite web
+   ↓
+Express API
+   ├── liveness: /health
+   └── readiness: /ready
+          ↓
+   node-postgres pool
           ↓
       PostgreSQL
-          ↑
-Background ingestion worker
-          ↓
-      GitHub API
+
+Schema changes
+   ↓
+node-pg-migrate
+   ↓
+PostgreSQL
 ```
 
-## Implemented Phase 1A shape
+Background ingestion is intentionally deferred until the persistence model exists.
+
+## Repository structure
 
 ```text
 reposcout/
 ├── apps/
 │   ├── web/   React + Vite + Tailwind CSS
-│   └── api/   Express + TypeScript
+│   └── api/
+│       ├── migrations/
+│       └── src/
+│           ├── config/
+│           └── database/
 ├── docs/
 ├── .github/workflows/
-├── eslint.config.js
+├── package-lock.json
 ├── package.json
 └── tsconfig.base.json
 ```
@@ -61,7 +68,11 @@ The project uses npm workspaces without a monorepo framework. A shared package w
 Express is sufficient for the first modular API surface. Do not introduce NestJS or another framework unless growing complexity creates a concrete need.
 
 ### Database
-- PostgreSQL.
+- PostgreSQL;
+- `pg` / node-postgres for runtime connections and queries;
+- `node-pg-migrate` for schema migrations.
+
+PostgreSQL is now an accepted architecture decision.
 
 Why PostgreSQL:
 - strong relational model for canonical repository data;
@@ -70,7 +81,34 @@ Why PostgreSQL:
 - can add pgvector later without introducing a separate vector database during MVP;
 - strong uniqueness and transactional guarantees for submissions/moderation.
 
-PostgreSQL implementation begins in Phase 1B.
+Why no ORM yet:
+- real query patterns do not exist yet;
+- direct SQL keeps behavior explicit;
+- adding an abstraction before it solves a demonstrated problem would increase complexity.
+
+Revisit a typed query builder or ORM only when repetitive mapping/query maintenance provides evidence that it is worth the cost.
+
+### Database connection lifecycle
+
+The API:
+1. validates database configuration;
+2. constructs a bounded connection pool;
+3. verifies PostgreSQL connectivity before accepting traffic;
+4. exposes a database-backed readiness check;
+5. closes the pool during graceful shutdown.
+
+Database URLs and credentials must never be written to logs.
+
+### Migrations
+
+Migration history uses `node-pg-migrate`.
+
+Rules:
+- application schema changes go through migrations;
+- shipped migrations are immutable;
+- destructive changes require explicit review;
+- database constraints are preferred over application-only integrity assumptions;
+- migration execution must be verified in CI.
 
 ### Background jobs
 
@@ -135,7 +173,7 @@ Frontend should not directly call privileged GitHub APIs with secret tokens.
 Browser → RepoScout API → GitHub API
 ```
 
-Public unauthenticated GitHub requests may be possible in limited cases, but canonical ingestion should remain server-side so:
+Canonical ingestion should remain server-side so:
 - tokens remain secret;
 - rate limits can be coordinated;
 - responses can be cached;
@@ -181,7 +219,7 @@ Do not snapshot every field unnecessarily.
 ## Security baseline
 
 MUST:
-- keep GitHub credentials server-side;
+- keep GitHub and database credentials server-side;
 - validate GitHub URLs/owner/repo identifiers;
 - apply authorization to moderation endpoints;
 - rate-limit submission endpoints;
@@ -190,7 +228,8 @@ MUST:
 - parameterize database queries;
 - validate all external API data before persistence;
 - log moderation actions;
-- avoid rendering unsanitized README/HTML content.
+- avoid rendering unsanitized README/HTML content;
+- keep TLS certificate verification enabled when database TLS is enabled.
 
 ## Reliability baseline
 
@@ -199,11 +238,13 @@ MUST:
 - renames must not create duplicates;
 - refresh failures must not delete healthy existing records;
 - moderation writes should be transactional;
-- derived scores must be recomputable.
+- derived scores must be recomputable;
+- production installs should use the committed npm lockfile and `npm ci`.
 
 ## Observability
 
 Initially capture:
+- database connectivity failures;
 - ingestion success/failure;
 - GitHub rate-limit state;
 - job retries;
