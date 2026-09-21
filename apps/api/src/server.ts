@@ -7,6 +7,7 @@ import {
   verifyDatabaseConnection,
 } from './database/database.js';
 import { logger } from './logger.js';
+import { RepositoryStore } from './repositories/repository-store.js';
 
 async function bootstrap(): Promise<void> {
   const environment = loadEnvironment();
@@ -14,8 +15,10 @@ async function bootstrap(): Promise<void> {
 
   await verifyDatabaseConnection(databasePool);
 
+  const repositoryStore = new RepositoryStore(databasePool);
   const app = createApp({
     checkReadiness: () => verifyDatabaseConnection(databasePool),
+    repositoryCatalog: repositoryStore,
   });
 
   const server = app.listen(environment.port, () => {
