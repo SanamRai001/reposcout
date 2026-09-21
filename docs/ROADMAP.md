@@ -125,7 +125,7 @@ Status: in progress
 
 ### Phase 3A — Catalog read API
 
-Status: implemented; verification pending
+Status: complete
 
 - `GET /api/repositories`;
 - `GET /api/repositories/:id`;
