@@ -8,10 +8,19 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --exclude '**/*.integration.test.ts'",
+    "test:db": "vitest run src/database/database.integration.test.ts",
+    "db:migrate": "node-pg-migrate up --migrations-dir migrations --migrations-table reposcout_migrations --check-order",
+    "db:migrate:down": "node-pg-migrate down --migrations-dir migrations --migrations-table reposcout_migrations",
+    "db:migrate:create": "node-pg-migrate create"
   },
   "dependencies": {
     "dotenv": "18.0.1",
-    "express": "5.2.1"
+    "express": "5.2.1",
+    "pg": "8.23.0"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1",
+    "node-pg-migrate": "9.0.0"
   }
 }
