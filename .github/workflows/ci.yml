@@ -68,5 +68,8 @@ jobs:
       - name: Verify GitHub ingestion operations
         run: npm run test:ingestion -w @reposcout/api
 
+      - name: Verify repository catalog API
+        run: npm run test:catalog -w @reposcout/api
+
       - name: Verify PostgreSQL connection
         run: npm run test:db -w @reposcout/api

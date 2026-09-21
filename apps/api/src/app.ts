@@ -1,9 +1,12 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
 
 import { logger } from './logger.js';
+import type { RepositoryCatalogReader } from './repositories/repository-catalog.js';
+import { createRepositoryRouter } from './repositories/repository-routes.js';
 
 export type AppDependencies = Readonly<{
   checkReadiness?: () => Promise<void>;
+  repositoryCatalog?: RepositoryCatalogReader;
 }>;
 
 export function createApp(dependencies: AppDependencies = {}) {
@@ -41,6 +44,13 @@ export function createApp(dependencies: AppDependencies = {}) {
       });
     }
   });
+
+  if (dependencies.repositoryCatalog) {
+    app.use(
+      '/api/repositories',
+      createRepositoryRouter(dependencies.repositoryCatalog),
+    );
+  }
 
   app.use((request, response) => {
     response.status(404).json({

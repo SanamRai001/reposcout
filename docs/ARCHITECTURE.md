@@ -17,11 +17,12 @@ React / Vite web
    ↓
 Express API
    ├── liveness: /health
-   └── readiness: /ready
-          ↓
-   node-postgres pool
-          ↓
-      PostgreSQL
+   ├── readiness: /ready
+   └── catalog: /api/repositories
+                 ↓
+          RepositoryStore
+                 ↓
+            PostgreSQL
 
 GitHub repository reference
           ↓
@@ -49,7 +50,7 @@ node-pg-migrate
 PostgreSQL
 ```
 
-Phase 2A contains the synchronous single-repository ingestion boundary. Phase 2B adds refresh eligibility, retry/unavailable decisions, structured operational logging, and an internal maintainer CLI. Background job execution remains deferred.
+Phase 2A contains the synchronous single-repository ingestion boundary. Phase 2B adds refresh eligibility, retry/unavailable decisions, structured operational logging, and an internal maintainer CLI. Phase 3A adds PostgreSQL-only public repository list/detail reads with bounded opaque keyset pagination. Background job execution remains deferred.
 
 ## Repository structure
 

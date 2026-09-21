@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
 import type { DatabasePool } from '../database/database.js';
+import {
+  isRepositoryId,
+  type RepositoryPage,
+  type RepositoryPageInput,
+} from './repository-catalog.js';
 import type { RepositoryRecord, UpsertRepositoryInput } from './repository.js';
 
 type RepositoryRow = {
@@ -195,5 +200,59 @@ export class RepositoryStore {
     );
 
     return result.rows.map(mapRepositoryRow);
+  }
+
+  async findById(id: string): Promise<RepositoryRecord | null> {
+    if (!isRepositoryId(id)) {
+      throw new Error('id must be a valid repository UUID.');
+    }
+
+    const result = await this.pool.query<RepositoryRow>(
+      `
+        SELECT ${SELECT_COLUMNS}
+        FROM repositories
+        WHERE id = $1
+      `,
+      [id],
+    );
+
+    const row = result.rows[0];
+    return row ? mapRepositoryRow(row) : null;
+  }
+
+  async listPage(input: RepositoryPageInput): Promise<RepositoryPage> {
+    if (!Number.isInteger(input.limit) || input.limit < 1 || input.limit > 50) {
+      throw new Error('limit must be an integer between 1 and 50.');
+    }
+
+    const fetchLimit = input.limit + 1;
+    const result = input.cursor
+      ? await this.pool.query<RepositoryRow>(
+          `
+            SELECT ${SELECT_COLUMNS}
+            FROM repositories
+            WHERE id > $1
+            ORDER BY id ASC
+            LIMIT $2
+          `,
+          [input.cursor.id, fetchLimit],
+        )
+      : await this.pool.query<RepositoryRow>(
+          `
+            SELECT ${SELECT_COLUMNS}
+            FROM repositories
+            ORDER BY id ASC
+            LIMIT $1
+          `,
+          [fetchLimit],
+        );
+
+    const hasMore = result.rows.length > input.limit;
+    const rows = hasMore ? result.rows.slice(0, input.limit) : result.rows;
+
+    return {
+      items: rows.map(mapRepositoryRow),
+      hasMore,
+    };
   }
 }

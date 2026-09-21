@@ -266,3 +266,36 @@ Phase 2 ends with a validated single-repository ingestion path, refresh eligibil
 RepoScout will not add cron, queues, or a background refresh worker before there is a concrete product need.
 
 The next implementation phase is the repository catalog/read surface. Background scheduling can return when repository volume, historical snapshots, or operational requirements justify it.
+
+
+## D-032 — Catalog reads never trigger GitHub ingestion
+
+**Status:** Accepted
+
+Repository list/detail requests read the last known canonical state from PostgreSQL.
+
+Browser-facing catalog traffic must not consume GitHub API quota or make response latency depend on GitHub availability.
+
+Refresh remains an ingestion concern.
+
+## D-033 — Phase 3A uses bounded opaque keyset pagination
+
+**Status:** Accepted
+
+Repository list requests default to 20 items and are capped at 50.
+
+Pagination uses an opaque cursor backed by the stable internal UUID and deterministic UUID ordering.
+
+The traversal order is internal only and must not be presented as newest, best, trending, or another semantic ranking.
+
+Timestamp-based cursors were avoided because PostgreSQL can retain timestamp precision beyond JavaScript Date's millisecond precision.
+
+## D-034 — Catalog API responses expose canonical facts only
+
+**Status:** Accepted
+
+Phase 3A serializes canonical repository records with ISO 8601 timestamps.
+
+It does not expose fabricated metrics, derived quality scores, or incomplete discovery signals.
+
+Search, ranking, metrics, and metadata enrichment remain separate phases.
