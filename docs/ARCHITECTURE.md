@@ -31,6 +31,11 @@ GitHub REST client ─────→ https://api.github.com
           ↓
 response validator
           ↓
+RepositoryRefreshService
+   ├── refresh-window decision
+   ├── retry/unavailable policy
+   └── operational logging
+          ↓
 RepositoryIngestionService
           ↓
 RepositoryStore
@@ -44,7 +49,7 @@ node-pg-migrate
 PostgreSQL
 ```
 
-Phase 2A now contains the synchronous single-repository ingestion boundary. Background job execution remains deferred until refresh scheduling/retry behavior is designed.
+Phase 2A contains the synchronous single-repository ingestion boundary. Phase 2B adds refresh eligibility, retry/unavailable decisions, structured operational logging, and an internal maintainer CLI. Background job execution remains deferred.
 
 ## Repository structure
 

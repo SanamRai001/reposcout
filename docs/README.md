@@ -20,6 +20,7 @@ Start here if you are contributing to the project.
 - [PHASE_1B2A_REPOSITORIES_SCHEMA.md](PHASE_1B2A_REPOSITORIES_SCHEMA.md) — canonical repository identity schema and migration verification.
 - [PHASE_1B2B_REPOSITORY_PERSISTENCE.md](PHASE_1B2B_REPOSITORY_PERSISTENCE.md) — idempotent repository writes, lookup behavior, and stale-sync protection.
 - [PHASE_2A_GITHUB_INGESTION.md](PHASE_2A_GITHUB_INGESTION.md) — repository reference parsing, GitHub API validation, and single-repository ingestion.
+- [PHASE_2B_INGESTION_OPERATIONS.md](PHASE_2B_INGESTION_OPERATIONS.md) — refresh policy, retry behavior, non-destructive unavailable handling, observability, and internal ingestion CLI.
 
 ## Community
 

@@ -73,7 +73,7 @@ No ingestion or discovery sophistication yet.
 
 ## Phase 2 — Repository ingestion
 
-Status: in progress
+Status: complete
 
 Build the most important backend path first:
 
@@ -98,20 +98,26 @@ Status: complete
 
 ### Phase 2B — Refresh operational behavior
 
-Next:
-- refresh policy;
-- rate-limit-aware retry decisions;
-- deleted/private transition handling;
-- ingestion logging/observability;
-- safe internal/manual ingestion entry point.
+Status: complete
 
-Phase 2 overall must eventually handle:
-- duplicates;
-- repository rename identity;
-- GitHub API errors;
-- rate limits;
-- archived/private/deleted transitions;
+- six-hour refresh policy;
+- force-refresh override;
+- rate-limit-aware retry decisions;
+- non-destructive 404/unavailable handling;
+- ingestion logging/observability;
+- safe internal/manual ingestion CLI;
+- PostgreSQL preservation tests.
+
+Phase 2 now handles:
+- duplicate-safe canonical identity;
+- repository rename/owner transfer;
+- GitHub API validation and stable errors;
+- rate-limit-aware retry decisions;
+- archived repository metadata;
+- non-destructive inaccessible/deleted/private-style 404 behavior;
 - idempotent refresh.
+
+Background scheduling remains intentionally deferred until product usage or snapshot requirements justify it.
 
 ## Phase 3 — Repository catalog
 

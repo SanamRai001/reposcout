@@ -16,7 +16,8 @@
     "db:migrate:down": "node-pg-migrate down --migrations-dir migrations --migrations-table reposcout_migrations --ignore-pattern README\\.md$",
     "db:migrate:create": "node-pg-migrate create",
     "test:persistence": "vitest run src/repositories/repository-store.integration.test.ts",
-    "test:ingestion": "vitest run src/github/repository-ingestion.integration.test.ts"
+    "test:ingestion": "vitest run src/github/repository-ingestion.integration.test.ts src/github/repository-refresh.integration.test.ts --maxWorkers=1",
+    "ingest:repository": "tsx src/cli/ingest-repository.ts"
   },
   "dependencies": {
     "dotenv": "18.0.1",
