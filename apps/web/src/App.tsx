@@ -96,9 +96,6 @@ export function App() {
   useEffect(() => {
     const controller = new AbortController();
 
-    setInitialLoading(true);
-    setErrorMessage(null);
-
     void fetchRepositoryCatalogPage({
       limit: PAGE_SIZE,
       signal: controller.signal,
@@ -128,6 +125,12 @@ export function App() {
 
     return () => controller.abort();
   }, [reloadToken]);
+
+  function retryCatalog(): void {
+    setInitialLoading(true);
+    setErrorMessage(null);
+    setReloadToken((value) => value + 1);
+  }
 
   async function loadMore(): Promise<void> {
     if (!nextCursor || loadingMore) {
@@ -222,7 +225,7 @@ export function App() {
               <button
                 className="secondary-button"
                 type="button"
-                onClick={() => setReloadToken((value) => value + 1)}
+                onClick={retryCatalog}
               >
                 Try again
               </button>
