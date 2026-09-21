@@ -255,3 +255,14 @@ If retry history, availability state, or scheduler coordination becomes necessar
 Maintainers can trigger one repository through the CLI.
 
 RepoScout will not expose an anonymous public ingestion route until community submission, moderation, authorization, and abuse/rate-limit controls are designed.
+
+
+## D-031 — Defer background refresh scheduling beyond Phase 2
+
+**Status:** Accepted
+
+Phase 2 ends with a validated single-repository ingestion path, refresh eligibility, retry decisions, non-destructive unavailable handling, observability, and a maintainer CLI.
+
+RepoScout will not add cron, queues, or a background refresh worker before there is a concrete product need.
+
+The next implementation phase is the repository catalog/read surface. Background scheduling can return when repository volume, historical snapshots, or operational requirements justify it.
