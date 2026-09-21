@@ -147,8 +147,14 @@ Phase 3B does not add:
 - client-side caching library;
 - router dependency.
 
+## Status
+
+Complete.
+
+The final branch passed lint, strict TypeScript, web/API unit tests, production builds, migration rollback/reapply, repository persistence, GitHub ingestion, catalog API integration, and PostgreSQL connectivity.
+
 ## Next checkpoint
 
-Phase 3C should add the **smallest repository detail web view** only if that is needed before metadata enrichment.
+Phase 3C will add the **smallest authoritative repository metadata/signals foundation** before building a dedicated repository detail page.
 
-Otherwise Phase 3 can move to the first metadata/signals expansion needed to make the catalog meaningfully informative before Phase 4 discovery.
+Reason: a detail page built from the current canonical fields would mostly repeat the catalog card. The next useful product step is richer measured repository information first.
