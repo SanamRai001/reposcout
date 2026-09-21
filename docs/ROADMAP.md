@@ -121,12 +121,31 @@ Background scheduling remains intentionally deferred until product usage or snap
 
 ## Phase 3 — Repository catalog
 
-- repository list;
-- repository detail API;
-- basic web UI;
+Status: in progress
+
+### Phase 3A — Catalog read API
+
+Status: implemented; verification pending
+
+- `GET /api/repositories`;
+- `GET /api/repositories/:id`;
+- bounded opaque keyset pagination;
+- stable repository response serialization;
+- PostgreSQL-only catalog reads;
+- end-to-end catalog integration tests.
+
+### Phase 3B — Basic catalog web UI
+
+Next:
+- repository list UI;
+- loading state;
+- empty state;
+- API error state;
+- pagination interaction.
+
+Later Phase 3 work:
 - metadata/signals;
-- refresh timestamps;
-- loading/empty/error states.
+- refresh timestamps in product UI.
 
 ## Phase 4 — Discovery
 
