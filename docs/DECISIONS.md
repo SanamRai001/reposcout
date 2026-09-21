@@ -299,3 +299,30 @@ Phase 3A serializes canonical repository records with ISO 8601 timestamps.
 It does not expose fabricated metrics, derived quality scores, or incomplete discovery signals.
 
 Search, ranking, metrics, and metadata enrichment remain separate phases.
+
+
+## D-035 — Catalog browser uses the same-origin RepoScout API
+
+**Status:** Accepted
+
+The web application requests `/api/repositories` rather than calling GitHub directly or hard-coding a production API host.
+
+Vite proxies `/api` to the local API during development.
+
+This preserves a simple production deployment shape and keeps GitHub credentials/rate limits server-side.
+
+## D-036 — Treat catalog cursors as opaque in the browser
+
+**Status:** Accepted
+
+The browser passes `nextCursor` back exactly as supplied by the API.
+
+Frontend code must not decode cursor structure, infer repository ordering from it, or manufacture pagination boundaries.
+
+## D-037 — Do not fake repository intelligence in the first catalog UI
+
+**Status:** Accepted
+
+Phase 3B renders only canonical facts already stored by RepoScout.
+
+Star counts, health, languages, categories, ranking badges, and AI descriptions will appear only after their data pipelines and ownership rules exist.
