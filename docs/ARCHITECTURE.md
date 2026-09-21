@@ -29,23 +29,39 @@ Background ingestion worker
       GitHub API
 ```
 
-## Suggested implementation stack
+## Implemented Phase 1A shape
 
-This is a default, not a hard requirement.
+```text
+reposcout/
+├── apps/
+│   ├── web/   React + Vite + Tailwind CSS
+│   └── api/   Express + TypeScript
+├── docs/
+├── .github/workflows/
+├── eslint.config.js
+├── package.json
+└── tsconfig.base.json
+```
+
+The project uses npm workspaces without a monorepo framework. A shared package will only be introduced when stable shared code exists.
+
+## Technology choices
 
 ### Frontend
-- React
-- TypeScript
-- Vite or a full-stack React framework if server rendering becomes valuable
-- Tailwind CSS
+- React;
+- TypeScript;
+- Vite;
+- Tailwind CSS.
 
 ### Backend
-- Node.js
-- TypeScript
-- a small modular API layer (Express/Fastify/NestJS only if its structure is justified)
+- Node.js;
+- TypeScript;
+- Express 5.
+
+Express is sufficient for the first modular API surface. Do not introduce NestJS or another framework unless growing complexity creates a concrete need.
 
 ### Database
-- PostgreSQL
+- PostgreSQL.
 
 Why PostgreSQL:
 - strong relational model for canonical repository data;
@@ -53,6 +69,8 @@ Why PostgreSQL:
 - good filtering/search primitives;
 - can add pgvector later without introducing a separate vector database during MVP;
 - strong uniqueness and transactional guarantees for submissions/moderation.
+
+PostgreSQL implementation begins in Phase 1B.
 
 ### Background jobs
 
