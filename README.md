@@ -87,7 +87,9 @@ The backend now uses PostgreSQL through node-postgres with explicit migration to
 
 **Phase 3A — repository catalog/read API:** complete.
 
-The next checkpoint after verification is **Phase 3B: the smallest catalog web UI**. Background scheduling remains deliberately deferred until real usage requires it.
+**Phase 3B — repository catalog web UI:** implemented and under verification.
+
+RepoScout now has a real browser catalog backed by the Phase 3A PostgreSQL read API. Search, ranking, and repository intelligence signals remain deliberately deferred.
 
 See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
 
