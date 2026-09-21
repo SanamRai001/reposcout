@@ -98,12 +98,15 @@ Status: complete
 
 ### Phase 2B — Refresh operational behavior
 
-Next:
-- refresh policy;
+Status: complete after PR verification
+
+- six-hour refresh policy;
+- force-refresh override;
 - rate-limit-aware retry decisions;
-- deleted/private transition handling;
+- non-destructive 404/unavailable handling;
 - ingestion logging/observability;
-- safe internal/manual ingestion entry point.
+- safe internal/manual ingestion CLI;
+- PostgreSQL preservation tests.
 
 Phase 2 overall must eventually handle:
 - duplicates;
