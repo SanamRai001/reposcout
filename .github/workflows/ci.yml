@@ -65,5 +65,8 @@ jobs:
       - name: Verify repository persistence
         run: npm run test:persistence -w @reposcout/api
 
+      - name: Verify GitHub ingestion boundary
+        run: npm run test:ingestion -w @reposcout/api
+
       - name: Verify PostgreSQL connection
         run: npm run test:db -w @reposcout/api
