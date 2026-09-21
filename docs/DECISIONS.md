@@ -132,3 +132,20 @@ CI and deployment-oriented installation should use `npm ci` so dependency drift 
 `/health` reports process liveness.
 
 `/ready` verifies required runtime dependencies, starting with PostgreSQL, and reports HTTP 503 when they are unavailable.
+
+
+## D-017 — Repository names are mutable attributes, not identity
+
+**Status:** Accepted
+
+`github_repository_id` is the canonical external identity and is unique in PostgreSQL.
+
+`owner`, `name`, `full_name`, and `github_url` may change when a repository is renamed or transferred. They must be updated on the existing canonical row rather than used to create a new identity.
+
+## D-018 — Keep repository metrics outside the canonical repository table
+
+**Status:** Accepted
+
+The first `repositories` table stores stable identity and basic current GitHub state only.
+
+Stars, forks, issue/release statistics, trend snapshots, categories, languages, topics, and derived signals are intentionally excluded so that metrics with different update cadence and ownership can evolve independently.
