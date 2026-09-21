@@ -77,7 +77,7 @@ AI chat, social feeds, browser extensions, large-scale GitHub crawling, and comp
 
 **Phase 1B.2B — repository persistence layer:** complete.
 
-**Phase 2A — single-repository GitHub ingestion:** implemented and under verification.
+**Phase 2A — single-repository GitHub ingestion:** complete.
 
 The backend now uses PostgreSQL through node-postgres with explicit migration tooling, validated connection configuration, database-backed readiness checks, and PostgreSQL integration tests. Dependency installs are reproducible through the committed root lockfile.
 
