@@ -47,11 +47,23 @@ Status: complete
 
 #### Phase 1B.2 — Canonical repository persistence
 
-Next:
+##### Phase 1B.2A — Canonical repositories schema
+
+Status: complete after PR verification
+
 - first `repositories` migration;
 - GitHub repository ID uniqueness;
-- repository persistence layer;
-- rename/transfer-safe identity;
+- rename/transfer-safe schema;
+- database constraints and targeted indexes;
+- migration up/down verification against PostgreSQL.
+
+##### Phase 1B.2B — Repository persistence layer
+
+Next:
+- repository persistence methods;
+- create/upsert by GitHub repository ID;
+- find-by-ID/current-name lookup;
+- rename/transfer-safe updates;
 - persistence integration tests.
 
 No ingestion or discovery sophistication yet.
