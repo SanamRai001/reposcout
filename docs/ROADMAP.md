@@ -35,7 +35,7 @@ Status: complete
 
 #### Phase 1B.1 — Connection and migration infrastructure
 
-Status: complete after PR verification
+Status: complete
 
 - PostgreSQL connection pool;
 - database configuration validation;
