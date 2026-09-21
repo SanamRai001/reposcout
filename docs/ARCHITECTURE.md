@@ -23,6 +23,20 @@ Express API
           ↓
       PostgreSQL
 
+GitHub repository reference
+          ↓
+reference parser
+          ↓
+GitHub REST client ─────→ https://api.github.com
+          ↓
+response validator
+          ↓
+RepositoryIngestionService
+          ↓
+RepositoryStore
+          ↓
+PostgreSQL
+
 Schema changes
    ↓
 node-pg-migrate
@@ -30,7 +44,7 @@ node-pg-migrate
 PostgreSQL
 ```
 
-Background ingestion is intentionally deferred until the persistence model exists.
+Phase 2A now contains the synchronous single-repository ingestion boundary. Background job execution remains deferred until refresh scheduling/retry behavior is designed.
 
 ## Repository structure
 

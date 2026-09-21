@@ -175,3 +175,38 @@ This prevents an older concurrent fetch or retry from overwriting newer canonica
 `full_name` is mutable and not canonical identity.
 
 Persistence therefore returns all exact matches for a full-name lookup instead of silently treating it as a unique key.
+
+
+## D-022 — GitHub ingestion fetches from a fixed API origin
+
+**Status:** Accepted
+
+RepoScout constructs repository API requests only against `https://api.github.com`.
+
+User-supplied repository references contribute only validated owner/repository path segments. Redirects are rejected.
+
+This is a core SSRF boundary and must not be replaced by arbitrary URL fetching.
+
+## D-023 — Pin the GitHub REST API version
+
+**Status:** Accepted
+
+RepoScout explicitly sends `X-GitHub-Api-Version: 2026-03-10`.
+
+The API version should only change through a reviewed compatibility update with tests.
+
+## D-024 — GitHub authentication is optional for the initial public-data client
+
+**Status:** Accepted
+
+Phase 2A supports unauthenticated public repository requests for local development and tests.
+
+`GITHUB_TOKEN` is strongly recommended for deployed ingestion due to rate limits. The token remains server-side and must never be logged.
+
+## D-025 — Reject external data before persistence
+
+**Status:** Accepted
+
+The GitHub client validates the subset of repository fields required by the canonical schema before returning a normalized snapshot.
+
+Malformed or internally inconsistent GitHub responses fail with `invalid_response` and are not persisted.
