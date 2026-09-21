@@ -210,3 +210,48 @@ Phase 2A supports unauthenticated public repository requests for local developme
 The GitHub client validates the subset of repository fields required by the canonical schema before returning a normalized snapshot.
 
 Malformed or internally inconsistent GitHub responses fail with `invalid_response` and are not persisted.
+
+
+## D-026 — Refresh repositories no more than once every six hours by default
+
+**Status:** Accepted
+
+The initial operational policy skips GitHub fetches when a repository was successfully synchronized within the previous six hours.
+
+Maintainers may explicitly force a refresh.
+
+This is a starting operational limit, not a permanent product promise.
+
+## D-027 — GitHub 404 is treated as unavailable, not deleted
+
+**Status:** Accepted
+
+GitHub 404 does not prove a repository was permanently deleted; it may also reflect private/inaccessible state.
+
+RepoScout preserves the last known good repository record, does not advance `last_synced_at`, and initially retries after 24 hours.
+
+Permanent lifecycle modeling requires stronger evidence and should be added separately.
+
+## D-028 — Retry decisions are explicit but Phase 2B does not run a scheduler
+
+**Status:** Accepted
+
+Rate limits and transient GitHub failures produce a concrete retry timestamp.
+
+Phase 2B exposes that decision to callers but intentionally does not introduce queue/cron infrastructure yet.
+
+## D-029 — Keep transient sync state out of the canonical repository table for now
+
+**Status:** Accepted
+
+The `repositories` table remains focused on canonical repository identity/current GitHub state.
+
+If retry history, availability state, or scheduler coordination becomes necessary, model it explicitly in a dedicated operational table rather than mixing transient workflow state into repository identity.
+
+## D-030 — Manual ingestion stays internal until moderation controls exist
+
+**Status:** Accepted
+
+Maintainers can trigger one repository through the CLI.
+
+RepoScout will not expose an anonymous public ingestion route until community submission, moderation, authorization, and abuse/rate-limit controls are designed.
