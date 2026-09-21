@@ -59,7 +59,7 @@ Status: complete
 
 ##### Phase 1B.2B — Repository persistence layer
 
-Status: complete after PR verification
+Status: complete
 
 - explicit repository persistence model;
 - idempotent upsert by GitHub repository ID;
