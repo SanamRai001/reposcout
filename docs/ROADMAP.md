@@ -49,7 +49,7 @@ Status: complete
 
 ##### Phase 1B.2A — Canonical repositories schema
 
-Status: complete after PR verification
+Status: complete
 
 - first `repositories` migration;
 - GitHub repository ID uniqueness;
