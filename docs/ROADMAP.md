@@ -136,16 +136,25 @@ Status: complete
 
 ### Phase 3B — Basic catalog web UI
 
-Next:
-- repository list UI;
-- loading state;
-- empty state;
-- API error state;
-- pagination interaction.
+Status: complete
 
-Later Phase 3 work:
-- metadata/signals;
-- refresh timestamps in product UI.
+- repository cards/list UI;
+- initial loading skeleton;
+- empty state;
+- API error + retry state;
+- load-more pagination;
+- responsive Scout Signal layout;
+- same-origin API client with local Vite proxy.
+
+### Phase 3C — Repository metadata/signals foundation
+
+Next:
+- ingest the smallest useful current GitHub metrics/metadata;
+- keep measured facts separate from derived signals;
+- expose those facts through the catalog API;
+- improve cards only after backend data is authoritative.
+
+Repository detail UI remains deferred until there is enough intelligence to justify a dedicated page.
 
 ## Phase 4 — Discovery
 
