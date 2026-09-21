@@ -73,7 +73,7 @@ AI chat, social feeds, browser extensions, large-scale GitHub crawling, and comp
 
 **Phase 1B.1 — persistence infrastructure:** complete.
 
-**Phase 1B.2A — canonical repositories schema:** implemented and under verification.
+**Phase 1B.2A — canonical repositories schema:** complete.
 
 The backend now uses PostgreSQL through node-postgres with explicit migration tooling, validated connection configuration, database-backed readiness checks, and PostgreSQL integration tests. Dependency installs are reproducible through the committed root lockfile.
 
