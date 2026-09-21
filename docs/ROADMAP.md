@@ -73,13 +73,39 @@ No ingestion or discovery sophistication yet.
 
 ## Phase 2 — Repository ingestion
 
+Status: in progress
+
 Build the most important backend path first:
 
 ```text
 GitHub URL → normalize → GitHub API → validate → persist
 ```
 
-Must handle:
+### Phase 2A — Single-repository ingestion boundary
+
+Status: complete after PR verification
+
+- GitHub repository reference parser;
+- fixed-origin GitHub REST client;
+- pinned REST API version;
+- optional server-side token;
+- request timeout;
+- response validation;
+- stable GitHub error model;
+- normalized repository snapshot;
+- ingestion service feeding RepositoryStore;
+- PostgreSQL end-to-end integration test.
+
+### Phase 2B — Refresh operational behavior
+
+Next:
+- refresh policy;
+- rate-limit-aware retry decisions;
+- deleted/private transition handling;
+- ingestion logging/observability;
+- safe internal/manual ingestion entry point.
+
+Phase 2 overall must eventually handle:
 - duplicates;
 - repository rename identity;
 - GitHub API errors;
