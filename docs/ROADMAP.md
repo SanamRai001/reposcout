@@ -83,7 +83,7 @@ GitHub URL → normalize → GitHub API → validate → persist
 
 ### Phase 2A — Single-repository ingestion boundary
 
-Status: complete after PR verification
+Status: complete
 
 - GitHub repository reference parser;
 - fixed-origin GitHub REST client;
