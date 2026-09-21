@@ -4,7 +4,6 @@ export const DEFAULT_REPOSITORY_PAGE_SIZE = 20;
 export const MAX_REPOSITORY_PAGE_SIZE = 50;
 
 export type RepositoryCursor = Readonly<{
-  createdAt: Date;
   id: string;
 }>;
 
@@ -43,7 +42,6 @@ export type RepositoryResponse = Readonly<{
 }>;
 
 type EncodedCursor = Readonly<{
-  createdAt: string;
   id: string;
 }>;
 
@@ -77,10 +75,9 @@ export function parseRepositoryPageLimit(value: unknown): number {
 }
 
 export function encodeRepositoryCursor(
-  repository: Pick<RepositoryRecord, 'createdAt' | 'id'>,
+  repository: Pick<RepositoryRecord, 'id'>,
 ): string {
   const payload: EncodedCursor = {
-    createdAt: repository.createdAt.toISOString(),
     id: repository.id,
   };
 
@@ -101,22 +98,11 @@ export function parseRepositoryCursor(value: unknown): RepositoryCursor | null {
       Buffer.from(value, 'base64url').toString('utf8'),
     ) as Partial<EncodedCursor>;
 
-    if (
-      typeof parsed.createdAt !== 'string' ||
-      typeof parsed.id !== 'string' ||
-      !isRepositoryId(parsed.id)
-    ) {
+    if (typeof parsed.id !== 'string' || !isRepositoryId(parsed.id)) {
       throw new Error('invalid cursor fields');
     }
 
-    const createdAt = new Date(parsed.createdAt);
-
-    if (Number.isNaN(createdAt.getTime())) {
-      throw new Error('invalid cursor timestamp');
-    }
-
     return {
-      createdAt,
       id: parsed.id,
     };
   } catch {
