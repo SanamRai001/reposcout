@@ -14,7 +14,8 @@
     "test:schema:down": "vitest run src/repositories/repository-schema-down.integration.test.ts",
     "db:migrate": "node-pg-migrate up --migrations-dir migrations --migrations-table reposcout_migrations --ignore-pattern README\\.md$ --check-order",
     "db:migrate:down": "node-pg-migrate down --migrations-dir migrations --migrations-table reposcout_migrations --ignore-pattern README\\.md$",
-    "db:migrate:create": "node-pg-migrate create"
+    "db:migrate:create": "node-pg-migrate create",
+    "test:persistence": "vitest run src/repositories/repository-store.integration.test.ts"
   },
   "dependencies": {
     "dotenv": "18.0.1",
