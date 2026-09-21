@@ -326,3 +326,14 @@ Frontend code must not decode cursor structure, infer repository ordering from i
 Phase 3B renders only canonical facts already stored by RepoScout.
 
 Star counts, health, languages, categories, ranking badges, and AI descriptions will appear only after their data pipelines and ownership rules exist.
+
+
+## D-038 — Enrich repository facts before building a dedicated detail page
+
+**Status:** Accepted
+
+Phase 3B already exposes the canonical repository facts available today.
+
+A new detail route at this point would mostly duplicate the catalog card and create UI surface without adding meaningful repository intelligence.
+
+Phase 3C will therefore add the smallest authoritative metadata/signals foundation first. A repository detail page can follow once it has enough useful information to justify a dedicated view.
