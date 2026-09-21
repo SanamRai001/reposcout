@@ -69,19 +69,15 @@ AI chat, social feeds, browser extensions, large-scale GitHub crawling, and comp
 
 **Phase 0 — product/architecture foundation:** complete.
 
-**Phase 1 — project skeleton:** in progress.
+**Phase 1A — application foundation:** complete.
 
-Phase 1A establishes:
-- npm workspaces;
-- React/Vite/Tailwind web application;
-- Express/TypeScript API;
-- configuration validation;
-- tests, linting, type checks, builds, and CI;
-- initial “Scout Signal” brand tokens.
+**Phase 1B.1 — persistence infrastructure:** implemented and under verification.
 
-PostgreSQL and migrations are intentionally deferred to Phase 1B.
+The backend now uses PostgreSQL through node-postgres with explicit migration tooling, validated connection configuration, database-backed readiness checks, and PostgreSQL integration tests. Dependency installs are reproducible through the committed root lockfile.
 
-See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, ranking principles, roadmap, and decisions.
+The next checkpoint is **Phase 1B.2: the smallest canonical repository schema and persistence layer**.
+
+See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
 
 ## Contributing
 
