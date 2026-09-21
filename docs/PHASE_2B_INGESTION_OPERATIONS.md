@@ -190,6 +190,8 @@ Phase 2B does not add:
 
 ## Next checkpoint
 
-Phase 2C should finish the ingestion foundation with the smallest **background refresh selection/execution boundary** only if it is needed before the repository catalog.
+Phase 2 is complete.
 
-Otherwise RepoScout can move directly to Phase 3 and build repository read APIs/catalog UI around the ingestion foundation already completed.
+RepoScout will move directly to **Phase 3A: repository catalog/read APIs**.
+
+Background refresh scheduling is intentionally deferred until repository volume, historical snapshots, or production operations demonstrate a concrete need.
