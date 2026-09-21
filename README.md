@@ -85,7 +85,9 @@ The backend now uses PostgreSQL through node-postgres with explicit migration to
 
 **Phase 2 — repository ingestion:** complete.
 
-The next checkpoint is **Phase 3A: the smallest repository catalog/read API**. Background scheduling is deliberately deferred until real usage requires it.
+**Phase 3A — repository catalog/read API:** implemented and under verification.
+
+The next checkpoint after verification is **Phase 3B: the smallest catalog web UI**. Background scheduling remains deliberately deferred until real usage requires it.
 
 See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
 
