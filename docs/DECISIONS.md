@@ -78,3 +78,27 @@ Each phase should:
 - include verification;
 - document meaningful architectural changes;
 - avoid unrelated refactors/features.
+
+## D-011 — Use a small npm workspace for the initial application
+
+**Status:** Accepted
+
+Phase 1A uses:
+- `apps/web` — React + Vite + Tailwind CSS;
+- `apps/api` — Node.js + Express + TypeScript;
+- npm workspaces at the repository root.
+
+No shared package is created until stable shared code actually exists.
+
+Reason:
+- keeps frontend/backend boundaries explicit;
+- matches the current product needs without a heavy monorepo framework;
+- keeps local development approachable for new contributors.
+
+## D-012 — Adopt the “Scout Signal” brand direction
+
+**Status:** Accepted for foundation; logo remains open
+
+The first visual direction uses a calm dark developer interface with Scout Mint as the primary signal color and restrained radar/navigation motifs.
+
+The temporary Phase 1A mark is not the final logo.
