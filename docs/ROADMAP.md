@@ -4,7 +4,7 @@ This roadmap intentionally favors small, verifiable phases.
 
 ## Phase 0 — Foundation
 
-Status: in progress
+Status: complete
 
 - define product;
 - define MVP/non-goals;
@@ -12,20 +12,33 @@ Status: in progress
 - define data model;
 - define discovery/ranking principles;
 - define submission/community rules;
-- establish contribution workflow.
+- establish contribution workflow;
+- define initial brand guidance.
 
-Exit criteria:
+Exit criteria met:
 implementation can begin without major ambiguity about the first product loop.
 
 ## Phase 1 — Project skeleton
 
+Status: in progress
+
+### Phase 1A — Application foundation
+
 - TypeScript project structure;
 - frontend/backend boundaries;
-- PostgreSQL connection and migrations;
 - configuration validation;
 - logging/error baseline;
 - test/lint/typecheck/build scripts;
-- CI.
+- CI;
+- initial branded foundation screen.
+
+### Phase 1B — Persistence foundation
+
+- PostgreSQL connection;
+- migration tooling;
+- initial canonical repository schema;
+- local database configuration;
+- database health verification.
 
 No discovery sophistication yet.
 
