@@ -42,10 +42,9 @@ describe('repository catalog contract', () => {
     const cursor = encodeRepositoryCursor(repository);
     const parsed = parseRepositoryCursor(cursor);
 
-    expect(parsed?.id).toBe(repository.id);
-    expect(parsed?.createdAt.toISOString()).toBe(
-      repository.createdAt.toISOString(),
-    );
+    expect(parsed).toEqual({
+      id: repository.id,
+    });
   });
 
   it('rejects malformed cursors', () => {
