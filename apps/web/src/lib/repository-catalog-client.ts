@@ -126,15 +126,20 @@ export async function fetchRepositoryCatalogPage(
   }
 
   const query = parameters.toString();
+  const requestInit: RequestInit = {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+    },
+  };
+
+  if (input.signal) {
+    requestInit.signal = input.signal;
+  }
+
   const response = await fetchImplementation(
     `/api/repositories${query ? `?${query}` : ''}`,
-    {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-      },
-      signal: input.signal,
-    },
+    requestInit,
   );
 
   const body = (await response.json().catch(() => null)) as
