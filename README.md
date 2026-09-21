@@ -79,9 +79,11 @@ AI chat, social feeds, browser extensions, large-scale GitHub crawling, and comp
 
 **Phase 2A — single-repository GitHub ingestion:** complete.
 
+**Phase 2B — ingestion refresh operations:** implemented and under verification.
+
 The backend now uses PostgreSQL through node-postgres with explicit migration tooling, validated connection configuration, database-backed readiness checks, and PostgreSQL integration tests. Dependency installs are reproducible through the committed root lockfile.
 
-The next checkpoint after this boundary is **Phase 2B: refresh policy, rate-limit/deletion behavior, observability, and a safe internal ingestion entry point**.
+After Phase 2B, we can decide whether a tiny Phase 2C background-refresh boundary is necessary or move directly into **Phase 3: repository catalog/read APIs**.
 
 See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
 
