@@ -11,7 +11,7 @@ export type DatabaseEnvironment = Readonly<{
 }>;
 
 export type GithubEnvironment = Readonly<{
-  token?: string;
+  token: string | undefined;
   requestTimeoutMs: number;
 }>;
 
