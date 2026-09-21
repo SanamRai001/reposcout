@@ -149,3 +149,29 @@ CI and deployment-oriented installation should use `npm ci` so dependency drift 
 The first `repositories` table stores stable identity and basic current GitHub state only.
 
 Stars, forks, issue/release statistics, trend snapshots, categories, languages, topics, and derived signals are intentionally excluded so that metrics with different update cadence and ownership can evolve independently.
+
+
+## D-019 — Represent GitHub repository IDs as strings in TypeScript
+
+**Status:** Accepted
+
+PostgreSQL stores `github_repository_id` as `BIGINT`, while TypeScript persistence models expose the value as a decimal string.
+
+Reason:
+JavaScript `number` cannot safely represent every 64-bit integer. External identity must never be rounded.
+
+## D-020 — Repository upserts reject stale synchronization state
+
+**Status:** Accepted
+
+Repository persistence updates an existing row only when the incoming `last_synced_at` is at least as recent as the stored value.
+
+This prevents an older concurrent fetch or retry from overwriting newer canonical repository state.
+
+## D-021 — Full-name lookup does not assume uniqueness
+
+**Status:** Accepted
+
+`full_name` is mutable and not canonical identity.
+
+Persistence therefore returns all exact matches for a full-name lookup instead of silently treating it as a unique key.
