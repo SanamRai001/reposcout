@@ -136,7 +136,7 @@ Status: complete
 
 ### Phase 3B — Basic catalog web UI
 
-Status: implemented; verification pending
+Status: complete
 
 - repository cards/list UI;
 - initial loading skeleton;
@@ -146,9 +146,15 @@ Status: implemented; verification pending
 - responsive Scout Signal layout;
 - same-origin API client with local Vite proxy.
 
-Later Phase 3 work:
-- repository detail UI if required;
-- metadata/signals expansion.
+### Phase 3C — Repository metadata/signals foundation
+
+Next:
+- ingest the smallest useful current GitHub metrics/metadata;
+- keep measured facts separate from derived signals;
+- expose those facts through the catalog API;
+- improve cards only after backend data is authoritative.
+
+Repository detail UI remains deferred until there is enough intelligence to justify a dedicated page.
 
 ## Phase 4 — Discovery
 
