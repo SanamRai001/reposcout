@@ -136,16 +136,19 @@ Status: complete
 
 ### Phase 3B — Basic catalog web UI
 
-Next:
-- repository list UI;
-- loading state;
+Status: implemented; verification pending
+
+- repository cards/list UI;
+- initial loading skeleton;
 - empty state;
-- API error state;
-- pagination interaction.
+- API error + retry state;
+- load-more pagination;
+- responsive Scout Signal layout;
+- same-origin API client with local Vite proxy.
 
 Later Phase 3 work:
-- metadata/signals;
-- refresh timestamps in product UI.
+- repository detail UI if required;
+- metadata/signals expansion.
 
 ## Phase 4 — Discovery
 
