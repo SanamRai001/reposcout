@@ -157,6 +157,27 @@ Measured current GitHub facts collected with a repository observation, including
 ### ingestion
 GitHub client, normalization, refresh, rate-limit handling, retries.
 
+### repository content
+Bounded source evidence collected independently from canonical ingestion.
+
+Phase 3D.1 supports README evidence only:
+
+~~~text
+maintainer/internal trigger
+        |
+RepositoryReadmeService
+        |
+GitHub README endpoint
+        |
+size + encoding + UTF-8 validation
+        |
+RepositoryReadmeStore
+        |
+repository_readme_content
+~~~
+
+README collection is a separate failure domain so content API failures do not block canonical repository/metadata refresh.
+
 ### discovery
 Filtering, text search, ordering, ranking inputs.
 
