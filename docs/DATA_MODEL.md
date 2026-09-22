@@ -96,6 +96,46 @@ Rules:
 - raw README text is not part of the public catalog contract in Phase 3D.1;
 - model interpretation belongs in RepositoryModelAssessment, never in this source-content table.
 
+### RepositoryContributionEvidence
+
+Implemented in Phase 3D.2 as a dedicated one-to-one evidence table.
+
+~~~text
+repository_id
+status
+
+contributing_api_url nullable
+contributing_html_url nullable
+code_of_conduct_api_url nullable
+code_of_conduct_html_url nullable
+issue_template_api_url nullable
+issue_template_html_url nullable
+pull_request_template_api_url nullable
+pull_request_template_html_url nullable
+
+security_source_ref nullable
+security_path nullable
+security_sha nullable
+security_size_bytes nullable
+
+community_profile_updated_at nullable
+observed_at
+created_at
+updated_at
+~~~
+
+Status:
+- OBSERVED — GitHub community profile was successfully observed;
+- UNSUPPORTED_FORK — RepoScout intentionally skipped GitHub's unsupported community-profile request for a fork.
+
+Rules:
+- community-file links represent GitHub effective evidence and may reflect supported account-level defaults;
+- SECURITY evidence is repository-local only and uses fixed supported paths;
+- contribution-document bodies are not stored in Phase 3D.2;
+- stale observations cannot overwrite newer evidence;
+- absence after OBSERVED is different from UNSUPPORTED_FORK;
+- model conclusions do not belong in this evidence table.
+
 ### RepositorySnapshot
 
 Historical measurements.
