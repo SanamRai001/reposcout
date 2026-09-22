@@ -97,7 +97,7 @@ RepoScout now collects measured stars, forks, GitHub open issue/PR count, primar
 
 **Phase 3D.1 — bounded README content foundation:** complete. README evidence uses a separate refresh lifecycle, a 256 KiB storage ceiling, source ref/path/blob-SHA provenance, stale protection, and no raw public exposure. **Phase 3D.2 — contribution-document evidence:** complete. It uses GitHub community-profile evidence for CONTRIBUTING, Code of Conduct, issue/PR templates plus bounded repository-local SECURITY policy checks, without recursive repository crawling.
 
-RepoScout also plans a later **Jev evaluation spike** after authoritative metadata and repository content exist. Jev is being treated as an optional probabilistic decision/reranking layer—not a source of GitHub facts, not the primary search engine, and not a required dependency for RepoScout to function.
+**Phase 3E.1 — Jev evaluation harness:** complete. RepoScout now has a versioned, provider-neutral benchmark and transparent scoring harness, but still makes no live Jev calls and has no production model dependency. Phase 3E.2 will add the verified live adapter and a controlled smoke evaluation.
 
 See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
 

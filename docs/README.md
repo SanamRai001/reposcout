@@ -28,6 +28,7 @@ Start here if you are contributing to the project.
 - [PHASE_3C_REPOSITORY_METADATA.md](PHASE_3C_REPOSITORY_METADATA.md) — authoritative measured GitHub metadata, transactional persistence, and catalog exposure.
 - [PHASE_3D1_README_CONTENT_FOUNDATION.md](PHASE_3D1_README_CONTENT_FOUNDATION.md) — bounded README evidence storage, provenance, validation, and independent refresh.
 - [PHASE_3D2_CONTRIBUTION_EVIDENCE.md](PHASE_3D2_CONTRIBUTION_EVIDENCE.md) — GitHub community-file evidence, repository-local security provenance, and bounded refresh.
+- [PHASE_3E1_JEV_EVALUATION_HARNESS.md](PHASE_3E1_JEV_EVALUATION_HARNESS.md) — provider-neutral Jev benchmark, replayable result schema, and transparent evaluation metrics.
 
 ## Community
 

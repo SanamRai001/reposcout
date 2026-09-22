@@ -2,7 +2,7 @@
 
 ## Status
 
-**Planned / experimental. Not implemented.**
+**Experimental. Phase 3E.1 evaluation harness implemented; live Jev integration is not yet implemented.**
 
 RepoScout is evaluating Jev, TypeSafe AI's System One model, as a possible decision layer for repository classification, candidate reranking, contribution suitability, and submission analysis.
 
@@ -286,7 +286,9 @@ Thresholds must be evaluated using RepoScout's own labeled repository examples b
 
 ## Evaluation before adoption
 
-Phase 3E should be an evaluation spike, not immediate production rollout.
+Phase 3E is an evaluation spike, not immediate production rollout.
+
+Phase 3E.1 now provides a provider-neutral benchmark harness before any live Jev adapter is added.
 
 Evaluate Jev on a labeled repository set for:
 
@@ -341,13 +343,19 @@ authoritative GitHub metadata/metrics
 Phase 3D
 repository content foundation
         |
-Phase 3E
-Jev evaluation spike
+Phase 3E.1
+provider-neutral evaluation harness
+        |
+Phase 3E.2
+live Jev adapter + controlled smoke evaluation
+        |
+Phase 3E.3
+real RepoScout evaluation + adoption decision
         |
 Phase 4
 lexical discovery + filters
         |
-optional Jev candidate reranking
+optional Jev candidate reranking only if justified
 ~~~
 
 This preserves RepoScout's original principle:
