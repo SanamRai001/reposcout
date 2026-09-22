@@ -29,6 +29,7 @@ Start here if you are contributing to the project.
 - [PHASE_3D2_CONTRIBUTION_EVIDENCE.md](PHASE_3D2_CONTRIBUTION_EVIDENCE.md) — GitHub community-file evidence, repository-local security provenance, and bounded refresh.
 - [PHASE_3E1_JEV_EVALUATION_HARNESS.md](PHASE_3E1_JEV_EVALUATION_HARNESS.md) — provider-neutral Jev benchmark, replayable result schema, and transparent evaluation metrics.
 - [PHASE_3E2_LIVE_JEV_ADAPTER.md](PHASE_3E2_LIVE_JEV_ADAPTER.md) — verified TypeSafe wire contract, live Jev provider adapter, and credential-gated smoke evaluation.
+- [PHASE_4A_LEXICAL_SEARCH.md](PHASE_4A_LEXICAL_SEARCH.md) — deterministic PostgreSQL lexical search, query-bound cursors, and backend discovery boundaries.
 
 ## Community
 
