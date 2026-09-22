@@ -269,15 +269,21 @@ The adapter passed application verification, all offline TypeSafe wire-contract 
 
 ### Phase 3E.2B — Controlled live smoke
 
-Pending credential.
+Deferred — external access unavailable.
 
-The codebase now supports a controlled live run, but no valid `TYPESAFE_API_KEY` was available in the repository/session during this phase.
+The codebase supports a controlled live run, but TypeSafe access is currently unavailable. RepoScout will not pause product development waiting for provider access.
 
 A live smoke evaluation should only be recorded as completed when the credential is supplied and the command actually succeeds.
 
 CI success alone is **not** evidence that Jev itself was evaluated live.
 
-## Next checkpoint
+## Resume condition
+
+Resume Phase 3E.2B only when TypeSafe access becomes available.
+
+Until then, the active product roadmap moves to deterministic Phase 4 discovery.
+
+## Later checkpoint
 
 ### Phase 3E.3 — Real RepoScout benchmark + adoption decision
 

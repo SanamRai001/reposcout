@@ -205,7 +205,9 @@ Phase 3D should provide the evidence Jev or other classifiers may later evaluate
 
 ### Phase 3E — Jev evaluation spike
 
-Status: in progress / experimental
+Status: deferred / experimental
+
+Jev evaluation is intentionally paused because live TypeSafe access is currently unavailable. The completed adapter and harness remain in place, but RepoScout product development does not wait on provider access.
 
 #### Phase 3E.1 — Evaluation harness
 
@@ -250,11 +252,15 @@ Status: complete
 
 ##### Phase 3E.2B — Controlled live smoke evaluation
 
-Status: pending credential
+Status: deferred — external access unavailable
+
+Resume only when TypeSafe access becomes available.
 
 A real live smoke result is only considered complete when a valid TypeSafe credential is supplied and the command succeeds.
 
 #### Phase 3E.3 — Real RepoScout evaluation + adoption decision
+
+Status: deferred until 3E.2B can run
 
 Later:
 - label real indexed repositories;
@@ -271,6 +277,18 @@ Repository detail UI remains deferred until there is enough intelligence to just
 
 ## Phase 4 — Discovery
 
+Status: next active product phase
+
+### Phase 4A — Deterministic lexical search foundation
+
+Next:
+- PostgreSQL-backed lexical search over canonical repository fields;
+- explicit query normalization and bounds;
+- deterministic result ordering;
+- bounded pagination compatible with search;
+- search remains independent of Jev.
+
+Later Phase 4 work:
 - lexical search;
 - language/category/topic filters;
 - activity/star/license filters;
