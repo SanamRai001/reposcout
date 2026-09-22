@@ -263,8 +263,16 @@ Tests cover:
 - schema constraints;
 - latest migration rollback preserving earlier repository/content tables.
 
+## Status
+
+Complete.
+
+The Phase 3D.2 branch passed application verification, migration apply/rollback/reapply, contribution-evidence schema constraints, community-profile/security integration tests, stale-write tests, existing ingestion/catalog regression gates, and PostgreSQL connectivity.
+
+With Phase 3D.1 and Phase 3D.2 complete, **Phase 3D — Repository content foundation is complete**.
+
 ## Next checkpoint
 
-With Phase 3D.1 README evidence and Phase 3D.2 contribution-document evidence complete, the next planned phase is **Phase 3E — Jev evaluation spike**.
+The next planned phase is **Phase 3E — Jev evaluation spike**.
 
 Phase 3E should evaluate model usefulness before any production model-assessment table or ranking dependency is introduced.
