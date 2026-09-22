@@ -337,3 +337,72 @@ Phase 3B already exposes the canonical repository facts available today.
 A new detail route at this point would mostly duplicate the catalog card and create UI surface without adding meaningful repository intelligence.
 
 Phase 3C will therefore add the smallest authoritative metadata/signals foundation first. A repository detail page can follow once it has enough useful information to justify a dedicated view.
+
+
+## D-039 — Evaluate Jev as an optional decision layer
+
+**Status:** Accepted as an experiment, not a production dependency
+
+RepoScout will evaluate Jev for constrained repository judgments such as classification, relevance assessment, contribution suitability, and submission triage.
+
+Jev is not the source of GitHub facts, not the primary retrieval engine, and not a replacement for deterministic RepoScout signals.
+
+No production dependency should be introduced until RepoScout-specific evaluation demonstrates measurable value.
+
+## D-040 — Keep four intelligence source classes separate
+
+**Status:** Accepted
+
+RepoScout distinguishes:
+
+1. GitHub/external measured facts;
+2. deterministic RepoScout signals;
+3. model-assisted probabilistic assessments;
+4. community/moderator judgments.
+
+These source classes must remain distinguishable in storage, APIs, explanations, and debugging.
+
+Model-assisted inference must never be presented as measured repository fact.
+
+## D-041 — Retrieval comes before model-assisted reranking
+
+**Status:** Accepted
+
+Search/discovery should first produce a bounded candidate set using PostgreSQL lexical search, filters, metadata, and deterministic signals.
+
+Jev may later assess/rerank that candidate set.
+
+RepoScout will not use Jev as the sole repository retrieval mechanism.
+
+## D-042 — RepoScout must degrade gracefully without Jev
+
+**Status:** Accepted
+
+Model-provider unavailability must not break:
+- repository ingestion;
+- factual metadata;
+- catalog reads;
+- deterministic search/filtering;
+- moderation queue access.
+
+Model-assisted features are optional enhancements over a functioning deterministic system.
+
+## D-043 — Model output cannot be the sole authority for permanent moderation rejection
+
+**Status:** Accepted
+
+Jev may support submission triage and surface uncertainty/risk.
+
+Permanent high-impact moderation decisions require human accountability and must not rely only on model output.
+
+Low-confidence model assessments should be escalated rather than silently converted into hard decisions.
+
+## D-044 — Evaluate model usefulness before creating persistent assessment infrastructure
+
+**Status:** Accepted
+
+RepoScout will not create a Jev-specific production table/service merely because the integration is technically possible.
+
+Phase 3E will evaluate classification quality, confidence usefulness, relevance, latency, cost, consistency, and failure behavior on RepoScout examples first.
+
+Persistent model-assessment storage is introduced only after a demonstrated product need.
