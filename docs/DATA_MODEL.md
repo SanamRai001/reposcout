@@ -7,6 +7,8 @@
 - Raw external data and curated RepoScout data must remain distinguishable.
 - Historical metrics belong in snapshots, not repeated columns.
 - Derived scores must be reproducible from stored inputs where practical.
+- Measured facts, deterministic RepoScout signals, model-assisted assessments, and community judgments must remain distinguishable.
+- Persisted model assessments must retain provider/model/schema/input provenance.
 
 ## Core entities
 
