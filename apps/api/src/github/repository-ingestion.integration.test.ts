@@ -44,6 +44,14 @@ function githubResponse(overrides: Record<string, unknown> = {}) {
     created_at: '2025-01-01T00:00:00Z',
     updated_at: '2026-09-20T00:00:00Z',
     pushed_at: '2026-09-20T03:00:00Z',
+    stargazers_count: 321,
+    forks_count: 27,
+    open_issues_count: 8,
+    language: 'TypeScript',
+    license: {
+      spdx_id: 'MIT',
+    },
+    topics: ['developer-tools', 'typescript'],
     owner: {
       login: 'small-org',
     },
@@ -82,6 +90,21 @@ describe('repository ingestion', () => {
     expect(persisted?.description).toBe(
       'A useful project that deserves discovery.',
     );
+
+    const catalogRepository = await repositoryStore.findById(repository.id);
+
+    expect(catalogRepository?.metadata).toEqual(
+      expect.objectContaining({
+        repositoryId: repository.id,
+        stars: 321,
+        forks: 27,
+        openIssues: 8,
+        primaryLanguage: 'TypeScript',
+        licenseSpdx: 'MIT',
+        topics: ['developer-tools', 'typescript'],
+        observedAt: syncedAt,
+      }),
+    );
   });
 
   it('refreshes the same canonical repository after a GitHub rename', async () => {
@@ -99,6 +122,12 @@ describe('repository ingestion', () => {
               html_url: 'https://github.com/new-org/better-project',
               owner: { login: 'new-org' },
               updated_at: '2026-09-21T00:00:00Z',
+              stargazers_count: 400,
+              forks_count: 31,
+              open_issues_count: 6,
+              language: 'TypeScript',
+              license: { spdx_id: 'MIT' },
+              topics: ['backend', 'typescript'],
             }),
           ),
           { status: 200 },
@@ -128,5 +157,16 @@ describe('repository ingestion', () => {
     );
 
     expect(count.rows[0]?.count).toBe('1');
+
+    const catalogRepository = await repositoryStore.findById(renamed.id);
+    expect(catalogRepository?.metadata).toEqual(
+      expect.objectContaining({
+        stars: 400,
+        forks: 31,
+        openIssues: 6,
+        topics: ['backend', 'typescript'],
+        observedAt: new Date('2026-09-21T11:00:00Z'),
+      }),
+    );
   });
 });
