@@ -24,21 +24,25 @@ afterAll(async () => {
 });
 
 describe('latest migration rollback', () => {
-  it('removes repository metadata while preserving canonical repositories', async () => {
+  it('removes README content while preserving repositories and metadata', async () => {
     const result = await pool.query<{
       repositories: string | null;
       repository_metadata: string | null;
+      repository_readme_content: string | null;
     }>(
       `
         SELECT
           to_regclass('public.repositories')::text AS repositories,
-          to_regclass('public.repository_metadata')::text AS repository_metadata
+          to_regclass('public.repository_metadata')::text AS repository_metadata,
+          to_regclass('public.repository_readme_content')::text
+            AS repository_readme_content
       `,
     );
 
     expect(result.rows[0]).toEqual({
       repositories: 'repositories',
-      repository_metadata: null,
+      repository_metadata: 'repository_metadata',
+      repository_readme_content: null,
     });
   });
 });

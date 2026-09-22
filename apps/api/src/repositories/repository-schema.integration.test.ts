@@ -207,6 +207,84 @@ describe('repositories schema', () => {
     ]);
   });
 
+  it('creates bounded README content storage with explicit provenance', async () => {
+    const result = await pool.query<{
+      column_name: string;
+      data_type: string;
+      is_nullable: 'YES' | 'NO';
+    }>(
+      `
+        SELECT column_name, data_type, is_nullable
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'repository_readme_content'
+        ORDER BY ordinal_position
+      `,
+    );
+
+    expect(result.rows).toEqual([
+      { column_name: 'repository_id', data_type: 'uuid', is_nullable: 'NO' },
+      { column_name: 'status', data_type: 'text', is_nullable: 'NO' },
+      { column_name: 'source_ref', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'path', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'sha', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'size_bytes', data_type: 'bigint', is_nullable: 'YES' },
+      { column_name: 'content', data_type: 'text', is_nullable: 'YES' },
+      {
+        column_name: 'observed_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'created_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'updated_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+    ]);
+  });
+
+  it('rejects an invalid README storage shape', async () => {
+    const repository = createRepositoryFixture({
+      githubRepositoryId: '444444444',
+    });
+    await insertRepository(repository);
+
+    await expect(
+      pool.query(
+        `
+          INSERT INTO repository_readme_content (
+            repository_id,
+            status,
+            source_ref,
+            path,
+            sha,
+            size_bytes,
+            content,
+            observed_at
+          )
+          VALUES (
+            $1,
+            'TOO_LARGE',
+            'main',
+            'README.md',
+            'sha',
+            300000,
+            'body should not be stored',
+            current_timestamp
+          )
+        `,
+        [repository.id],
+      ),
+    ).rejects.toMatchObject({
+      code: '23514',
+    });
+  });
+
   it('enforces nonnegative measured counts', async () => {
     const repository = createRepositoryFixture({
       githubRepositoryId: '555555555',

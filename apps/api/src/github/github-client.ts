@@ -1,4 +1,5 @@
 import type { GithubRepositoryReference } from './github-repository-reference.js';
+import { REPOSITORY_README_MAX_BYTES } from '../repositories/repository-readme.js';
 
 const GITHUB_API_ORIGIN = 'https://api.github.com';
 const GITHUB_API_VERSION = '2026-03-10';
@@ -17,6 +18,24 @@ export type GithubRepositoryMetadataSnapshot = Readonly<{
   licenseSpdx: string | null;
   topics: string[];
 }>;
+
+export type GithubReadmeSnapshot =
+  | Readonly<{
+      status: 'present';
+      path: string;
+      sha: string;
+      sizeBytes: number;
+      content: string;
+    }>
+  | Readonly<{
+      status: 'not_found';
+    }>
+  | Readonly<{
+      status: 'too_large';
+      path: string;
+      sha: string;
+      sizeBytes: number;
+    }>;
 
 export type GithubRepositorySnapshot = Readonly<{
   githubRepositoryId: string;
@@ -226,6 +245,111 @@ function validateGithubUrl(value: string): string {
   return value;
 }
 
+function decodeReadmeContent(
+  payload: JsonObject,
+  expectedSizeBytes: number,
+): string {
+  const encoding = requiredString(payload, 'encoding');
+
+  if (encoding !== 'base64') {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub README encoding must be base64.',
+    );
+  }
+
+  const encoded = requiredString(payload, 'content', {
+    allowEmpty: true,
+  }).replace(/\s+/g, '');
+
+  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(encoded)) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub README content is not valid base64.',
+    );
+  }
+
+  const bytes = Buffer.from(encoded, 'base64');
+
+  if (bytes.byteLength !== expectedSizeBytes) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub README byte size does not match the response metadata.',
+    );
+  }
+
+  let content: string;
+
+  try {
+    content = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub README content is not valid UTF-8 text.',
+    );
+  }
+
+  if (content.includes('\u0000')) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub README content contains unsupported null bytes.',
+    );
+  }
+
+  return content;
+}
+
+function normalizeReadme(payload: unknown): GithubReadmeSnapshot {
+  if (!isObject(payload)) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub README response must be an object.',
+    );
+  }
+
+  if (requiredString(payload, 'type') !== 'file') {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub README response must describe a file.',
+    );
+  }
+
+  const path = requiredString(payload, 'path');
+  const sha = requiredString(payload, 'sha');
+  const sizeBytes = requiredNonnegativeSafeInteger(payload, 'size');
+
+  if (sizeBytes > REPOSITORY_README_MAX_BYTES) {
+    return {
+      status: 'too_large',
+      path,
+      sha,
+      sizeBytes,
+    };
+  }
+
+  return {
+    status: 'present',
+    path,
+    sha,
+    sizeBytes,
+    content: decodeReadmeContent(payload, sizeBytes),
+  };
+}
+
+function createGithubHeaders(token: string | undefined): Headers {
+  const headers = new Headers({
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'RepoScout',
+    'X-GitHub-Api-Version': GITHUB_API_VERSION,
+  });
+
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  return headers;
+}
+
 function normalizeRepository(payload: unknown): GithubRepositorySnapshot {
   if (!isObject(payload)) {
     throw new GithubApiError(
@@ -313,15 +437,7 @@ export class GithubClient {
     const name = encodeURIComponent(reference.name);
     const url = `${GITHUB_API_ORIGIN}/repos/${owner}/${name}`;
 
-    const headers = new Headers({
-      Accept: 'application/vnd.github+json',
-      'User-Agent': 'RepoScout',
-      'X-GitHub-Api-Version': GITHUB_API_VERSION,
-    });
-
-    if (this.token) {
-      headers.set('Authorization', `Bearer ${this.token}`);
-    }
+    const headers = createGithubHeaders(this.token);
 
     let response: Response;
 
@@ -384,5 +500,78 @@ export class GithubClient {
     }
 
     return normalizeRepository(payload);
+  }
+
+  async fetchReadme(
+    reference: GithubRepositoryReference,
+    sourceRef: string | null,
+  ): Promise<GithubReadmeSnapshot> {
+    const owner = encodeURIComponent(reference.owner);
+    const name = encodeURIComponent(reference.name);
+    const query = sourceRef
+      ? `?ref=${encodeURIComponent(sourceRef)}`
+      : '';
+    const url = `${GITHUB_API_ORIGIN}/repos/${owner}/${name}/readme${query}`;
+    const headers = createGithubHeaders(this.token);
+
+    let response: Response;
+
+    try {
+      response = await this.fetchImplementation(url, {
+        method: 'GET',
+        headers,
+        redirect: 'error',
+        signal: AbortSignal.timeout(this.requestTimeoutMs),
+      });
+    } catch (error) {
+      throw new GithubApiError(
+        'request_failed',
+        error instanceof Error
+          ? `GitHub README request failed: ${error.message}`
+          : 'GitHub README request failed.',
+      );
+    }
+
+    if (response.status === 404) {
+      return {
+        status: 'not_found',
+      };
+    }
+
+    const rateLimited =
+      response.status === 429 ||
+      (response.status === 403 &&
+        response.headers.get('x-ratelimit-remaining') === '0');
+
+    if (rateLimited) {
+      throw new GithubApiError(
+        'rate_limited',
+        'GitHub API rate limit was reached.',
+        response.status,
+        parseRateLimitReset(response.headers),
+      );
+    }
+
+    if (!response.ok) {
+      throw new GithubApiError(
+        'request_failed',
+        `GitHub README request failed with HTTP ${response.status}.`,
+        response.status,
+      );
+    }
+
+    let payload: unknown;
+
+    try {
+      payload = await response.json();
+    } catch {
+      throw new GithubApiError(
+        'invalid_response',
+        'GitHub README API returned invalid JSON.',
+        response.status,
+      );
+    }
+
+    return normalizeReadme(payload);
   }
 }

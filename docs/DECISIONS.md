@@ -433,3 +433,44 @@ A successful repository ingestion commits canonical repository state and measure
 Older repository synchronizations cannot overwrite newer canonical state or newer metadata observations.
 
 Missing metadata remains distinguishable from a real zero value.
+
+
+## D-048 — Split repository content foundation into small evidence phases
+
+**Status:** Accepted
+
+Phase 3D is split into:
+- 3D.1 bounded README content;
+- 3D.2 contribution-document evidence.
+
+README storage and contribution-document discovery introduce different API and validation concerns and should not be shipped as one large change.
+
+## D-049 — README collection is independent from canonical ingestion
+
+**Status:** Accepted
+
+README API failures must not prevent canonical repository identity/state or measured metadata from refreshing.
+
+README content therefore has an independent refresh service/store lifecycle.
+
+Later orchestration may invoke both workflows, but their failure domains remain separate.
+
+## D-050 — Bound stored README bodies to 256 KiB with explicit provenance
+
+**Status:** Accepted
+
+RepoScout stores validated README text only when the decoded UTF-8 body is at most 256 KiB.
+
+For stored content, RepoScout preserves source ref, path, Git blob SHA, byte size, and observation timestamp.
+
+Oversized README files retain provenance/size evidence without storing their body.
+
+## D-051 — Do not publicly expose raw README bodies in Phase 3D.1
+
+**Status:** Accepted
+
+README text is collected as source evidence for future search/classification/model evaluation.
+
+Phase 3D.1 does not add raw README content to catalog APIs or web surfaces.
+
+Any future public snippet/rendering feature requires an explicit sanitization, attribution, and product-policy decision.

@@ -167,14 +167,33 @@ No Jev integration belongs in Phase 3C. This phase establishes the authoritative
 
 ### Phase 3D — Repository content foundation
 
-Planned:
-- collect the smallest repository text/content needed for later intelligence;
-- README content with size/safety limits;
-- topics and contribution-document presence;
-- content provenance and refresh timestamps;
-- keep raw/normalized content separate from model interpretation.
+Status: in progress
 
-This phase should provide the evidence Jev or other classifiers may later evaluate.
+#### Phase 3D.1 — Bounded README content foundation
+
+Status: complete
+
+- fixed-origin GitHub README fetch;
+- explicit default-branch/ref provenance;
+- 256 KiB RepoScout storage ceiling;
+- Base64, byte-size, UTF-8, and null-byte validation;
+- PRESENT / NOT_FOUND / TOO_LARGE evidence states;
+- dedicated one-to-one README content storage;
+- stale observation protection;
+- independent README refresh service;
+- maintainer CLI;
+- no raw README public exposure.
+
+#### Phase 3D.2 — Contribution-document evidence
+
+Next:
+- CONTRIBUTING presence;
+- Code of Conduct presence;
+- security-policy presence where useful;
+- evidence provenance and observation timestamps;
+- avoid arbitrary recursive repository crawling.
+
+Phase 3D should provide the evidence Jev or other classifiers may later evaluate.
 
 ### Phase 3E — Jev evaluation spike
 
