@@ -3,8 +3,11 @@ import { describe, expect, it } from 'vitest';
 import type { RepositoryCatalogRecord } from './repository-catalog.js';
 import {
   encodeRepositoryCursor,
+  encodeRepositorySearchCursor,
   parseRepositoryCursor,
   parseRepositoryPageLimit,
+  parseRepositorySearchCursor,
+  parseRepositorySearchQuery,
   toRepositoryResponse,
 } from './repository-catalog.js';
 
@@ -48,6 +51,36 @@ describe('repository catalog contract', () => {
     expect(() => parseRepositoryPageLimit('0')).toThrow();
     expect(() => parseRepositoryPageLimit('51')).toThrow();
     expect(() => parseRepositoryPageLimit('1.5')).toThrow();
+  });
+
+  it('normalizes and bounds lexical search queries', () => {
+    expect(parseRepositorySearchQuery('  TypeScript   BACKEND  ')).toBe(
+      'typescript backend',
+    );
+
+    expect(() => parseRepositorySearchQuery(undefined)).toThrow(
+      'q must be a string between 2 and 120 characters.',
+    );
+    expect(() => parseRepositorySearchQuery('a')).toThrow();
+    expect(() => parseRepositorySearchQuery('---')).toThrow();
+    expect(() => parseRepositorySearchQuery('x'.repeat(121))).toThrow();
+  });
+
+  it('binds opaque search cursors to the normalized query', () => {
+    const cursor = encodeRepositorySearchCursor(
+      repository,
+      'typescript backend',
+    );
+
+    expect(
+      parseRepositorySearchCursor(cursor, 'typescript backend'),
+    ).toEqual({
+      id: repository.id,
+    });
+
+    expect(() =>
+      parseRepositorySearchCursor(cursor, 'react frontend'),
+    ).toThrow('cursor is invalid.');
   });
 
   it('round-trips an opaque repository cursor', () => {
