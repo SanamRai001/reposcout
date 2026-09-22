@@ -229,7 +229,11 @@ The synthetic benchmark validates the harness and task definitions. It is not ev
 
 #### Phase 3E.2 — Live Jev adapter + controlled smoke evaluation
 
-Status: implemented; verification pending
+Status: in progress
+
+##### Phase 3E.2A — Verified TypeSafe/Jev adapter
+
+Status: complete
 
 - current TypeSafe OpenAPI contract verified;
 - fixed TypeSafe API origin and Bearer auth boundary;
@@ -243,6 +247,10 @@ Status: implemented; verification pending
 - TypeSafe config isolated from normal application startup;
 - offline mocked provider tests in CI;
 - no production persistence/ranking/moderation integration.
+
+##### Phase 3E.2B — Controlled live smoke evaluation
+
+Status: pending credential
 
 A real live smoke result is only considered complete when a valid TypeSafe credential is supplied and the command succeeds.
 
