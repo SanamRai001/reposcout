@@ -565,3 +565,51 @@ TypeSafe's public API documents the System One endpoint, model discovery, Bearer
 RepoScout will not guess undocumented request/response details.
 
 Phase 3E.2 will implement the adapter only after validating the exact current OpenAPI contract and a controlled credentialed request.
+
+
+## D-061 — Implement Jev against the published System One contract
+
+**Status:** Accepted
+
+RepoScout's live adapter follows the current published TypeSafe OpenAPI contract:
+- `GET /v1/models`;
+- `POST /v1/systemone`;
+- Bearer authentication;
+- `state`, `model`, and named `questions`;
+- Noul, Choice, and Score answers.
+
+RepoScout does not use undocumented payload fields.
+
+## D-062 — Keep TypeSafe credentials out of normal application startup
+
+**Status:** Accepted
+
+`TYPESAFE_API_KEY` is required only by explicit live evaluation tooling.
+
+The normal RepoScout API server, repository ingestion, catalog, and deterministic discovery must continue to function without TypeSafe credentials.
+
+## D-063 — Record the concrete model returned by TypeSafe
+
+**Status:** Accepted
+
+A configured alias such as `jev-latest` may resolve to a concrete model.
+
+Evaluation runs record the resolved response model. If multiple calls in the same benchmark resolve to different model names, the run fails rather than mixing provenance.
+
+## D-064 — Translate TypeSafe zero-based score rubrics at the adapter boundary
+
+**Status:** Accepted
+
+TypeSafe score levels are positional and begin at zero. RepoScout's evaluation benchmark uses a one-to-five scale.
+
+The adapter performs the conversion `reposcout = typesafe + 1` and preserves fractional expected scores.
+
+The benchmark/evaluator itself remains provider-neutral.
+
+## D-065 — Live Jev calls are never part of ordinary CI
+
+**Status:** Accepted
+
+CI tests the TypeSafe adapter with mocked HTTP responses.
+
+Live smoke evaluation is explicit, credential-gated, and non-production so provider availability, quota, latency, or billing cannot destabilize RepoScout's normal quality gate.

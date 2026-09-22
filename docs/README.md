@@ -14,8 +14,7 @@ Start here if you are contributing to the project.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — current system direction and production concerns.
 - [DATA_MODEL.md](DATA_MODEL.md) — canonical repository, snapshot, submission, and moderation model.
 - [DISCOVERY_RANKING.md](DISCOVERY_RANKING.md) — discovery modes, explainability, and scoring constraints.
-- [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md) — planned Jev decision-layer evaluation, data ownership, fallback, moderation, and reranking boundaries.
-- [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md) — planned Jev decision-layer evaluation, data ownership, fallback, moderation, and reranking boundaries.
+- [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md) — Jev decision-layer evaluation, data ownership, fallback, moderation, and reranking boundaries.
 - [DECISIONS.md](DECISIONS.md) — project decision log.
 - [PHASE_1A_PROJECT_SKELETON.md](PHASE_1A_PROJECT_SKELETON.md) — application foundation checkpoint.
 - [PHASE_1B1_PERSISTENCE_FOUNDATION.md](PHASE_1B1_PERSISTENCE_FOUNDATION.md) — PostgreSQL connection, migrations, readiness, and reproducible installs.
@@ -29,6 +28,7 @@ Start here if you are contributing to the project.
 - [PHASE_3D1_README_CONTENT_FOUNDATION.md](PHASE_3D1_README_CONTENT_FOUNDATION.md) — bounded README evidence storage, provenance, validation, and independent refresh.
 - [PHASE_3D2_CONTRIBUTION_EVIDENCE.md](PHASE_3D2_CONTRIBUTION_EVIDENCE.md) — GitHub community-file evidence, repository-local security provenance, and bounded refresh.
 - [PHASE_3E1_JEV_EVALUATION_HARNESS.md](PHASE_3E1_JEV_EVALUATION_HARNESS.md) — provider-neutral Jev benchmark, replayable result schema, and transparent evaluation metrics.
+- [PHASE_3E2_LIVE_JEV_ADAPTER.md](PHASE_3E2_LIVE_JEV_ADAPTER.md) — verified TypeSafe wire contract, live Jev provider adapter, and credential-gated smoke evaluation.
 
 ## Community
 

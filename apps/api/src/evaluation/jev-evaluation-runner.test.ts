@@ -41,6 +41,30 @@ describe('runJevEvaluation', () => {
     });
   });
 
+  it('records provider-resolved model provenance when available', async () => {
+    const evaluate = vi.fn<JevEvaluationProvider['evaluate']>().mockResolvedValue({
+      repositoryAssessments: [],
+      relevanceAssessments: [],
+      resolvedModelName: 'jev-1.13.0',
+    });
+    const provider: JevEvaluationProvider = {
+      providerName: 'typesafe-system-one',
+      modelName: 'jev-latest',
+      evaluate,
+    };
+    const times = [
+      new Date('2026-09-22T15:00:00.000Z'),
+      new Date('2026-09-22T15:00:01.000Z'),
+    ];
+
+    const run = await runJevEvaluation(provider, {
+      now: () => times.shift()!,
+      runIdFactory: () => 'run-resolved',
+    });
+
+    expect(run.model).toBe('jev-1.13.0');
+  });
+
   it('rejects unnamed provider metadata before evaluation', async () => {
     const evaluate = vi.fn<JevEvaluationProvider['evaluate']>();
     const provider: JevEvaluationProvider = {

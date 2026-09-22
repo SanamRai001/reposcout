@@ -9,6 +9,7 @@ import type {
 export type JevProviderEvaluation = Readonly<{
   repositoryAssessments: readonly JevRepositoryAssessment[];
   relevanceAssessments: readonly JevRelevanceAssessment[];
+  resolvedModelName?: string;
 }>;
 
 export interface JevEvaluationProvider {
