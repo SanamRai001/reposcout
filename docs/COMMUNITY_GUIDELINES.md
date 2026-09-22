@@ -52,6 +52,28 @@ As the community grows, trusted reviewers may receive limited moderation roles.
 
 All moderation actions should be auditable.
 
+### Model-assisted submission analysis
+
+RepoScout may later use Jev or another model to support submission triage after deterministic checks and repository metadata/content collection.
+
+Potential model-assisted signals include:
+- project/use-case classification;
+- tutorial/demo likelihood;
+- possible spam/self-promotion risk;
+- beginner contribution suitability;
+- whether a submission needs closer human review.
+
+Rules:
+- deterministic duplicate/existence/access checks happen first;
+- model output is advisory/inferred, not canonical fact;
+- model confidence must be preserved when used;
+- low-confidence cases should be escalated rather than silently decided;
+- a permanent rejection must not rely solely on model output;
+- moderators must be able to see the evidence/source class behind automated suggestions;
+- RepoScout moderation must continue functioning if the model provider is unavailable.
+
+Model-assisted triage should reduce reviewer effort, not remove human accountability.
+
 ## Corrections
 
 Community members should be able to report:

@@ -93,6 +93,8 @@ RepoScout now has a real browser catalog backed by the Phase 3A PostgreSQL read 
 
 The next checkpoint is **Phase 3C: the smallest authoritative repository metadata/signals foundation**. A dedicated repository detail page is deferred until it has richer information to show.
 
+RepoScout also plans a later **Jev evaluation spike** after authoritative metadata and repository content exist. Jev is being treated as an optional probabilistic decision/reranking layer—not a source of GitHub facts, not the primary search engine, and not a required dependency for RepoScout to function.
+
 See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
 
 ## Contributing

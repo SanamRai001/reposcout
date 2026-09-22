@@ -91,7 +91,44 @@ The differentiation is primarily:
 - community curation;
 - consistent repository analysis.
 
-AI may assist classification, summarization, and query interpretation, but should not be the foundation of correctness.
+AI/model systems may assist classification, summarization, query interpretation, and bounded candidate reranking, but they are not the foundation of correctness.
+
+RepoScout's intended intelligence stack separates:
+- GitHub-originated measured facts;
+- deterministic RepoScout signals;
+- model-assisted probabilistic assessments;
+- community/moderator judgments.
+
+These sources must remain distinguishable. Model-assisted assessments must never be presented as GitHub facts.
+
+## Model-assisted intelligence direction
+
+RepoScout is evaluating Jev as a future optional decision layer for constrained repository judgments such as:
+- use-case/project-type classification;
+- tutorial/demo likelihood;
+- beginner contribution suitability;
+- relevance assessment over an already-retrieved candidate set;
+- submission triage support.
+
+The intended discovery architecture remains retrieval-first:
+
+~~~text
+query
+  |
+PostgreSQL search + filters
+  |
+candidate repositories
+  |
+measured facts + deterministic RepoScout signals
+  |
+optional model-assisted assessment/reranking
+  |
+explainable results
+~~~
+
+RepoScout must remain useful if the model layer is unavailable.
+
+See [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md).
 
 ## Target users
 

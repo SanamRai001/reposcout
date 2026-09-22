@@ -146,3 +146,18 @@ The MVP is useful when:
 - duplicate repositories cannot enter the canonical index;
 - ranking formulas are documented;
 - no secret credential is exposed client-side.
+
+
+## Model-assisted intelligence boundary
+
+Jev or another model-assisted decision layer is **not required for the MVP**.
+
+RepoScout must first establish:
+- authoritative GitHub metadata;
+- repository content needed for classification;
+- deterministic search/filtering;
+- explainable signals.
+
+A later evaluation may test model-assisted classification and reranking. The deterministic product must remain usable without it.
+
+See [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md).

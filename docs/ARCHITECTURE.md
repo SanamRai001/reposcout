@@ -211,6 +211,41 @@ The ingestion system must:
 - distinguish temporary fetch failure from repository deletion/private conversion;
 - never hammer GitHub from per-page browser requests.
 
+## Planned model-assisted intelligence layer
+
+This layer is **not implemented yet**.
+
+RepoScout is evaluating Jev as an optional decision component after authoritative data/content collection and after normal candidate retrieval.
+
+Planned flow:
+
+~~~text
+GitHub facts/content
+        |
+RepoScout normalization
+        |
+PostgreSQL
+        |
+search / filters / candidate retrieval
+        |
+deterministic RepoScout signals
+        |
+optional Jev assessment
+        |
+transparent reranking / classification / moderation support
+~~~
+
+Architectural rules:
+- Jev is not a source of GitHub facts;
+- Jev is not the primary retrieval engine;
+- model output is untrusted external data and must be validated;
+- model/provider failures must degrade to deterministic RepoScout behavior;
+- high-impact moderation decisions require human review;
+- model assessment provenance/versioning must be stored if assessments become persistent;
+- no Jev table/service should be added until the planned evaluation phase proves value.
+
+See [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md).
+
 ## Search evolution
 
 ### MVP
@@ -221,7 +256,8 @@ Hybrid retrieval may combine:
 - lexical/full-text search;
 - metadata filters;
 - semantic/vector similarity;
-- transparent reranking.
+- transparent deterministic reranking;
+- optional model-assisted reranking over a bounded candidate set.
 
 Do not add embeddings until there is enough repository content and a concrete query-quality problem they solve.
 
