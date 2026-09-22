@@ -91,7 +91,7 @@ The backend now uses PostgreSQL through node-postgres with explicit migration to
 
 RepoScout now has a real browser catalog backed by the Phase 3A PostgreSQL read API.
 
-**Phase 3C — authoritative repository metadata foundation:** implemented and under verification.
+**Phase 3C — authoritative repository metadata foundation:** complete.
 
 RepoScout now collects measured stars, forks, GitHub open issue/PR count, primary language, SPDX license, and topics separately from canonical repository identity. The next planned implementation phase after verification is **Phase 3D: repository content foundation**.
 
