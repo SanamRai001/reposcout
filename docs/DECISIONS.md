@@ -516,3 +516,52 @@ Repository-local security evidence preserves the default branch/ref, path, blob 
 Contribution evidence is collected for future contribution discovery and Jev evaluation but is not exposed in public catalog APIs, repository cards, or ranking during Phase 3D.2.
 
 No contribution-readiness score is created.
+
+
+## D-056 — Define the Jev evaluation harness before the live adapter
+
+**Status:** Accepted
+
+RepoScout fixes benchmark tasks, labels, result schema, and evaluation metrics before introducing a TypeSafe/Jev HTTP dependency.
+
+This prevents success criteria from being changed after seeing model results.
+
+## D-057 — Phase 3E.1 synthetic labels validate the harness, not Jev
+
+**Status:** Accepted
+
+The initial six repository examples and five relevance examples are synthetic and include explicit rationales.
+
+They exist to verify task definitions, schema handling, orchestration, and metric math.
+
+They must not be cited as evidence that Jev performs well or poorly.
+
+A real RepoScout repository benchmark is required before an adoption decision.
+
+## D-058 — Jev evaluation metrics remain separate
+
+**Status:** Accepted
+
+RepoScout does not create a single composite Jev quality score.
+
+Project-type accuracy, tutorial/demo accuracy and Brier score, beginner-suitability error, relevance error, confidence, and latency remain separate so failure modes stay visible.
+
+## D-059 — Model evaluation results are replayable and provider-neutral
+
+**Status:** Accepted
+
+Evaluation runs record benchmark version, provider, model, run ID, timestamps, and typed assessments.
+
+Scoring can be replayed from a validated JSON result file.
+
+The benchmark/evaluator does not depend on TypeSafe HTTP request details.
+
+## D-060 — Defer the live Jev adapter until the exact current API schema is verified
+
+**Status:** Accepted
+
+TypeSafe's public API documents the System One endpoint, model discovery, Bearer authentication, and typed decision families.
+
+RepoScout will not guess undocumented request/response details.
+
+Phase 3E.2 will implement the adapter only after validating the exact current OpenAPI contract and a controlled credentialed request.
