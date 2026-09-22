@@ -5,7 +5,10 @@ import {
   jevEvaluationBenchmark,
 } from './jev-evaluation-benchmark.js';
 import { evaluateJevRun } from './jev-evaluator.js';
-import type { JevEvaluationRun } from './jev-evaluation-result.js';
+import {
+  parseJevEvaluationRun,
+  type JevEvaluationRun,
+} from './jev-evaluation-result.js';
 
 function perfectRun(): JevEvaluationRun {
   return {
@@ -59,6 +62,26 @@ describe('Jev evaluation benchmark', () => {
     for (const item of jevEvaluationBenchmark.relevance) {
       expect(repositoryIdSet.has(item.repositoryCaseId)).toBe(true);
     }
+  });
+});
+
+describe('parseJevEvaluationRun', () => {
+  it('rejects malformed external result structure', () => {
+    expect(() =>
+      parseJevEvaluationRun({
+        schemaVersion: '3e1-v1',
+        benchmarkVersion: JEV_EVALUATION_BENCHMARK_VERSION,
+        provider: 'fixture',
+        model: 'fixture',
+        runId: 'bad-run',
+        startedAt: '2026-09-22T15:00:00.000Z',
+        completedAt: '2026-09-22T15:00:01.000Z',
+        repositoryAssessments: 'not-an-array',
+        relevanceAssessments: [],
+      }),
+    ).toThrow(
+      'Evaluation run field "repositoryAssessments" must be an array.',
+    );
   });
 });
 
