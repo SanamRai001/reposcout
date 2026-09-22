@@ -148,20 +148,20 @@ Status: complete
 
 ### Phase 3C — Repository metadata/signals foundation
 
-Next:
-- ingest the smallest useful current GitHub metrics/metadata;
-- keep measured facts separate from derived signals;
-- expose those facts through the catalog API;
-- improve cards only after backend data is authoritative.
+Status: implemented; verification pending
 
-Likely first measured fields:
-- stars;
-- forks;
-- open issues;
+- dedicated one-to-one repository metadata table;
+- stars, forks, GitHub open issue/PR count;
 - primary language;
-- license;
-- topics where useful;
-- release/current activity facts where collection is reliable.
+- SPDX license;
+- GitHub topics;
+- metadata observation timestamp;
+- transactional repository + metadata ingestion;
+- stale metadata overwrite protection;
+- catalog API exposure;
+- metadata-aware repository cards.
+
+Release history and additional activity metrics remain deferred because they require extra GitHub endpoints and different refresh behavior.
 
 No Jev integration belongs in Phase 3C. This phase establishes the authoritative factual base first.
 
