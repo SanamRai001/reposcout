@@ -205,16 +205,51 @@ Phase 3D should provide the evidence Jev or other classifiers may later evaluate
 
 ### Phase 3E — Jev evaluation spike
 
-Planned / experimental:
-- evaluate Jev on a labeled RepoScout repository set;
-- test use-case/project-type classification;
-- test tutorial/demo detection;
-- test beginner-suitability assessment;
-- test bounded query-to-repository relevance;
-- evaluate confidence/calibration usefulness;
-- measure latency, cost, consistency, and failure behavior;
-- define fallback behavior;
-- do not create production assessment persistence unless evaluation proves value.
+Status: in progress / experimental
+
+#### Phase 3E.1 — Evaluation harness
+
+Status: implemented; verification pending
+
+- provider-neutral evaluation boundary;
+- benchmark versioning;
+- 6 synthetic labeled repository cases;
+- 5 bounded query-relevance cases;
+- project-type accuracy;
+- tutorial/demo accuracy + Brier score;
+- beginner-suitability MAE;
+- relevance MAE;
+- confidence and latency reporting;
+- runtime validation for replayed provider output;
+- CLI benchmark/replay commands;
+- no live model dependency;
+- no production persistence.
+
+The synthetic benchmark validates the harness and task definitions. It is not evidence of Jev quality.
+
+#### Phase 3E.2 — Live Jev adapter + controlled smoke evaluation
+
+Next:
+- verify current TypeSafe OpenAPI schema;
+- add server-side Jev credentials;
+- implement the provider adapter;
+- validate typed Jev responses;
+- run a controlled non-production benchmark;
+- capture latency/provider/model provenance;
+- keep fallback behavior explicit.
+
+#### Phase 3E.3 — Real RepoScout evaluation + adoption decision
+
+Later:
+- label real indexed repositories;
+- add difficult/ambiguous examples;
+- repeat runs for consistency;
+- evaluate confidence/calibration, latency, and cost;
+- compare with deterministic baselines;
+- document failure cases;
+- decide which tasks, if any, justify production Jev integration.
+
+Do not create production assessment persistence unless evaluation proves value.
 
 Repository detail UI remains deferred until there is enough intelligence to justify a dedicated page.
 
