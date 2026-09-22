@@ -259,11 +259,21 @@ Phase 3E.2 still does **not** add:
 
 Jev remains an evaluation-only dependency.
 
-## Live run status
+## Status
 
-The codebase now supports a controlled live run.
+### Phase 3E.2A — Adapter
 
-A live smoke evaluation should only be recorded as completed when a valid `TYPESAFE_API_KEY` is supplied and the command actually succeeds.
+Complete.
+
+The adapter passed application verification, all offline TypeSafe wire-contract tests, evaluation tests, and the existing database/content/ingestion/catalog regression gates.
+
+### Phase 3E.2B — Controlled live smoke
+
+Pending credential.
+
+The codebase now supports a controlled live run, but no valid `TYPESAFE_API_KEY` was available in the repository/session during this phase.
+
+A live smoke evaluation should only be recorded as completed when the credential is supplied and the command actually succeeds.
 
 CI success alone is **not** evidence that Jev itself was evaluated live.
 
