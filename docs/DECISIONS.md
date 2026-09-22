@@ -474,3 +474,45 @@ README text is collected as source evidence for future search/classification/mod
 Phase 3D.1 does not add raw README content to catalog APIs or web surfaces.
 
 Any future public snippet/rendering feature requires an explicit sanitization, attribution, and product-policy decision.
+
+
+## D-052 — Use GitHub community profile for contribution-file presence
+
+**Status:** Accepted
+
+RepoScout uses GitHub's community-profile metrics endpoint for effective CONTRIBUTING, Code of Conduct, issue-template, and pull-request-template evidence instead of recursively searching repository trees.
+
+Returned GitHub API/HTML links are stored as provenance.
+
+These links are treated as GitHub effective community evidence and are not assumed to be repository-local because supported account-level defaults may apply.
+
+## D-053 — Skip community-profile requests for forks
+
+**Status:** Accepted
+
+GitHub documents the community-profile endpoint as unavailable for fork repositories.
+
+RepoScout records `UNSUPPORTED_FORK` instead of making the unsupported call or incorrectly recording all evidence as absent.
+
+## D-054 — Security policy detection uses only supported repository-local paths
+
+**Status:** Accepted
+
+RepoScout probes, in order:
+1. `.github/SECURITY.md`
+2. `SECURITY.md`
+3. `docs/SECURITY.md`
+
+The first existing file wins.
+
+This lookup is bounded and non-recursive.
+
+Repository-local security evidence preserves the default branch/ref, path, blob SHA, and byte size.
+
+## D-055 — Contribution evidence remains internal in Phase 3D.2
+
+**Status:** Accepted
+
+Contribution evidence is collected for future contribution discovery and Jev evaluation but is not exposed in public catalog APIs, repository cards, or ranking during Phase 3D.2.
+
+No contribution-readiness score is created.

@@ -19,8 +19,9 @@
     "test:ingestion": "vitest run src/github/repository-ingestion.integration.test.ts src/github/repository-refresh.integration.test.ts --maxWorkers=1",
     "ingest:repository": "tsx src/cli/ingest-repository.ts",
     "test:catalog": "vitest run src/repositories/repository-catalog.integration.test.ts",
-    "test:content": "vitest run src/github/repository-readme.integration.test.ts",
-    "refresh:readme": "tsx src/cli/refresh-repository-readme.ts"
+    "test:content": "vitest run src/github/repository-readme.integration.test.ts src/github/repository-contribution-evidence.integration.test.ts --maxWorkers=1",
+    "refresh:readme": "tsx src/cli/refresh-repository-readme.ts",
+    "refresh:contribution-evidence": "tsx src/cli/refresh-contribution-evidence.ts"
   },
   "dependencies": {
     "dotenv": "18.0.1",

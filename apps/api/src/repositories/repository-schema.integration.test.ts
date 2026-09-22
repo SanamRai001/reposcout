@@ -248,6 +248,98 @@ describe('repositories schema', () => {
     ]);
   });
 
+  it('creates contribution evidence storage with explicit provenance fields', async () => {
+    const result = await pool.query<{
+      column_name: string;
+      data_type: string;
+      is_nullable: 'YES' | 'NO';
+    }>(
+      `
+        SELECT column_name, data_type, is_nullable
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'repository_contribution_evidence'
+        ORDER BY ordinal_position
+      `,
+    );
+
+    expect(result.rows).toEqual([
+      { column_name: 'repository_id', data_type: 'uuid', is_nullable: 'NO' },
+      { column_name: 'status', data_type: 'text', is_nullable: 'NO' },
+      { column_name: 'contributing_api_url', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'contributing_html_url', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'code_of_conduct_api_url', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'code_of_conduct_html_url', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'issue_template_api_url', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'issue_template_html_url', data_type: 'text', is_nullable: 'YES' },
+      {
+        column_name: 'pull_request_template_api_url',
+        data_type: 'text',
+        is_nullable: 'YES',
+      },
+      {
+        column_name: 'pull_request_template_html_url',
+        data_type: 'text',
+        is_nullable: 'YES',
+      },
+      { column_name: 'security_source_ref', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'security_path', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'security_sha', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'security_size_bytes', data_type: 'bigint', is_nullable: 'YES' },
+      {
+        column_name: 'community_profile_updated_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'YES',
+      },
+      {
+        column_name: 'observed_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'created_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'updated_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+    ]);
+  });
+
+  it('rejects unsupported-fork evidence that invents contribution files', async () => {
+    const repository = createRepositoryFixture({
+      githubRepositoryId: '4433221100',
+    });
+    await insertRepository(repository);
+
+    await expect(
+      pool.query(
+        `
+          INSERT INTO repository_contribution_evidence (
+            repository_id,
+            status,
+            contributing_api_url,
+            contributing_html_url,
+            observed_at
+          )
+          VALUES (
+            $1,
+            'UNSUPPORTED_FORK',
+            'https://api.github.com/repos/example/project/contents/CONTRIBUTING.md',
+            'https://github.com/example/project/blob/main/CONTRIBUTING.md',
+            current_timestamp
+          )
+        `,
+        [repository.id],
+      ),
+    ).rejects.toMatchObject({
+      code: '23514',
+    });
+  });
+
   it('rejects an invalid README storage shape', async () => {
     const repository = createRepositoryFixture({
       githubRepositoryId: '444444444',

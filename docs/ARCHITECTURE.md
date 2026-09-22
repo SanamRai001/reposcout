@@ -160,7 +160,31 @@ GitHub client, normalization, refresh, rate-limit handling, retries.
 ### repository content
 Bounded source evidence collected independently from canonical ingestion.
 
-Phase 3D.1 supports README evidence only:
+Phase 3D.1 supports bounded README evidence.
+
+Phase 3D.2 adds contribution-document evidence without repository crawling:
+
+~~~text
+maintainer/internal trigger
+        |
+RepositoryContributionEvidenceService
+        |
+        +-- GitHub community profile
+        |      +-- CONTRIBUTING
+        |      +-- Code of Conduct
+        |      +-- issue template
+        |      +-- PR template
+        |
+        +-- fixed SECURITY.md path probes
+        |
+RepositoryContributionEvidenceStore
+        |
+repository_contribution_evidence
+~~~
+
+Community-profile links are treated as GitHub effective evidence. SECURITY evidence is repository-local and branch-attributed.
+
+README flow:
 
 ~~~text
 maintainer/internal trigger
