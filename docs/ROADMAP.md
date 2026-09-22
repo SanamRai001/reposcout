@@ -186,12 +186,20 @@ Status: complete
 
 #### Phase 3D.2 — Contribution-document evidence
 
-Next:
-- CONTRIBUTING presence;
-- Code of Conduct presence;
-- security-policy presence where useful;
-- evidence provenance and observation timestamps;
-- avoid arbitrary recursive repository crawling.
+Status: implemented; verification pending
+
+- GitHub effective CONTRIBUTING evidence;
+- GitHub effective Code of Conduct evidence;
+- issue-template evidence;
+- pull-request-template evidence;
+- repository-local SECURITY policy evidence;
+- bounded fixed-path security lookup;
+- fork-aware unsupported state;
+- provenance URLs / ref / path / blob SHA / size;
+- stale observation protection;
+- independent maintainer refresh command;
+- no recursive repository crawling;
+- no contribution-document body storage.
 
 Phase 3D should provide the evidence Jev or other classifiers may later evaluate.
 
