@@ -20,6 +20,14 @@ function validPayload(overrides: Record<string, unknown> = {}) {
     created_at: '2023-04-19T00:00:00Z',
     updated_at: '2026-09-20T00:00:00Z',
     pushed_at: '2026-09-20T01:00:00Z',
+    stargazers_count: 1250,
+    forks_count: 210,
+    open_issues_count: 34,
+    language: 'TypeScript',
+    license: {
+      spdx_id: 'Apache-2.0',
+    },
+    topics: ['sdk', 'typescript', 'openai'],
     owner: {
       login: 'openai',
     },
@@ -61,6 +69,14 @@ describe('GithubClient', () => {
     expect(repository.createdAtGithub.toISOString()).toBe(
       '2023-04-19T00:00:00.000Z',
     );
+    expect(repository.metadata).toEqual({
+      stars: 1250,
+      forks: 210,
+      openIssues: 34,
+      primaryLanguage: 'TypeScript',
+      licenseSpdx: 'Apache-2.0',
+      topics: ['openai', 'sdk', 'typescript'],
+    });
   });
 
   it('supports unauthenticated public requests when no token is configured', async () => {
@@ -119,6 +135,25 @@ describe('GithubClient', () => {
           JSON.stringify(
             validPayload({
               full_name: 'someone-else/openai-node',
+            }),
+          ),
+          { status: 200 },
+        ),
+      ),
+    });
+
+    await expect(client.fetchRepository(reference)).rejects.toMatchObject({
+      kind: 'invalid_response',
+    });
+  });
+
+  it('rejects invalid measured metadata before persistence', async () => {
+    const client = new GithubClient({
+      fetchImplementation: vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(
+          JSON.stringify(
+            validPayload({
+              stargazers_count: -1,
             }),
           ),
           { status: 200 },
