@@ -33,7 +33,7 @@ export async function runJevEvaluation(
     schemaVersion: '3e1-v1',
     benchmarkVersion: benchmark.version,
     provider: provider.providerName,
-    model: provider.modelName,
+    model: result.resolvedModelName ?? provider.modelName,
     runId: runIdFactory(),
     startedAt: startedAt.toISOString(),
     completedAt: completedAt.toISOString(),
