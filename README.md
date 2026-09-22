@@ -99,7 +99,7 @@ RepoScout now collects measured stars, forks, GitHub open issue/PR count, primar
 
 **Phase 3E.1 — Jev evaluation harness:** complete. **Phase 3E.2A — verified live Jev adapter:** complete. **Phase 3E.2B / 3E.3:** deferred while TypeSafe access is unavailable. RepoScout development continues with **Phase 4 deterministic discovery** rather than waiting on a provider credential.
 
-**Phase 4A — deterministic lexical search API:** implemented and under verification. It adds PostgreSQL-backed search over canonical repository text with bounded normalized queries and query-bound opaque pagination, without Jev or relevance ranking. RepoScout now has a validated TypeSafe System One adapter and credential-gated smoke command, while production ranking, moderation, persistence, and normal application startup remain independent of Jev.
+**Phase 4A — deterministic lexical search API:** complete. It adds PostgreSQL-backed search over canonical repository text with bounded normalized queries and query-bound opaque pagination, without Jev or relevance ranking. RepoScout now has a validated TypeSafe System One adapter and credential-gated smoke command, while production ranking, moderation, persistence, and normal application startup remain independent of Jev.
 
 See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
 
