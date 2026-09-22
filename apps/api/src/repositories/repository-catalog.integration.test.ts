@@ -131,9 +131,18 @@ describe('repository catalog API with PostgreSQL', () => {
     expect(new Set(allIds).size).toBe(3);
   });
 
-  it('returns canonical repository detail from PostgreSQL', async () => {
-    const repository = await repositoryStore.upsert(
+  it('returns canonical detail with measured metadata from PostgreSQL', async () => {
+    const repository = await repositoryStore.upsertWithMetadata(
       createInput('400000001', 'detail-project'),
+      {
+        stars: 75,
+        forks: 9,
+        openIssues: 4,
+        primaryLanguage: 'Go',
+        licenseSpdx: 'Apache-2.0',
+        topics: ['cli', 'developer-tools'],
+        observedAt: new Date('2026-09-21T00:00:00.000Z'),
+      },
     );
     const baseUrl = await startApp();
 
@@ -146,6 +155,15 @@ describe('repository catalog API with PostgreSQL', () => {
         githubRepositoryId: string;
         fullName: string;
         lastSyncedAt: string;
+        metadata: {
+          stars: number;
+          forks: number;
+          openIssues: number;
+          primaryLanguage: string | null;
+          licenseSpdx: string | null;
+          topics: string[];
+          observedAt: string;
+        } | null;
       };
     };
 
@@ -156,6 +174,15 @@ describe('repository catalog API with PostgreSQL', () => {
         githubRepositoryId: '400000001',
         fullName: 'catalog-org/detail-project',
         lastSyncedAt: '2026-09-21T00:00:00.000Z',
+        metadata: {
+          stars: 75,
+          forks: 9,
+          openIssues: 4,
+          primaryLanguage: 'Go',
+          licenseSpdx: 'Apache-2.0',
+          topics: ['cli', 'developer-tools'],
+          observedAt: '2026-09-21T00:00:00.000Z',
+        },
       }),
     );
   });
