@@ -67,6 +67,35 @@ Notes:
 
 Future measured fields may include watchers/subscribers, release data, contributor counts, and contribution issue counts when their collection cost and semantics are explicitly defined.
 
+### RepositoryReadmeContent
+
+Implemented in Phase 3D.1 as a dedicated one-to-one content-evidence table.
+
+~~~text
+repository_id
+status
+source_ref nullable
+path nullable
+sha nullable
+size_bytes nullable
+content nullable
+observed_at
+created_at
+updated_at
+~~~
+
+Status:
+- PRESENT — validated UTF-8 README body is stored;
+- NOT_FOUND — the README endpoint did not yield a README for the observation;
+- TOO_LARGE — path/SHA/size provenance is stored, but body storage is refused.
+
+Rules:
+- README bodies are limited to 256 KiB;
+- source ref/path/blob SHA/byte size are preserved as provenance;
+- stale observations cannot overwrite newer evidence;
+- raw README text is not part of the public catalog contract in Phase 3D.1;
+- model interpretation belongs in RepositoryModelAssessment, never in this source-content table.
+
 ### RepositorySnapshot
 
 Historical measurements.
