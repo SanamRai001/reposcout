@@ -179,6 +179,105 @@ describe('GithubClient', () => {
     });
   });
 
+  it('normalizes community profile contribution evidence', async () => {
+    const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          files: {
+            contributing: {
+              url: 'https://api.github.com/repos/openai/openai-node/contents/CONTRIBUTING.md',
+              html_url: 'https://github.com/openai/openai-node/blob/main/CONTRIBUTING.md',
+            },
+            code_of_conduct_file: {
+              url: 'https://api.github.com/repos/openai/openai-node/contents/CODE_OF_CONDUCT.md',
+              html_url: 'https://github.com/openai/openai-node/blob/main/CODE_OF_CONDUCT.md',
+            },
+            issue_template: null,
+            pull_request_template: {
+              url: 'https://api.github.com/repos/openai/openai-node/contents/.github/PULL_REQUEST_TEMPLATE.md',
+              html_url: 'https://github.com/openai/openai-node/blob/main/.github/PULL_REQUEST_TEMPLATE.md',
+            },
+          },
+          updated_at: '2026-09-20T12:00:00Z',
+        }),
+        { status: 200 },
+      ),
+    );
+    const client = new GithubClient({ fetchImplementation });
+
+    const result = await client.fetchCommunityProfile(reference);
+
+    expect(fetchImplementation).toHaveBeenCalledWith(
+      'https://api.github.com/repos/openai/openai-node/community/profile',
+      expect.objectContaining({
+        method: 'GET',
+        redirect: 'error',
+      }),
+    );
+    expect(result).toEqual({
+      contributing: {
+        apiUrl: 'https://api.github.com/repos/openai/openai-node/contents/CONTRIBUTING.md',
+        htmlUrl: 'https://github.com/openai/openai-node/blob/main/CONTRIBUTING.md',
+      },
+      codeOfConduct: {
+        apiUrl: 'https://api.github.com/repos/openai/openai-node/contents/CODE_OF_CONDUCT.md',
+        htmlUrl: 'https://github.com/openai/openai-node/blob/main/CODE_OF_CONDUCT.md',
+      },
+      issueTemplate: null,
+      pullRequestTemplate: {
+        apiUrl: 'https://api.github.com/repos/openai/openai-node/contents/.github/PULL_REQUEST_TEMPLATE.md',
+        htmlUrl: 'https://github.com/openai/openai-node/blob/main/.github/PULL_REQUEST_TEMPLATE.md',
+      },
+      updatedAt: new Date('2026-09-20T12:00:00Z'),
+    });
+  });
+
+  it('probes only supported security-policy paths in precedence order', async () => {
+    const fetchImplementation = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response('{}', { status: 404 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            type: 'file',
+            path: 'SECURITY.md',
+            sha: 'security-sha',
+            size: 420,
+          }),
+          { status: 200 },
+        ),
+      );
+    const client = new GithubClient({ fetchImplementation });
+
+    const result = await client.fetchSecurityPolicy(reference, 'main');
+
+    expect(result).toEqual({
+      path: 'SECURITY.md',
+      sha: 'security-sha',
+      sizeBytes: 420,
+    });
+    expect(fetchImplementation).toHaveBeenCalledTimes(2);
+    expect(fetchImplementation.mock.calls[0]?.[0]).toBe(
+      'https://api.github.com/repos/openai/openai-node/contents/.github/SECURITY.md?ref=main',
+    );
+    expect(fetchImplementation.mock.calls[1]?.[0]).toBe(
+      'https://api.github.com/repos/openai/openai-node/contents/SECURITY.md?ref=main',
+    );
+  });
+
+  it('returns null when no supported repository-local security policy exists', async () => {
+    const fetchImplementation = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response('{}', { status: 404 }));
+    const client = new GithubClient({ fetchImplementation });
+
+    await expect(
+      client.fetchSecurityPolicy(reference, 'main'),
+    ).resolves.toBeNull();
+
+    expect(fetchImplementation).toHaveBeenCalledTimes(3);
+  });
+
   it('supports unauthenticated public requests when no token is configured', async () => {
     const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify(validPayload()), { status: 200 }),
