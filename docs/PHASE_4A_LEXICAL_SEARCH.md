@@ -200,6 +200,12 @@ Phase 4A does not add:
 - Jev reranking;
 - frontend search UI.
 
+## Status
+
+Complete.
+
+The Phase 4A branch passed application verification, migration rollback/reapply, persistence, repository-content evidence, ingestion, catalog regression, PostgreSQL lexical-search integration, and PostgreSQL connectivity gates.
+
 ## Next checkpoint
 
 Phase 4B should add the first explicit structured filters over already-authoritative metadata, likely starting with language, license, topics, fork/archive state, and bounded star ranges.
