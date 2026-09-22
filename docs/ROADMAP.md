@@ -281,12 +281,30 @@ Status: next active product phase
 
 ### Phase 4A — Deterministic lexical search foundation
 
+Status: implemented; verification pending
+
+- `GET /api/repositories/search`;
+- PostgreSQL full-text matching over owner/name/full-name/description;
+- normalized bounded queries;
+- stable UUID ordering;
+- opaque query-bound keyset cursor;
+- metadata-preserving search responses;
+- no total-count query;
+- no relevance rank yet;
+- no search index migration yet;
+- no Jev dependency.
+
+### Phase 4B — Structured repository filters
+
 Next:
-- PostgreSQL-backed lexical search over canonical repository fields;
-- explicit query normalization and bounds;
-- deterministic result ordering;
-- bounded pagination compatible with search;
-- search remains independent of Jev.
+- compose explicit filters with lexical search;
+- start with authoritative metadata only;
+- language;
+- license;
+- topics;
+- fork/archive state;
+- bounded star ranges;
+- keep deterministic pagination and sorting.
 
 Later Phase 4 work:
 - lexical search;
