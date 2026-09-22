@@ -48,6 +48,23 @@ afterEach(async () => {
   );
 });
 
+function createCatalog(
+  overrides: Partial<RepositoryCatalogReader> = {},
+): RepositoryCatalogReader {
+  return {
+    listPage: vi.fn().mockResolvedValue({
+      items: [],
+      hasMore: false,
+    }),
+    searchPage: vi.fn().mockResolvedValue({
+      items: [],
+      hasMore: false,
+    }),
+    findById: vi.fn().mockResolvedValue(null),
+    ...overrides,
+  };
+}
+
 async function startApp(repositoryCatalog: RepositoryCatalogReader) {
   const app = createApp({ repositoryCatalog });
   const server = app.listen(0);
@@ -67,10 +84,7 @@ describe('repository catalog routes', () => {
       items: [repository],
       hasMore: false,
     });
-    const repositoryCatalog: RepositoryCatalogReader = {
-      listPage,
-      findById: vi.fn(),
-    };
+    const repositoryCatalog = createCatalog({ listPage });
     const { baseUrl } = await startApp(repositoryCatalog);
 
     const response = await fetch(`${baseUrl}/api/repositories?limit=10`);
@@ -93,13 +107,12 @@ describe('repository catalog routes', () => {
   });
 
   it('returns a next cursor when another page exists', async () => {
-    const repositoryCatalog: RepositoryCatalogReader = {
+    const repositoryCatalog = createCatalog({
       listPage: vi.fn().mockResolvedValue({
         items: [repository],
         hasMore: true,
       }),
-      findById: vi.fn(),
-    };
+    });
     const { baseUrl } = await startApp(repositoryCatalog);
 
     const response = await fetch(`${baseUrl}/api/repositories?limit=1`);
@@ -112,10 +125,8 @@ describe('repository catalog routes', () => {
   });
 
   it('rejects invalid pagination', async () => {
-    const repositoryCatalog: RepositoryCatalogReader = {
-      listPage: vi.fn(),
-      findById: vi.fn(),
-    };
+    const listPage = vi.fn();
+    const repositoryCatalog = createCatalog({ listPage });
     const { baseUrl } = await startApp(repositoryCatalog);
 
     const response = await fetch(`${baseUrl}/api/repositories?limit=500`);
@@ -123,15 +134,78 @@ describe('repository catalog routes', () => {
 
     expect(response.status).toBe(400);
     expect(body.error).toBe('invalid_pagination');
-    expect(repositoryCatalog.listPage).not.toHaveBeenCalled();
+    expect(listPage).not.toHaveBeenCalled();
+  });
+
+  it('searches repositories with a normalized lexical query', async () => {
+    const searchPage = vi.fn().mockResolvedValue({
+      items: [repository],
+      hasMore: false,
+    });
+    const repositoryCatalog = createCatalog({ searchPage });
+    const { baseUrl } = await startApp(repositoryCatalog);
+
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?q=%20TypeScript%20%20Backend%20&limit=5`,
+    );
+    const body = (await response.json()) as {
+      data: Array<{ id: string }>;
+      search: { query: string };
+      pagination: { limit: number; nextCursor: string | null };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.data).toHaveLength(1);
+    expect(body.search.query).toBe('typescript backend');
+    expect(body.pagination).toEqual({
+      limit: 5,
+      nextCursor: null,
+    });
+    expect(searchPage).toHaveBeenCalledWith({
+      query: 'typescript backend',
+      limit: 5,
+      cursor: null,
+    });
+  });
+
+  it('returns a search cursor bound to the normalized query', async () => {
+    const repositoryCatalog = createCatalog({
+      searchPage: vi.fn().mockResolvedValue({
+        items: [repository],
+        hasMore: true,
+      }),
+    });
+    const { baseUrl } = await startApp(repositoryCatalog);
+
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?q=typescript&limit=1`,
+    );
+    const body = (await response.json()) as {
+      pagination: { nextCursor: string | null };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.pagination.nextCursor).toEqual(expect.any(String));
+  });
+
+  it('rejects invalid search queries before persistence lookup', async () => {
+    const searchPage = vi.fn();
+    const repositoryCatalog = createCatalog({ searchPage });
+    const { baseUrl } = await startApp(repositoryCatalog);
+
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?q=-`,
+    );
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe('invalid_search_query');
+    expect(searchPage).not.toHaveBeenCalled();
   });
 
   it('returns repository detail by stable internal id', async () => {
     const findById = vi.fn().mockResolvedValue(repository);
-    const repositoryCatalog: RepositoryCatalogReader = {
-      listPage: vi.fn(),
-      findById,
-    };
+    const repositoryCatalog = createCatalog({ findById });
     const { baseUrl } = await startApp(repositoryCatalog);
 
     const response = await fetch(
@@ -148,10 +222,9 @@ describe('repository catalog routes', () => {
   });
 
   it('returns 404 when repository detail is missing', async () => {
-    const repositoryCatalog: RepositoryCatalogReader = {
-      listPage: vi.fn(),
+    const repositoryCatalog = createCatalog({
       findById: vi.fn().mockResolvedValue(null),
-    };
+    });
     const { baseUrl } = await startApp(repositoryCatalog);
 
     const response = await fetch(
@@ -164,15 +237,13 @@ describe('repository catalog routes', () => {
   });
 
   it('rejects malformed repository ids before persistence lookup', async () => {
-    const repositoryCatalog: RepositoryCatalogReader = {
-      listPage: vi.fn(),
-      findById: vi.fn(),
-    };
+    const findById = vi.fn();
+    const repositoryCatalog = createCatalog({ findById });
     const { baseUrl } = await startApp(repositoryCatalog);
 
     const response = await fetch(`${baseUrl}/api/repositories/not-a-uuid`);
 
     expect(response.status).toBe(400);
-    expect(repositoryCatalog.findById).not.toHaveBeenCalled();
+    expect(findById).not.toHaveBeenCalled();
   });
 });

@@ -2,9 +2,12 @@ import { Router } from 'express';
 
 import {
   encodeRepositoryCursor,
+  encodeRepositorySearchCursor,
   isRepositoryId,
   parseRepositoryCursor,
   parseRepositoryPageLimit,
+  parseRepositorySearchCursor,
+  parseRepositorySearchQuery,
   toRepositoryResponse,
   type RepositoryCatalogReader,
 } from './repository-catalog.js';
@@ -31,6 +34,66 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
         },
       });
     } catch (error) {
+      if (
+        error instanceof Error &&
+        (error.message.startsWith('limit ') ||
+          error.message.startsWith('cursor '))
+      ) {
+        response.status(400).json({
+          error: 'invalid_pagination',
+          message: error.message,
+        });
+        return;
+      }
+
+      next(error);
+    }
+  });
+
+  router.get('/search', async (request, response, next) => {
+    try {
+      const query = parseRepositorySearchQuery(request.query.q);
+      const limit = parseRepositoryPageLimit(request.query.limit);
+      const cursor = parseRepositorySearchCursor(
+        request.query.cursor,
+        query,
+      );
+      const page = await repositoryCatalog.searchPage({
+        query,
+        limit,
+        cursor,
+      });
+
+      const nextCursor =
+        page.hasMore && page.items.length > 0
+          ? encodeRepositorySearchCursor(
+              page.items[page.items.length - 1]!,
+              query,
+            )
+          : null;
+
+      response.status(200).json({
+        data: page.items.map(toRepositoryResponse),
+        search: {
+          query,
+        },
+        pagination: {
+          limit,
+          nextCursor,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.startsWith('q ')
+      ) {
+        response.status(400).json({
+          error: 'invalid_search_query',
+          message: error.message,
+        });
+        return;
+      }
+
       if (
         error instanceof Error &&
         (error.message.startsWith('limit ') ||

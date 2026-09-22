@@ -5,9 +5,11 @@ import type { PoolClient } from 'pg';
 import type { DatabasePool } from '../database/database.js';
 import {
   isRepositoryId,
+  parseRepositorySearchQuery,
   type RepositoryCatalogRecord,
   type RepositoryPage,
   type RepositoryPageInput,
+  type RepositorySearchPageInput,
 } from './repository-catalog.js';
 import type {
   RepositoryMetadataRecord,
@@ -501,6 +503,62 @@ export class RepositoryStore {
 
     const row = result.rows[0];
     return row ? mapCatalogRow(row) : null;
+  }
+
+  async searchPage(
+    input: RepositorySearchPageInput,
+  ): Promise<RepositoryPage> {
+    if (!Number.isInteger(input.limit) || input.limit < 1 || input.limit > 50) {
+      throw new Error('limit must be an integer between 1 and 50.');
+    }
+
+    const query = parseRepositorySearchQuery(input.query);
+    const fetchLimit = input.limit + 1;
+    const searchVector = `
+      to_tsvector(
+        'simple',
+        concat_ws(
+          ' ',
+          r.owner,
+          r.name,
+          r.full_name,
+          COALESCE(r.description, '')
+        )
+      )
+    `;
+
+    const result = input.cursor
+      ? await this.pool.query<RepositoryCatalogRow>(
+          `
+            SELECT ${CATALOG_SELECT_COLUMNS}
+            FROM repositories r
+            LEFT JOIN repository_metadata m ON m.repository_id = r.id
+            WHERE ${searchVector} @@ plainto_tsquery('simple', $1)
+              AND r.id > $2
+            ORDER BY r.id ASC
+            LIMIT $3
+          `,
+          [query, input.cursor.id, fetchLimit],
+        )
+      : await this.pool.query<RepositoryCatalogRow>(
+          `
+            SELECT ${CATALOG_SELECT_COLUMNS}
+            FROM repositories r
+            LEFT JOIN repository_metadata m ON m.repository_id = r.id
+            WHERE ${searchVector} @@ plainto_tsquery('simple', $1)
+            ORDER BY r.id ASC
+            LIMIT $2
+          `,
+          [query, fetchLimit],
+        );
+
+    const hasMore = result.rows.length > input.limit;
+    const rows = hasMore ? result.rows.slice(0, input.limit) : result.rows;
+
+    return {
+      items: rows.map(mapCatalogRow),
+      hasMore,
+    };
   }
 
   async listPage(input: RepositoryPageInput): Promise<RepositoryPage> {

@@ -632,3 +632,34 @@ Phase 3E.2B and 3E.3 may resume later without redesigning the current architectu
 Phase 4 search, filtering, pagination, and deterministic sorting must be complete and useful without Jev.
 
 If Jev is later validated, it may only enhance bounded candidate reranking after deterministic retrieval.
+
+
+## D-068 — Phase 4A search filters candidates before relevance ranking
+
+**Status:** Accepted
+
+The first discovery endpoint performs PostgreSQL lexical matching but orders matching repositories by stable internal UUID.
+
+Phase 4A does not claim that UUID order represents relevance.
+
+Text relevance ranking is a separate later decision so ranking semantics can be tested and explained independently from basic retrieval.
+
+## D-069 — Search cursors are bound to the normalized query
+
+**Status:** Accepted
+
+Phase 4A search cursors encode the last stable repository UUID together with the normalized query.
+
+A cursor generated for one query is rejected when supplied to another query.
+
+Clients still treat the cursor as opaque.
+
+## D-070 — Defer a dedicated PostgreSQL search index until measurement justifies it
+
+**Status:** Accepted
+
+The initial curated RepoScout index is intentionally small.
+
+Phase 4A computes the PostgreSQL text vector at query time rather than adding a generated vector column or GIN index immediately.
+
+A dedicated search index should be introduced only after realistic repository volume, query plans, and latency show that it is useful.

@@ -25,7 +25,8 @@
     "test:evaluation": "vitest run src/evaluation/jev-evaluator.test.ts src/evaluation/jev-evaluation-runner.test.ts src/evaluation/typesafe-evaluation-env.test.ts src/evaluation/typesafe-system-one-client.test.ts src/evaluation/typesafe-jev-evaluation-provider.test.ts",
     "eval:jev": "tsx src/cli/evaluate-jev-run.ts",
     "eval:jev:benchmark": "tsx src/cli/print-jev-benchmark.ts",
-    "eval:jev:live": "tsx src/cli/run-live-jev-evaluation.ts"
+    "eval:jev:live": "tsx src/cli/run-live-jev-evaluation.ts",
+    "test:search": "vitest run src/repositories/repository-search.integration.test.ts"
   },
   "dependencies": {
     "dotenv": "18.0.1",

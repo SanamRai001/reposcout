@@ -368,3 +368,32 @@ Scale one bottleneck at a time:
 3. optimize database/query paths;
 4. separate workers if needed;
 5. add specialized search infrastructure only after PostgreSQL is no longer sufficient.
+
+
+## Phase 4A lexical discovery boundary
+
+The first search path is PostgreSQL-only and remains independent of GitHub and model providers.
+
+~~~text
+GET /api/repositories/search
+        |
+query normalization
+        |
+RepositoryStore.searchPage
+        |
+PostgreSQL plainto_tsquery(simple)
+        |
+canonical repository text match
+        |
+stable UUID keyset page
+~~~
+
+Searchable Phase 4A text:
+- owner;
+- repository name;
+- full repository name;
+- description.
+
+Search cursors include the normalized query as well as the last repository UUID so a cursor cannot silently cross query boundaries.
+
+Phase 4A intentionally does not add relevance rank ordering or a persisted/generated search vector. RepoScout should measure realistic query plans and latency before introducing GIN/search-index migration complexity.
