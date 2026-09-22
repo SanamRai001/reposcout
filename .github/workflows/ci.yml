@@ -65,7 +65,7 @@ jobs:
       - name: Verify repository persistence
         run: npm run test:persistence -w @reposcout/api
 
-      - name: Verify repository README content
+      - name: Verify repository content evidence
         run: npm run test:content -w @reposcout/api
 
       - name: Verify GitHub ingestion operations
