@@ -10,7 +10,16 @@ RepoScout should expose named discovery signals and clearly document how each ra
 
 ## Base discovery
 
-Search should combine:
+Phase 4A establishes deterministic lexical candidate retrieval before relevance ranking.
+
+Current Phase 4A search:
+- matches canonical owner/name/full-name/description text;
+- uses PostgreSQL `plainto_tsquery`;
+- returns matching repositories in stable internal UUID order;
+- uses opaque query-bound keyset cursors;
+- does not claim relevance ordering yet.
+
+Later discovery should combine:
 - text relevance;
 - explicit filters;
 - repository eligibility;
