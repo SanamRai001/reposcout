@@ -166,6 +166,73 @@ describe('repositories schema', () => {
     ]);
   });
 
+  it('creates repository metadata with separate measured facts', async () => {
+    const result = await pool.query<{
+      column_name: string;
+      data_type: string;
+      is_nullable: 'YES' | 'NO';
+    }>(
+      `
+        SELECT column_name, data_type, is_nullable
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'repository_metadata'
+        ORDER BY ordinal_position
+      `,
+    );
+
+    expect(result.rows).toEqual([
+      { column_name: 'repository_id', data_type: 'uuid', is_nullable: 'NO' },
+      { column_name: 'stars', data_type: 'bigint', is_nullable: 'NO' },
+      { column_name: 'forks', data_type: 'bigint', is_nullable: 'NO' },
+      { column_name: 'open_issues', data_type: 'bigint', is_nullable: 'NO' },
+      { column_name: 'primary_language', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'license_spdx', data_type: 'text', is_nullable: 'YES' },
+      { column_name: 'topics', data_type: 'ARRAY', is_nullable: 'NO' },
+      {
+        column_name: 'observed_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'created_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'updated_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+    ]);
+  });
+
+  it('enforces nonnegative measured counts', async () => {
+    const repository = createRepositoryFixture({
+      githubRepositoryId: '555555555',
+    });
+    await insertRepository(repository);
+
+    await expect(
+      pool.query(
+        `
+          INSERT INTO repository_metadata (
+            repository_id,
+            stars,
+            forks,
+            open_issues,
+            topics,
+            observed_at
+          )
+          VALUES ($1, -1, 0, 0, '{}', current_timestamp)
+        `,
+        [repository.id],
+      ),
+    ).rejects.toMatchObject({
+      code: '23514',
+    });
+  });
+
   it('enforces GitHub repository ID as the canonical unique identity', async () => {
     const first = createRepositoryFixture({
       githubRepositoryId: '987654321',
