@@ -148,7 +148,7 @@ Status: complete
 
 ### Phase 3C — Repository metadata/signals foundation
 
-Status: implemented; verification pending
+Status: complete
 
 - dedicated one-to-one repository metadata table;
 - stars, forks, GitHub open issue/PR count;
