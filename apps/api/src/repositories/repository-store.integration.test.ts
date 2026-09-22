@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
 import type { DatabaseEnvironment } from '../config/env.js';
 import { createDatabasePool } from '../database/database.js';
+import type { UpsertRepositoryMetadataInput } from './repository-metadata.js';
 import type { UpsertRepositoryInput } from './repository.js';
 import { RepositoryStore } from './repository-store.js';
 
@@ -47,6 +48,21 @@ function createInput(
     updatedAtGithub: new Date('2026-01-02T00:00:00.000Z'),
     pushedAtGithub: new Date('2026-01-03T00:00:00.000Z'),
     lastSyncedAt: new Date('2026-01-04T00:00:00.000Z'),
+    ...overrides,
+  };
+}
+
+function createMetadataInput(
+  overrides: Partial<UpsertRepositoryMetadataInput> = {},
+): UpsertRepositoryMetadataInput {
+  return {
+    stars: 10,
+    forks: 2,
+    openIssues: 3,
+    primaryLanguage: 'TypeScript',
+    licenseSpdx: 'MIT',
+    topics: ['backend', 'typescript'],
+    observedAt: new Date('2026-01-04T00:00:00.000Z'),
     ...overrides,
   };
 }
@@ -130,6 +146,61 @@ describe('RepositoryStore', () => {
     expect(staleResult.id).toBe(current.id);
     expect(staleResult.fullName).toBe('current-org/current-name');
     expect(staleResult.lastSyncedAt.toISOString()).toBe(
+      '2026-02-01T00:00:00.000Z',
+    );
+  });
+
+  it('writes canonical state and measured metadata together', async () => {
+    const repository = await repositoryStore.upsertWithMetadata(
+      createInput(),
+      createMetadataInput(),
+    );
+
+    const catalogRecord = await repositoryStore.findById(repository.id);
+
+    expect(catalogRecord?.metadata).toEqual(
+      expect.objectContaining({
+        repositoryId: repository.id,
+        stars: 10,
+        forks: 2,
+        openIssues: 3,
+        primaryLanguage: 'TypeScript',
+        licenseSpdx: 'MIT',
+        topics: ['backend', 'typescript'],
+        observedAt: new Date('2026-01-04T00:00:00.000Z'),
+      }),
+    );
+  });
+
+  it('does not let stale metadata overwrite a newer observation', async () => {
+    const current = await repositoryStore.upsertWithMetadata(
+      createInput({
+        lastSyncedAt: new Date('2026-02-01T00:00:00.000Z'),
+      }),
+      createMetadataInput({
+        stars: 100,
+        observedAt: new Date('2026-02-01T00:00:00.000Z'),
+      }),
+    );
+
+    await repositoryStore.upsertWithMetadata(
+      createInput({
+        description: 'Stale repository state.',
+        lastSyncedAt: new Date('2026-01-15T00:00:00.000Z'),
+      }),
+      createMetadataInput({
+        stars: 5,
+        observedAt: new Date('2026-01-15T00:00:00.000Z'),
+      }),
+    );
+
+    const catalogRecord = await repositoryStore.findById(current.id);
+
+    expect(catalogRecord?.description).toBe(
+      'A repository persistence fixture.',
+    );
+    expect(catalogRecord?.metadata?.stars).toBe(100);
+    expect(catalogRecord?.metadata?.observedAt.toISOString()).toBe(
       '2026-02-01T00:00:00.000Z',
     );
   });

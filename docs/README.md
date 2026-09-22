@@ -25,6 +25,7 @@ Start here if you are contributing to the project.
 - [PHASE_2B_INGESTION_OPERATIONS.md](PHASE_2B_INGESTION_OPERATIONS.md) — refresh policy, retry behavior, non-destructive unavailable handling, observability, and internal ingestion CLI.
 - [PHASE_3A_REPOSITORY_CATALOG_API.md](PHASE_3A_REPOSITORY_CATALOG_API.md) — bounded catalog pagination and canonical repository list/detail API.
 - [PHASE_3B_REPOSITORY_CATALOG_WEB.md](PHASE_3B_REPOSITORY_CATALOG_WEB.md) — first real catalog browsing UI with loading, empty, error, and load-more states.
+- [PHASE_3C_REPOSITORY_METADATA.md](PHASE_3C_REPOSITORY_METADATA.md) — authoritative measured GitHub metadata, transactional persistence, and catalog exposure.
 
 ## Community
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { RepositoryRecord } from './repository.js';
+import type { RepositoryCatalogRecord } from './repository-catalog.js';
 import {
   encodeRepositoryCursor,
   parseRepositoryCursor,
@@ -8,7 +8,7 @@ import {
   toRepositoryResponse,
 } from './repository-catalog.js';
 
-const repository: RepositoryRecord = {
+const repository: RepositoryCatalogRecord = {
   id: '11111111-1111-4111-8111-111111111111',
   githubRepositoryId: '123456789',
   owner: 'openai',
@@ -25,6 +25,18 @@ const repository: RepositoryRecord = {
   lastSyncedAt: new Date('2026-09-21T08:00:00Z'),
   createdAt: new Date('2026-09-21T08:00:01Z'),
   updatedAt: new Date('2026-09-21T08:00:01Z'),
+  metadata: {
+    repositoryId: '11111111-1111-4111-8111-111111111111',
+    stars: 1250,
+    forks: 210,
+    openIssues: 34,
+    primaryLanguage: 'TypeScript',
+    licenseSpdx: 'Apache-2.0',
+    topics: ['openai', 'sdk', 'typescript'],
+    observedAt: new Date('2026-09-21T08:00:00Z'),
+    createdAt: new Date('2026-09-21T08:00:01Z'),
+    updatedAt: new Date('2026-09-21T08:00:01Z'),
+  },
 };
 
 describe('repository catalog contract', () => {
@@ -61,5 +73,14 @@ describe('repository catalog contract', () => {
     expect(response.createdAtGithub).toBe('2023-04-19T00:00:00.000Z');
     expect(response.pushedAtGithub).toBe('2026-09-20T01:00:00.000Z');
     expect(response.lastSyncedAt).toBe('2026-09-21T08:00:00.000Z');
+    expect(response.metadata).toEqual({
+      stars: 1250,
+      forks: 210,
+      openIssues: 34,
+      primaryLanguage: 'TypeScript',
+      licenseSpdx: 'Apache-2.0',
+      topics: ['openai', 'sdk', 'typescript'],
+      observedAt: '2026-09-21T08:00:00.000Z',
+    });
   });
 });

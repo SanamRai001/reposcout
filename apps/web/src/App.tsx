@@ -7,6 +7,15 @@ import {
 
 const PAGE_SIZE = 12;
 
+const compactNumber = new Intl.NumberFormat(undefined, {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+function formatCount(value: number): string {
+  return compactNumber.format(value);
+}
+
 function formatSyncDate(value: string): string {
   const date = new Date(value);
 
@@ -45,6 +54,39 @@ function RepositoryCard({
       <p className="repository-description">
         {repository.description ?? 'No repository description is available yet.'}
       </p>
+
+      {repository.metadata ? (
+        <>
+          <div className="repository-stats" aria-label="Repository metrics">
+            <span>
+              <strong>{formatCount(repository.metadata.stars)}</strong>
+              <small>Stars</small>
+            </span>
+            <span>
+              <strong>{formatCount(repository.metadata.forks)}</strong>
+              <small>Forks</small>
+            </span>
+            <span>
+              <strong>{formatCount(repository.metadata.openIssues)}</strong>
+              <small>Open issues/PRs</small>
+            </span>
+          </div>
+
+          <div className="repository-facts">
+            {repository.metadata.primaryLanguage ? (
+              <span>{repository.metadata.primaryLanguage}</span>
+            ) : null}
+            {repository.metadata.licenseSpdx ? (
+              <span>{repository.metadata.licenseSpdx}</span>
+            ) : null}
+            {repository.metadata.topics.slice(0, 2).map((topic) => (
+              <span key={topic}>#{topic}</span>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p className="metadata-pending">Metadata pending</p>
+      )}
 
       <div className="repository-meta">
         <span>
@@ -182,7 +224,7 @@ export function App() {
           <span>RepoScout</span>
         </a>
 
-        <span className="phase-badge">Catalog · Phase 3B</span>
+        <span className="phase-badge">Catalog · Phase 3C</span>
       </header>
 
       <section className="catalog-intro" aria-labelledby="catalog-title">
@@ -193,8 +235,9 @@ export function App() {
           </div>
           <p>
             Browse the first repositories indexed by RepoScout. These are
-            canonical repository facts from our own catalog—no popularity
-            ranking, AI scoring, or hidden recommendation logic yet.
+            canonical repository facts and measured GitHub metadata from our
+            own catalog—still without popularity ranking, AI scoring, or hidden
+            recommendation logic.
           </p>
         </div>
       </section>

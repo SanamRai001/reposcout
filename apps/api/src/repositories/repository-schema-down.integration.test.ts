@@ -23,12 +23,22 @@ afterAll(async () => {
   await pool.end();
 });
 
-describe('repositories migration rollback', () => {
-  it('removes the repositories table', async () => {
-    const result = await pool.query<{ relation_name: string | null }>(
-      "SELECT to_regclass('public.repositories')::text AS relation_name",
+describe('latest migration rollback', () => {
+  it('removes repository metadata while preserving canonical repositories', async () => {
+    const result = await pool.query<{
+      repositories: string | null;
+      repository_metadata: string | null;
+    }>(
+      `
+        SELECT
+          to_regclass('public.repositories')::text AS repositories,
+          to_regclass('public.repository_metadata')::text AS repository_metadata
+      `,
     );
 
-    expect(result.rows[0]?.relation_name).toBeNull();
+    expect(result.rows[0]).toEqual({
+      repositories: 'repositories',
+      repository_metadata: null,
+    });
   });
 });

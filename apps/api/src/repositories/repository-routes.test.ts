@@ -3,12 +3,14 @@ import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createApp } from '../app.js';
-import type { RepositoryCatalogReader } from './repository-catalog.js';
-import type { RepositoryRecord } from './repository.js';
+import type {
+  RepositoryCatalogReader,
+  RepositoryCatalogRecord,
+} from './repository-catalog.js';
 
 const servers: ReturnType<ReturnType<typeof createApp>['listen']>[] = [];
 
-const repository: RepositoryRecord = {
+const repository: RepositoryCatalogRecord = {
   id: '11111111-1111-4111-8111-111111111111',
   githubRepositoryId: '123456789',
   owner: 'openai',
@@ -25,6 +27,7 @@ const repository: RepositoryRecord = {
   lastSyncedAt: new Date('2026-09-21T08:00:00Z'),
   createdAt: new Date('2026-09-21T08:00:01Z'),
   updatedAt: new Date('2026-09-21T08:00:01Z'),
+  metadata: null,
 };
 
 afterEach(async () => {

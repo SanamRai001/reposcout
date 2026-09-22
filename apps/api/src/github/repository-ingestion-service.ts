@@ -7,12 +7,18 @@ import {
   type GithubRepositoryReference,
 } from './github-repository-reference.js';
 import type {
+  UpsertRepositoryMetadataInput,
+} from '../repositories/repository-metadata.js';
+import type {
   RepositoryRecord,
   UpsertRepositoryInput,
 } from '../repositories/repository.js';
 
 type RepositoryWriter = Readonly<{
-  upsert(input: UpsertRepositoryInput): Promise<RepositoryRecord>;
+  upsertWithMetadata(
+    input: UpsertRepositoryInput,
+    metadata: UpsertRepositoryMetadataInput,
+  ): Promise<RepositoryRecord>;
 }>;
 
 type GithubRepositoryReader = Pick<GithubClient, 'fetchRepository'>;
@@ -51,6 +57,17 @@ export class RepositoryIngestionService {
     const fetchedAt = this.now();
     const repository = await this.githubClient.fetchRepository(reference);
 
-    return this.repositoryStore.upsert(toUpsertInput(repository, fetchedAt));
+    return this.repositoryStore.upsertWithMetadata(
+      toUpsertInput(repository, fetchedAt),
+      {
+        stars: repository.metadata.stars,
+        forks: repository.metadata.forks,
+        openIssues: repository.metadata.openIssues,
+        primaryLanguage: repository.metadata.primaryLanguage,
+        licenseSpdx: repository.metadata.licenseSpdx,
+        topics: repository.metadata.topics,
+        observedAt: fetchedAt,
+      },
+    );
   }
 }

@@ -23,6 +23,15 @@ function repository() {
     lastSyncedAt: '2026-09-21T08:00:00.000Z',
     createdAt: '2026-09-21T08:00:01.000Z',
     updatedAt: '2026-09-21T08:00:01.000Z',
+    metadata: {
+      stars: 1250,
+      forks: 210,
+      openIssues: 34,
+      primaryLanguage: 'TypeScript',
+      licenseSpdx: 'Apache-2.0',
+      topics: ['openai', 'sdk', 'typescript'],
+      observedAt: '2026-09-21T08:00:00.000Z',
+    },
   };
 }
 
@@ -60,6 +69,7 @@ describe('fetchRepositoryCatalogPage', () => {
       }),
     );
     expect(page.data[0]?.fullName).toBe('openai/openai-node');
+    expect(page.data[0]?.metadata?.stars).toBe(1250);
     expect(page.pagination.nextCursor).toBe('next-page');
   });
 

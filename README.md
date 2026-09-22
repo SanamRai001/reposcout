@@ -91,7 +91,9 @@ The backend now uses PostgreSQL through node-postgres with explicit migration to
 
 RepoScout now has a real browser catalog backed by the Phase 3A PostgreSQL read API.
 
-The next checkpoint is **Phase 3C: the smallest authoritative repository metadata/signals foundation**. A dedicated repository detail page is deferred until it has richer information to show.
+**Phase 3C — authoritative repository metadata foundation:** complete.
+
+RepoScout now collects measured stars, forks, GitHub open issue/PR count, primary language, SPDX license, and topics separately from canonical repository identity. The next planned implementation phase after verification is **Phase 3D: repository content foundation**.
 
 RepoScout also plans a later **Jev evaluation spike** after authoritative metadata and repository content exist. Jev is being treated as an optional probabilistic decision/reranking layer—not a source of GitHub facts, not the primary search engine, and not a required dependency for RepoScout to function.
 

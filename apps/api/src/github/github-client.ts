@@ -9,6 +9,15 @@ export type GithubClientOptions = Readonly<{
   fetchImplementation?: typeof fetch | undefined;
 }>;
 
+export type GithubRepositoryMetadataSnapshot = Readonly<{
+  stars: number;
+  forks: number;
+  openIssues: number;
+  primaryLanguage: string | null;
+  licenseSpdx: string | null;
+  topics: string[];
+}>;
+
 export type GithubRepositorySnapshot = Readonly<{
   githubRepositoryId: string;
   owner: string;
@@ -22,6 +31,7 @@ export type GithubRepositorySnapshot = Readonly<{
   createdAtGithub: Date;
   updatedAtGithub: Date;
   pushedAtGithub: Date | null;
+  metadata: GithubRepositoryMetadataSnapshot;
 }>;
 
 export type GithubApiErrorKind =
@@ -83,6 +93,63 @@ function nullableString(source: JsonObject, field: string): string | null {
   }
 
   return value;
+}
+
+function requiredNonnegativeSafeInteger(
+  source: JsonObject,
+  field: string,
+): number {
+  const value = source[field];
+
+  if (
+    typeof value !== 'number' ||
+    !Number.isSafeInteger(value) ||
+    value < 0
+  ) {
+    throw new GithubApiError(
+      'invalid_response',
+      `GitHub response field "${field}" is invalid.`,
+    );
+  }
+
+  return value;
+}
+
+function stringArray(source: JsonObject, field: string): string[] {
+  const value = source[field];
+
+  if (
+    !Array.isArray(value) ||
+    !value.every(
+      (item) => typeof item === 'string' && item.trim().length > 0,
+    )
+  ) {
+    throw new GithubApiError(
+      'invalid_response',
+      `GitHub response field "${field}" is invalid.`,
+    );
+  }
+
+  return [...new Set(value)].sort((left, right) =>
+    left.localeCompare(right),
+  );
+}
+
+function licenseSpdx(source: JsonObject): string | null {
+  const value = source.license;
+
+  if (value === null) {
+    return null;
+  }
+
+  if (!isObject(value)) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub response field "license" is invalid.',
+    );
+  }
+
+  return nullableString(value, 'spdx_id');
 }
 
 function requiredBoolean(source: JsonObject, field: string): boolean {
@@ -200,6 +267,14 @@ function normalizeRepository(payload: unknown): GithubRepositorySnapshot {
     createdAtGithub: requiredDate(payload, 'created_at'),
     updatedAtGithub: requiredDate(payload, 'updated_at'),
     pushedAtGithub: nullableDate(payload, 'pushed_at'),
+    metadata: {
+      stars: requiredNonnegativeSafeInteger(payload, 'stargazers_count'),
+      forks: requiredNonnegativeSafeInteger(payload, 'forks_count'),
+      openIssues: requiredNonnegativeSafeInteger(payload, 'open_issues_count'),
+      primaryLanguage: nullableString(payload, 'language'),
+      licenseSpdx: licenseSpdx(payload),
+      topics: stringArray(payload, 'topics'),
+    },
   };
 }
 

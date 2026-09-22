@@ -1,4 +1,10 @@
+import type { RepositoryMetadataRecord } from './repository-metadata.js';
 import type { RepositoryRecord } from './repository.js';
+
+export type RepositoryCatalogRecord = RepositoryRecord &
+  Readonly<{
+    metadata: RepositoryMetadataRecord | null;
+  }>;
 
 export const DEFAULT_REPOSITORY_PAGE_SIZE = 20;
 export const MAX_REPOSITORY_PAGE_SIZE = 50;
@@ -13,13 +19,13 @@ export type RepositoryPageInput = Readonly<{
 }>;
 
 export type RepositoryPage = Readonly<{
-  items: RepositoryRecord[];
+  items: RepositoryCatalogRecord[];
   hasMore: boolean;
 }>;
 
 export type RepositoryCatalogReader = Readonly<{
   listPage(input: RepositoryPageInput): Promise<RepositoryPage>;
-  findById(id: string): Promise<RepositoryRecord | null>;
+  findById(id: string): Promise<RepositoryCatalogRecord | null>;
 }>;
 
 export type RepositoryResponse = Readonly<{
@@ -39,6 +45,15 @@ export type RepositoryResponse = Readonly<{
   lastSyncedAt: string;
   createdAt: string;
   updatedAt: string;
+  metadata: null | Readonly<{
+    stars: number;
+    forks: number;
+    openIssues: number;
+    primaryLanguage: string | null;
+    licenseSpdx: string | null;
+    topics: string[];
+    observedAt: string;
+  }>;
 }>;
 
 type EncodedCursor = Readonly<{
@@ -111,7 +126,7 @@ export function parseRepositoryCursor(value: unknown): RepositoryCursor | null {
 }
 
 export function toRepositoryResponse(
-  repository: RepositoryRecord,
+  repository: RepositoryCatalogRecord,
 ): RepositoryResponse {
   return {
     id: repository.id,
@@ -130,5 +145,16 @@ export function toRepositoryResponse(
     lastSyncedAt: repository.lastSyncedAt.toISOString(),
     createdAt: repository.createdAt.toISOString(),
     updatedAt: repository.updatedAt.toISOString(),
+    metadata: repository.metadata
+      ? {
+          stars: repository.metadata.stars,
+          forks: repository.metadata.forks,
+          openIssues: repository.metadata.openIssues,
+          primaryLanguage: repository.metadata.primaryLanguage,
+          licenseSpdx: repository.metadata.licenseSpdx,
+          topics: repository.metadata.topics,
+          observedAt: repository.metadata.observedAt.toISOString(),
+        }
+      : null,
   };
 }

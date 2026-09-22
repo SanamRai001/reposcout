@@ -39,24 +39,33 @@ updated_at
 
 Do not use `full_name` as the unique identity because repositories can be renamed or transferred. The database enforces uniqueness on `github_repository_id`; `full_name` is a mutable, indexed lookup attribute.
 
-### RepositoryMetrics
+### RepositoryMetadata
 
-Current normalized metrics, either on Repository for very small MVPs or in a dedicated 1:1 table.
+Implemented in Phase 3C as a dedicated one-to-one table.
 
-Examples:
 ```text
+repository_id
 stars
 forks
 open_issues
-watchers/subscribers when meaningful
-release_count
-latest_release_at
-contributors_count when reliably collected
-good_first_issue_count
-help_wanted_issue_count
+primary_language nullable
+license_spdx nullable
+topics
+observed_at
+created_at
+updated_at
 ```
 
-Each metric should document its GitHub/API meaning.
+Phase 3C values come directly from GitHub's repository REST response.
+
+Notes:
+- missing metadata is distinct from zero;
+- `open_issues` preserves GitHub's `open_issues_count` source semantics, which may include pull requests;
+- counts are nonnegative measured values;
+- metadata has its own observation timestamp;
+- stale observations cannot overwrite newer values.
+
+Future measured fields may include watchers/subscribers, release data, contributor counts, and contribution issue counts when their collection cost and semantics are explicitly defined.
 
 ### RepositorySnapshot
 
