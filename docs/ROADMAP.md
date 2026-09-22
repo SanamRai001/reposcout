@@ -209,7 +209,7 @@ Status: in progress / experimental
 
 #### Phase 3E.1 — Evaluation harness
 
-Status: implemented; verification pending
+Status: complete
 
 - provider-neutral evaluation boundary;
 - benchmark versioning;
