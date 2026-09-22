@@ -144,14 +144,46 @@ contribution-friendly-v1
 
 When formulas change, results should be attributable to the ranking version.
 
-## AI usage
+## Model-assisted intelligence
 
-AI can assist with:
+Model systems may assist with:
 - query interpretation;
-- README summarization;
+- README/content classification;
 - use-case/category suggestions;
-- semantic retrieval.
+- bounded candidate reranking;
+- beginner-suitability assessment;
+- submission triage support.
 
-AI should not fabricate repository health facts.
+RepoScout is evaluating Jev as a possible decision layer for these tasks.
 
-Measured facts should come from traceable repository/API data.
+Rules:
+- retrieval happens before model reranking;
+- model output is probabilistic inference, not repository fact;
+- measured facts come from traceable repository/API data;
+- deterministic signals remain independently computable;
+- model-assisted signals must be clearly distinguishable in explanations;
+- model/provider unavailability must fall back to deterministic discovery;
+- high-impact moderation decisions require human review;
+- no universal quality score may be produced from model output.
+
+Preferred discovery flow:
+
+~~~text
+query
+  |
+lexical search + filters
+  |
+bounded candidate set
+  |
+deterministic RepoScout signals
+  |
+optional model-assisted relevance assessment
+  |
+transparent reranking
+~~~
+
+Hidden Gems and Rising remain primarily driven by measured/historical data. A model may provide qualitative context, but must not replace activity, momentum, or popularity-saturation inputs.
+
+Before any model-assisted ranking ships, evaluate it on a labeled RepoScout repository/query set and version the assessment schema/model combination.
+
+See [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md).
