@@ -229,14 +229,22 @@ The synthetic benchmark validates the harness and task definitions. It is not ev
 
 #### Phase 3E.2 — Live Jev adapter + controlled smoke evaluation
 
-Next:
-- verify current TypeSafe OpenAPI schema;
-- add server-side Jev credentials;
-- implement the provider adapter;
-- validate typed Jev responses;
-- run a controlled non-production benchmark;
-- capture latency/provider/model provenance;
-- keep fallback behavior explicit.
+Status: implemented; verification pending
+
+- current TypeSafe OpenAPI contract verified;
+- fixed TypeSafe API origin and Bearer auth boundary;
+- model discovery through `GET /v1/models`;
+- System One adapter through `POST /v1/systemone`;
+- native Noul / Choice / Score benchmark mapping;
+- zero-based Jev score to one-based RepoScout scale conversion;
+- requested + resolved model provenance;
+- inconsistent model-resolution rejection;
+- credential-gated live smoke command;
+- TypeSafe config isolated from normal application startup;
+- offline mocked provider tests in CI;
+- no production persistence/ranking/moderation integration.
+
+A real live smoke result is only considered complete when a valid TypeSafe credential is supplied and the command succeeds.
 
 #### Phase 3E.3 — Real RepoScout evaluation + adoption decision
 
