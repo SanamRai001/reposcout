@@ -136,6 +136,43 @@ Each signal should store:
 - observed_at;
 - optional evidence metadata.
 
+### RepositoryModelAssessment
+
+**Future / not implemented.**
+
+Stores model-assisted probabilistic assessments separately from canonical repository facts.
+
+Conceptual fields:
+
+~~~text
+id
+repository_id
+provider
+model
+assessment_type
+input_version
+schema_version
+result_json
+confidence_json
+evaluated_at
+expires_at nullable
+superseded_by nullable
+~~~
+
+Potential assessment types:
+- use_case_classification;
+- tutorial_demo_probability;
+- beginner_suitability;
+- query_relevance;
+- submission_triage.
+
+Rules:
+- GitHub metrics do not belong here;
+- this entity is not canonical repository truth;
+- each assessment must be attributable to a specific provider/model/schema/input version;
+- model output must be validated before persistence;
+- do not create this table until the Jev evaluation phase proves a real product need.
+
 ### Submission
 
 Community request to add a repository.
