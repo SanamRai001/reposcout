@@ -204,6 +204,12 @@ Tests cover:
 - browser response validation;
 - metadata-aware catalog UI production build.
 
+## Status
+
+Complete.
+
+The Phase 3C branch passed the complete application, migration, schema rollback/reapply, persistence, ingestion, catalog API, web build, and PostgreSQL verification gates.
+
 ## Next checkpoint
 
 Phase 3D should establish the smallest repository content foundation needed for later classification and intelligence:
