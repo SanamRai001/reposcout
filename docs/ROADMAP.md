@@ -154,6 +154,41 @@ Next:
 - expose those facts through the catalog API;
 - improve cards only after backend data is authoritative.
 
+Likely first measured fields:
+- stars;
+- forks;
+- open issues;
+- primary language;
+- license;
+- topics where useful;
+- release/current activity facts where collection is reliable.
+
+No Jev integration belongs in Phase 3C. This phase establishes the authoritative factual base first.
+
+### Phase 3D — Repository content foundation
+
+Planned:
+- collect the smallest repository text/content needed for later intelligence;
+- README content with size/safety limits;
+- topics and contribution-document presence;
+- content provenance and refresh timestamps;
+- keep raw/normalized content separate from model interpretation.
+
+This phase should provide the evidence Jev or other classifiers may later evaluate.
+
+### Phase 3E — Jev evaluation spike
+
+Planned / experimental:
+- evaluate Jev on a labeled RepoScout repository set;
+- test use-case/project-type classification;
+- test tutorial/demo detection;
+- test beginner-suitability assessment;
+- test bounded query-to-repository relevance;
+- evaluate confidence/calibration usefulness;
+- measure latency, cost, consistency, and failure behavior;
+- define fallback behavior;
+- do not create production assessment persistence unless evaluation proves value.
+
 Repository detail UI remains deferred until there is enough intelligence to justify a dedicated page.
 
 ## Phase 4 — Discovery
@@ -161,19 +196,28 @@ Repository detail UI remains deferred until there is enough intelligence to just
 - lexical search;
 - language/category/topic filters;
 - activity/star/license filters;
-- transparent sorting;
-- shareable query URLs.
+- transparent deterministic sorting;
+- shareable query URLs;
+- bounded candidate retrieval;
+- optional Jev-assisted reranking only if Phase 3E proves useful.
 
-Verify useful discovery before adding AI.
+Normal search/filtering must work without Jev.
+
+Verify deterministic discovery first. Model-assisted reranking should improve an existing discovery engine, not substitute for one.
 
 ## Phase 5 — Community submission
 
 - submit GitHub URL;
 - duplicate validation;
+- deterministic eligibility checks;
+- repository metadata/content collection;
+- optional model-assisted triage if already validated;
 - pending moderation queue;
 - approve/reject;
 - abuse/rate limits;
 - audit events.
+
+Model output must remain advisory for permanent moderation decisions.
 
 This is the first major community loop.
 
