@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { evaluateJevRun } from '../evaluation/jev-evaluator.js';
-import type { JevEvaluationRun } from '../evaluation/jev-evaluation-result.js';
+import { parseJevEvaluationRun } from '../evaluation/jev-evaluation-result.js';
 
 function parsePathArgument(args: string[]): string {
   if (args.length !== 1 || !args[0]) {
@@ -25,7 +25,7 @@ async function run(): Promise<void> {
     throw new Error('Evaluation run file must contain valid JSON.');
   }
 
-  const report = evaluateJevRun(value as JevEvaluationRun);
+  const report = evaluateJevRun(parseJevEvaluationRun(value));
 
   console.log(
     JSON.stringify(
