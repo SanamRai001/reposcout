@@ -14,6 +14,7 @@ Start here if you are contributing to the project.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — current system direction and production concerns.
 - [DATA_MODEL.md](DATA_MODEL.md) — canonical repository, snapshot, submission, and moderation model.
 - [DISCOVERY_RANKING.md](DISCOVERY_RANKING.md) — discovery modes, explainability, and scoring constraints.
+- [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md) — planned Jev decision-layer evaluation, data ownership, fallback, moderation, and reranking boundaries.
 - [DECISIONS.md](DECISIONS.md) — project decision log.
 - [PHASE_1A_PROJECT_SKELETON.md](PHASE_1A_PROJECT_SKELETON.md) — application foundation checkpoint.
 - [PHASE_1B1_PERSISTENCE_FOUNDATION.md](PHASE_1B1_PERSISTENCE_FOUNDATION.md) — PostgreSQL connection, migrations, readiness, and reproducible installs.
