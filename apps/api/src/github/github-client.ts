@@ -37,6 +37,25 @@ export type GithubReadmeSnapshot =
       sizeBytes: number;
     }>;
 
+export type GithubLinkedEvidence = Readonly<{
+  apiUrl: string;
+  htmlUrl: string;
+}>;
+
+export type GithubCommunityProfileSnapshot = Readonly<{
+  contributing: GithubLinkedEvidence | null;
+  codeOfConduct: GithubLinkedEvidence | null;
+  issueTemplate: GithubLinkedEvidence | null;
+  pullRequestTemplate: GithubLinkedEvidence | null;
+  updatedAt: Date | null;
+}>;
+
+export type GithubSecurityPolicySnapshot = Readonly<{
+  path: string;
+  sha: string;
+  sizeBytes: number;
+}> | null;
+
 export type GithubRepositorySnapshot = Readonly<{
   githubRepositoryId: string;
   owner: string;
@@ -223,7 +242,11 @@ function repositoryId(source: JsonObject): string {
   return String(value);
 }
 
-function validateGithubUrl(value: string): string {
+function validateTrustedUrl(
+  value: string,
+  hostname: 'github.com' | 'api.github.com',
+  label: string,
+): string {
   let url: URL;
 
   try {
@@ -231,18 +254,26 @@ function validateGithubUrl(value: string): string {
   } catch {
     throw new GithubApiError(
       'invalid_response',
-      'GitHub repository html_url is invalid.',
+      `${label} is invalid.`,
     );
   }
 
-  if (url.protocol !== 'https:' || url.hostname.toLowerCase() !== 'github.com') {
+  if (url.protocol !== 'https:' || url.hostname.toLowerCase() !== hostname) {
     throw new GithubApiError(
       'invalid_response',
-      'GitHub repository html_url must use https://github.com.',
+      `${label} must use https://${hostname}.`,
     );
   }
 
   return value;
+}
+
+function validateGithubUrl(value: string): string {
+  return validateTrustedUrl(
+    value,
+    'github.com',
+    'GitHub repository html_url',
+  );
 }
 
 function decodeReadmeContent(
@@ -297,6 +328,93 @@ function decodeReadmeContent(
   }
 
   return content;
+}
+
+function nullableLinkedEvidence(
+  files: JsonObject,
+  field: string,
+): GithubLinkedEvidence | null {
+  const value = files[field];
+
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isObject(value)) {
+    throw new GithubApiError(
+      'invalid_response',
+      `GitHub community profile field "${field}" is invalid.`,
+    );
+  }
+
+  return {
+    apiUrl: validateTrustedUrl(
+      requiredString(value, 'url'),
+      'api.github.com',
+      `GitHub community profile ${field} API URL`,
+    ),
+    htmlUrl: validateTrustedUrl(
+      requiredString(value, 'html_url'),
+      'github.com',
+      `GitHub community profile ${field} HTML URL`,
+    ),
+  };
+}
+
+function normalizeCommunityProfile(
+  payload: unknown,
+): GithubCommunityProfileSnapshot {
+  if (!isObject(payload)) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub community profile response must be an object.',
+    );
+  }
+
+  const files = payload.files;
+
+  if (!isObject(files)) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub community profile files are invalid.',
+    );
+  }
+
+  return {
+    contributing: nullableLinkedEvidence(files, 'contributing'),
+    codeOfConduct: nullableLinkedEvidence(files, 'code_of_conduct_file'),
+    issueTemplate: nullableLinkedEvidence(files, 'issue_template'),
+    pullRequestTemplate: nullableLinkedEvidence(
+      files,
+      'pull_request_template',
+    ),
+    updatedAt: nullableDate(payload, 'updated_at'),
+  };
+}
+
+function normalizeFileMetadata(
+  payload: unknown,
+  label: string,
+): Exclude<GithubSecurityPolicySnapshot, null> {
+  if (!isObject(payload)) {
+    throw new GithubApiError(
+      'invalid_response',
+      `GitHub ${label} response must be an object.`,
+    );
+  }
+
+  if (requiredString(payload, 'type') !== 'file') {
+    throw new GithubApiError(
+      'invalid_response',
+      `GitHub ${label} response must describe a file.`,
+    );
+  }
+
+  return {
+    path: requiredString(payload, 'path'),
+    sha: requiredString(payload, 'sha'),
+    sizeBytes: requiredNonnegativeSafeInteger(payload, 'size'),
+  };
 }
 
 function normalizeReadme(payload: unknown): GithubReadmeSnapshot {
@@ -500,6 +618,154 @@ export class GithubClient {
     }
 
     return normalizeRepository(payload);
+  }
+
+  async fetchCommunityProfile(
+    reference: GithubRepositoryReference,
+  ): Promise<GithubCommunityProfileSnapshot> {
+    const owner = encodeURIComponent(reference.owner);
+    const name = encodeURIComponent(reference.name);
+    const url =
+      `${GITHUB_API_ORIGIN}/repos/${owner}/${name}/community/profile`;
+    const headers = createGithubHeaders(this.token);
+
+    let response: Response;
+
+    try {
+      response = await this.fetchImplementation(url, {
+        method: 'GET',
+        headers,
+        redirect: 'error',
+        signal: AbortSignal.timeout(this.requestTimeoutMs),
+      });
+    } catch (error) {
+      throw new GithubApiError(
+        'request_failed',
+        error instanceof Error
+          ? `GitHub community profile request failed: ${error.message}`
+          : 'GitHub community profile request failed.',
+      );
+    }
+
+    const rateLimited =
+      response.status === 429 ||
+      (response.status === 403 &&
+        response.headers.get('x-ratelimit-remaining') === '0');
+
+    if (rateLimited) {
+      throw new GithubApiError(
+        'rate_limited',
+        'GitHub API rate limit was reached.',
+        response.status,
+        parseRateLimitReset(response.headers),
+      );
+    }
+
+    if (!response.ok) {
+      throw new GithubApiError(
+        response.status === 404 ? 'not_found' : 'request_failed',
+        `GitHub community profile request failed with HTTP ${response.status}.`,
+        response.status,
+      );
+    }
+
+    let payload: unknown;
+
+    try {
+      payload = await response.json();
+    } catch {
+      throw new GithubApiError(
+        'invalid_response',
+        'GitHub community profile API returned invalid JSON.',
+        response.status,
+      );
+    }
+
+    return normalizeCommunityProfile(payload);
+  }
+
+  async fetchSecurityPolicy(
+    reference: GithubRepositoryReference,
+    sourceRef: string,
+  ): Promise<GithubSecurityPolicySnapshot> {
+    const owner = encodeURIComponent(reference.owner);
+    const name = encodeURIComponent(reference.name);
+    const headers = createGithubHeaders(this.token);
+    const paths = [
+      '.github/SECURITY.md',
+      'SECURITY.md',
+      'docs/SECURITY.md',
+    ] as const;
+
+    for (const path of paths) {
+      const encodedPath = path
+        .split('/')
+        .map((segment) => encodeURIComponent(segment))
+        .join('/');
+      const url =
+        `${GITHUB_API_ORIGIN}/repos/${owner}/${name}/contents/${encodedPath}` +
+        `?ref=${encodeURIComponent(sourceRef)}`;
+
+      let response: Response;
+
+      try {
+        response = await this.fetchImplementation(url, {
+          method: 'GET',
+          headers,
+          redirect: 'error',
+          signal: AbortSignal.timeout(this.requestTimeoutMs),
+        });
+      } catch (error) {
+        throw new GithubApiError(
+          'request_failed',
+          error instanceof Error
+            ? `GitHub security policy request failed: ${error.message}`
+            : 'GitHub security policy request failed.',
+        );
+      }
+
+      if (response.status === 404) {
+        continue;
+      }
+
+      const rateLimited =
+        response.status === 429 ||
+        (response.status === 403 &&
+          response.headers.get('x-ratelimit-remaining') === '0');
+
+      if (rateLimited) {
+        throw new GithubApiError(
+          'rate_limited',
+          'GitHub API rate limit was reached.',
+          response.status,
+          parseRateLimitReset(response.headers),
+        );
+      }
+
+      if (!response.ok) {
+        throw new GithubApiError(
+          'request_failed',
+          `GitHub security policy request failed with HTTP ${response.status}.`,
+          response.status,
+        );
+      }
+
+      let payload: unknown;
+
+      try {
+        payload = await response.json();
+      } catch {
+        throw new GithubApiError(
+          'invalid_response',
+          'GitHub security policy API returned invalid JSON.',
+          response.status,
+        );
+      }
+
+      return normalizeFileMetadata(payload, 'security policy');
+    }
+
+    return null;
   }
 
   async fetchReadme(
