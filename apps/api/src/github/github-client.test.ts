@@ -79,6 +79,106 @@ describe('GithubClient', () => {
     });
   });
 
+  it('fetches and validates bounded README content from the pinned GitHub API', async () => {
+    const readme = '# RepoScout fixture\n';
+    const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          type: 'file',
+          encoding: 'base64',
+          size: Buffer.byteLength(readme, 'utf8'),
+          name: 'README.md',
+          path: 'README.md',
+          sha: 'abc123',
+          content: Buffer.from(readme, 'utf8').toString('base64'),
+        }),
+        { status: 200 },
+      ),
+    );
+    const client = new GithubClient({
+      token: 'secret-token',
+      fetchImplementation,
+    });
+
+    const result = await client.fetchReadme(reference, 'main');
+
+    expect(fetchImplementation).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchImplementation.mock.calls[0] ?? [];
+    expect(url).toBe(
+      'https://api.github.com/repos/openai/openai-node/readme?ref=main',
+    );
+    expect(init?.redirect).toBe('error');
+
+    const headers = init?.headers as Headers;
+    expect(headers.get('x-github-api-version')).toBe('2026-03-10');
+    expect(headers.get('authorization')).toBe('Bearer secret-token');
+    expect(result).toEqual({
+      status: 'present',
+      path: 'README.md',
+      sha: 'abc123',
+      sizeBytes: Buffer.byteLength(readme, 'utf8'),
+      content: readme,
+    });
+  });
+
+  it('records README 404 as not-found content evidence', async () => {
+    const client = new GithubClient({
+      fetchImplementation: vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(new Response('{}', { status: 404 })),
+    });
+
+    await expect(client.fetchReadme(reference, 'main')).resolves.toEqual({
+      status: 'not_found',
+    });
+  });
+
+  it('does not decode README bodies above RepoScout storage limits', async () => {
+    const client = new GithubClient({
+      fetchImplementation: vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            type: 'file',
+            size: 300_000,
+            path: 'README.md',
+            sha: 'large123',
+          }),
+          { status: 200 },
+        ),
+      ),
+    });
+
+    await expect(client.fetchReadme(reference, 'main')).resolves.toEqual({
+      status: 'too_large',
+      path: 'README.md',
+      sha: 'large123',
+      sizeBytes: 300_000,
+    });
+  });
+
+  it('rejects README content whose decoded byte size is inconsistent', async () => {
+    const content = 'hello';
+    const client = new GithubClient({
+      fetchImplementation: vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            type: 'file',
+            encoding: 'base64',
+            size: 100,
+            path: 'README.md',
+            sha: 'badsize',
+            content: Buffer.from(content, 'utf8').toString('base64'),
+          }),
+          { status: 200 },
+        ),
+      ),
+    });
+
+    await expect(client.fetchReadme(reference, 'main')).rejects.toMatchObject({
+      kind: 'invalid_response',
+    });
+  });
+
   it('supports unauthenticated public requests when no token is configured', async () => {
     const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify(validPayload()), { status: 200 }),
