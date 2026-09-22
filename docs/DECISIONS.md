@@ -613,3 +613,22 @@ The benchmark/evaluator itself remains provider-neutral.
 CI tests the TypeSafe adapter with mocked HTTP responses.
 
 Live smoke evaluation is explicit, credential-gated, and non-production so provider availability, quota, latency, or billing cannot destabilize RepoScout's normal quality gate.
+
+
+## D-066 — Do not block RepoScout product development on Jev provider access
+
+**Status:** Accepted
+
+The Jev harness and verified adapter remain in the codebase, but live evaluation is deferred while TypeSafe access is unavailable.
+
+RepoScout will continue into deterministic search/discovery without waiting for a model credential.
+
+Phase 3E.2B and 3E.3 may resume later without redesigning the current architecture.
+
+## D-067 — Phase 4 deterministic discovery proceeds independently of Jev
+
+**Status:** Accepted
+
+Phase 4 search, filtering, pagination, and deterministic sorting must be complete and useful without Jev.
+
+If Jev is later validated, it may only enhance bounded candidate reranking after deterministic retrieval.
