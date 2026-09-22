@@ -68,7 +68,7 @@ function RepositoryCard({
             </span>
             <span>
               <strong>{formatCount(repository.metadata.openIssues)}</strong>
-              <small>Open issues</small>
+              <small>Open issues/PRs</small>
             </span>
           </div>
 
