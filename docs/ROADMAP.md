@@ -167,7 +167,7 @@ No Jev integration belongs in Phase 3C. This phase establishes the authoritative
 
 ### Phase 3D — Repository content foundation
 
-Status: in progress
+Status: complete
 
 #### Phase 3D.1 — Bounded README content foundation
 
@@ -186,7 +186,7 @@ Status: complete
 
 #### Phase 3D.2 — Contribution-document evidence
 
-Status: implemented; verification pending
+Status: complete
 
 - GitHub effective CONTRIBUTING evidence;
 - GitHub effective Code of Conduct evidence;
