@@ -261,6 +261,12 @@ Phase 3D.1 does not add:
 - conditional requests/ETag optimization;
 - background refresh jobs.
 
+## Status
+
+Complete.
+
+The Phase 3D.1 branch passed application verification, migration apply/rollback/reapply, README schema constraints, README content integration, existing ingestion/catalog regression gates, and PostgreSQL connectivity.
+
 ## Next checkpoint
 
 Phase 3D.2 should add the smallest **contribution-document evidence** needed for contribution discovery and later Jev evaluation, without downloading arbitrary repository trees.
