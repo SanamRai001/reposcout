@@ -281,7 +281,7 @@ Status: next active product phase
 
 ### Phase 4A — Deterministic lexical search foundation
 
-Status: implemented; verification pending
+Status: complete
 
 - `GET /api/repositories/search`;
 - PostgreSQL full-text matching over owner/name/full-name/description;
