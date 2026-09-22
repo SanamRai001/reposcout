@@ -40,6 +40,8 @@ RepositoryRefreshService
 RepositoryIngestionService
           ↓
 RepositoryStore
+   ├── canonical repository state
+   └── measured repository metadata
           ↓
 PostgreSQL
 
@@ -147,7 +149,10 @@ Avoid introducing Redis until job volume or coordination actually requires it. A
 ## Modules
 
 ### repositories
-Canonical repository records and normalized GitHub metadata.
+Canonical repository identity/current GitHub state.
+
+### repository metadata
+Measured current GitHub facts collected with a repository observation, including stars, forks, open issue/PR count, primary language, SPDX license, and topics. Stored separately from canonical identity and future derived/model signals.
 
 ### ingestion
 GitHub client, normalization, refresh, rate-limit handling, retries.
