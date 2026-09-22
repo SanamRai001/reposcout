@@ -275,6 +275,12 @@ Phase 3E.1 does not add:
 - cost accounting from live usage;
 - production thresholds.
 
+## Status
+
+Complete.
+
+The Phase 3E.1 branch passed application verification, the dedicated Jev evaluation-harness gate, migration rollback/reapply, persistence, repository-content evidence, ingestion, catalog, and PostgreSQL regression checks.
+
 ## Next checkpoints
 
 ### Phase 3E.2 — Live Jev adapter + controlled smoke evaluation
