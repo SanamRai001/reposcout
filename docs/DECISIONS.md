@@ -406,3 +406,30 @@ RepoScout will not create a Jev-specific production table/service merely because
 Phase 3E will evaluate classification quality, confidence usefulness, relevance, latency, cost, consistency, and failure behavior on RepoScout examples first.
 
 Persistent model-assessment storage is introduced only after a demonstrated product need.
+
+
+## D-045 — Store current measured repository metadata separately from canonical identity
+
+**Status:** Accepted
+
+Phase 3C introduces a one-to-one `repository_metadata` table instead of adding fast-changing counts/topics to `repositories`.
+
+Canonical repository identity/state and measured metadata have different ownership, refresh cadence, and future historical use.
+
+## D-046 — Phase 3C uses only fields available from the existing repository fetch
+
+**Status:** Accepted
+
+The first metadata set is limited to stars, forks, GitHub open issue/PR count, primary language, SPDX license, and topics from the existing repository REST response.
+
+Release history, contributor counts, language-byte breakdown, and contribution metrics are deferred because they require additional GitHub endpoints or different collection semantics.
+
+## D-047 — Repository and metadata ingestion are transactional and stale-safe
+
+**Status:** Accepted
+
+A successful repository ingestion commits canonical repository state and measured metadata together.
+
+Older repository synchronizations cannot overwrite newer canonical state or newer metadata observations.
+
+Missing metadata remains distinguishable from a real zero value.
