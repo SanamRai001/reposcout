@@ -8,12 +8,20 @@ export type RepositoryCatalogRecord = RepositoryRecord &
 
 export const DEFAULT_REPOSITORY_PAGE_SIZE = 20;
 export const MAX_REPOSITORY_PAGE_SIZE = 50;
+export const MIN_REPOSITORY_SEARCH_QUERY_LENGTH = 2;
+export const MAX_REPOSITORY_SEARCH_QUERY_LENGTH = 120;
 
 export type RepositoryCursor = Readonly<{
   id: string;
 }>;
 
 export type RepositoryPageInput = Readonly<{
+  limit: number;
+  cursor: RepositoryCursor | null;
+}>;
+
+export type RepositorySearchPageInput = Readonly<{
+  query: string;
   limit: number;
   cursor: RepositoryCursor | null;
 }>;
@@ -25,6 +33,7 @@ export type RepositoryPage = Readonly<{
 
 export type RepositoryCatalogReader = Readonly<{
   listPage(input: RepositoryPageInput): Promise<RepositoryPage>;
+  searchPage(input: RepositorySearchPageInput): Promise<RepositoryPage>;
   findById(id: string): Promise<RepositoryCatalogRecord | null>;
 }>;
 
@@ -60,6 +69,11 @@ type EncodedCursor = Readonly<{
   id: string;
 }>;
 
+type EncodedSearchCursor = Readonly<{
+  id: string;
+  query: string;
+}>;
+
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -89,6 +103,24 @@ export function parseRepositoryPageLimit(value: unknown): number {
   return parsed;
 }
 
+export function parseRepositorySearchQuery(value: unknown): string {
+  if (typeof value !== 'string') {
+    throw new Error('q must be a string between 2 and 120 characters.');
+  }
+
+  const normalized = value.trim().replace(/\s+/g, ' ').toLowerCase();
+
+  if (
+    normalized.length < MIN_REPOSITORY_SEARCH_QUERY_LENGTH ||
+    normalized.length > MAX_REPOSITORY_SEARCH_QUERY_LENGTH ||
+    !/[\p{L}\p{N}]/u.test(normalized)
+  ) {
+    throw new Error('q must be a string between 2 and 120 characters.');
+  }
+
+  return normalized;
+}
+
 export function encodeRepositoryCursor(
   repository: Pick<RepositoryRecord, 'id'>,
 ): string {
@@ -115,6 +147,51 @@ export function parseRepositoryCursor(value: unknown): RepositoryCursor | null {
 
     if (typeof parsed.id !== 'string' || !isRepositoryId(parsed.id)) {
       throw new Error('invalid cursor fields');
+    }
+
+    return {
+      id: parsed.id,
+    };
+  } catch {
+    throw new Error('cursor is invalid.');
+  }
+}
+
+export function encodeRepositorySearchCursor(
+  repository: Pick<RepositoryRecord, 'id'>,
+  query: string,
+): string {
+  const payload: EncodedSearchCursor = {
+    id: repository.id,
+    query,
+  };
+
+  return Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
+}
+
+export function parseRepositorySearchCursor(
+  value: unknown,
+  query: string,
+): RepositoryCursor | null {
+  if (value === undefined) {
+    return null;
+  }
+
+  if (typeof value !== 'string' || value.length === 0 || value.length > 768) {
+    throw new Error('cursor is invalid.');
+  }
+
+  try {
+    const parsed = JSON.parse(
+      Buffer.from(value, 'base64url').toString('utf8'),
+    ) as Partial<EncodedSearchCursor>;
+
+    if (
+      typeof parsed.id !== 'string' ||
+      !isRepositoryId(parsed.id) ||
+      parsed.query !== query
+    ) {
+      throw new Error('invalid search cursor fields');
     }
 
     return {
