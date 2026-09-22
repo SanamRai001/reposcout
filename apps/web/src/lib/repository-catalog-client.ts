@@ -15,6 +15,15 @@ export type RepositoryCatalogItem = Readonly<{
   lastSyncedAt: string;
   createdAt: string;
   updatedAt: string;
+  metadata: null | Readonly<{
+    stars: number;
+    forks: number;
+    openIssues: number;
+    primaryLanguage: string | null;
+    licenseSpdx: string | null;
+    topics: string[];
+    observedAt: string;
+  }>;
 }>;
 
 export type RepositoryCatalogPage = Readonly<{
@@ -40,6 +49,39 @@ type CatalogErrorBody = Readonly<{
   message?: unknown;
 }>;
 
+function isRepositoryMetadata(value: unknown): boolean {
+  if (value === null) {
+    return true;
+  }
+
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const metadata = value as Record<string, unknown>;
+
+  return (
+    typeof metadata.stars === 'number' &&
+    Number.isSafeInteger(metadata.stars) &&
+    metadata.stars >= 0 &&
+    typeof metadata.forks === 'number' &&
+    Number.isSafeInteger(metadata.forks) &&
+    metadata.forks >= 0 &&
+    typeof metadata.openIssues === 'number' &&
+    Number.isSafeInteger(metadata.openIssues) &&
+    metadata.openIssues >= 0 &&
+    (typeof metadata.primaryLanguage === 'string' ||
+      metadata.primaryLanguage === null) &&
+    (typeof metadata.licenseSpdx === 'string' ||
+      metadata.licenseSpdx === null) &&
+    Array.isArray(metadata.topics) &&
+    metadata.topics.every(
+      (topic) => typeof topic === 'string' && topic.length > 0,
+    ) &&
+    typeof metadata.observedAt === 'string'
+  );
+}
+
 function isCatalogItem(value: unknown): value is RepositoryCatalogItem {
   if (!value || typeof value !== 'object') {
     return false;
@@ -63,7 +105,8 @@ function isCatalogItem(value: unknown): value is RepositoryCatalogItem {
     (typeof item.pushedAtGithub === 'string' || item.pushedAtGithub === null) &&
     typeof item.lastSyncedAt === 'string' &&
     typeof item.createdAt === 'string' &&
-    typeof item.updatedAt === 'string'
+    typeof item.updatedAt === 'string' &&
+    isRepositoryMetadata(item.metadata)
   );
 }
 
