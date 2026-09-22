@@ -1,11 +1,18 @@
 import { randomUUID } from 'node:crypto';
 
+import type { PoolClient } from 'pg';
+
 import type { DatabasePool } from '../database/database.js';
 import {
   isRepositoryId,
+  type RepositoryCatalogRecord,
   type RepositoryPage,
   type RepositoryPageInput,
 } from './repository-catalog.js';
+import type {
+  RepositoryMetadataRecord,
+  UpsertRepositoryMetadataInput,
+} from './repository-metadata.js';
 import type { RepositoryRecord, UpsertRepositoryInput } from './repository.js';
 
 type RepositoryRow = {
@@ -27,6 +34,32 @@ type RepositoryRow = {
   updated_at: Date;
 };
 
+type RepositoryMetadataRow = {
+  repository_id: string;
+  stars: string;
+  forks: string;
+  open_issues: string;
+  primary_language: string | null;
+  license_spdx: string | null;
+  topics: string[];
+  observed_at: Date;
+  created_at: Date;
+  updated_at: Date;
+};
+
+type RepositoryCatalogRow = RepositoryRow & {
+  metadata_repository_id: string | null;
+  metadata_stars: string | null;
+  metadata_forks: string | null;
+  metadata_open_issues: string | null;
+  metadata_primary_language: string | null;
+  metadata_license_spdx: string | null;
+  metadata_topics: string[] | null;
+  metadata_observed_at: Date | null;
+  metadata_created_at: Date | null;
+  metadata_updated_at: Date | null;
+};
+
 const SELECT_COLUMNS = `
   id,
   github_repository_id,
@@ -45,6 +78,167 @@ const SELECT_COLUMNS = `
   created_at,
   updated_at
 `;
+
+const UPSERT_REPOSITORY_SQL = `
+  INSERT INTO repositories (
+    id,
+    github_repository_id,
+    owner,
+    name,
+    full_name,
+    github_url,
+    default_branch,
+    description,
+    is_archived,
+    is_fork,
+    created_at_github,
+    updated_at_github,
+    pushed_at_github,
+    last_synced_at
+  )
+  VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9,
+    $10,
+    $11,
+    $12,
+    $13,
+    $14
+  )
+  ON CONFLICT (github_repository_id)
+  DO UPDATE SET
+    owner = EXCLUDED.owner,
+    name = EXCLUDED.name,
+    full_name = EXCLUDED.full_name,
+    github_url = EXCLUDED.github_url,
+    default_branch = EXCLUDED.default_branch,
+    description = EXCLUDED.description,
+    is_archived = EXCLUDED.is_archived,
+    is_fork = EXCLUDED.is_fork,
+    created_at_github = EXCLUDED.created_at_github,
+    updated_at_github = EXCLUDED.updated_at_github,
+    pushed_at_github = EXCLUDED.pushed_at_github,
+    last_synced_at = EXCLUDED.last_synced_at,
+    updated_at = current_timestamp
+  WHERE EXCLUDED.last_synced_at >= repositories.last_synced_at
+  RETURNING ${SELECT_COLUMNS}
+`;
+
+const UPSERT_METADATA_SQL = `
+  INSERT INTO repository_metadata (
+    repository_id,
+    stars,
+    forks,
+    open_issues,
+    primary_language,
+    license_spdx,
+    topics,
+    observed_at
+  )
+  VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8
+  )
+  ON CONFLICT (repository_id)
+  DO UPDATE SET
+    stars = EXCLUDED.stars,
+    forks = EXCLUDED.forks,
+    open_issues = EXCLUDED.open_issues,
+    primary_language = EXCLUDED.primary_language,
+    license_spdx = EXCLUDED.license_spdx,
+    topics = EXCLUDED.topics,
+    observed_at = EXCLUDED.observed_at,
+    updated_at = current_timestamp
+  WHERE EXCLUDED.observed_at >= repository_metadata.observed_at
+  RETURNING
+    repository_id,
+    stars,
+    forks,
+    open_issues,
+    primary_language,
+    license_spdx,
+    topics,
+    observed_at,
+    created_at,
+    updated_at
+`;
+
+const CATALOG_SELECT_COLUMNS = `
+  r.id,
+  r.github_repository_id,
+  r.owner,
+  r.name,
+  r.full_name,
+  r.github_url,
+  r.default_branch,
+  r.description,
+  r.is_archived,
+  r.is_fork,
+  r.created_at_github,
+  r.updated_at_github,
+  r.pushed_at_github,
+  r.last_synced_at,
+  r.created_at,
+  r.updated_at,
+  m.repository_id AS metadata_repository_id,
+  m.stars AS metadata_stars,
+  m.forks AS metadata_forks,
+  m.open_issues AS metadata_open_issues,
+  m.primary_language AS metadata_primary_language,
+  m.license_spdx AS metadata_license_spdx,
+  m.topics AS metadata_topics,
+  m.observed_at AS metadata_observed_at,
+  m.created_at AS metadata_created_at,
+  m.updated_at AS metadata_updated_at
+`;
+
+function repositoryParams(input: UpsertRepositoryInput): unknown[] {
+  return [
+    randomUUID(),
+    input.githubRepositoryId,
+    input.owner,
+    input.name,
+    input.fullName,
+    input.githubUrl,
+    input.defaultBranch,
+    input.description,
+    input.isArchived,
+    input.isFork,
+    input.createdAtGithub,
+    input.updatedAtGithub,
+    input.pushedAtGithub,
+    input.lastSyncedAt,
+  ];
+}
+
+function metadataParams(
+  repositoryId: string,
+  input: UpsertRepositoryMetadataInput,
+): unknown[] {
+  return [
+    repositoryId,
+    input.stars,
+    input.forks,
+    input.openIssues,
+    input.primaryLanguage,
+    input.licenseSpdx,
+    input.topics,
+    input.observedAt,
+  ];
+}
 
 function mapRepositoryRow(row: RepositoryRow): RepositoryRecord {
   return {
@@ -67,11 +261,98 @@ function mapRepositoryRow(row: RepositoryRow): RepositoryRecord {
   };
 }
 
+function parseCount(value: string): number {
+  const parsed = Number(value);
+
+  if (!Number.isSafeInteger(parsed) || parsed < 0) {
+    throw new Error('Stored repository metadata count is invalid.');
+  }
+
+  return parsed;
+}
+
+function mapMetadataRow(row: RepositoryMetadataRow): RepositoryMetadataRecord {
+  return {
+    repositoryId: row.repository_id,
+    stars: parseCount(row.stars),
+    forks: parseCount(row.forks),
+    openIssues: parseCount(row.open_issues),
+    primaryLanguage: row.primary_language,
+    licenseSpdx: row.license_spdx,
+    topics: row.topics,
+    observedAt: row.observed_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapCatalogRow(row: RepositoryCatalogRow): RepositoryCatalogRecord {
+  const repository = mapRepositoryRow(row);
+  const metadata =
+    row.metadata_repository_id &&
+    row.metadata_stars !== null &&
+    row.metadata_forks !== null &&
+    row.metadata_open_issues !== null &&
+    row.metadata_topics !== null &&
+    row.metadata_observed_at &&
+    row.metadata_created_at &&
+    row.metadata_updated_at
+      ? mapMetadataRow({
+          repository_id: row.metadata_repository_id,
+          stars: row.metadata_stars,
+          forks: row.metadata_forks,
+          open_issues: row.metadata_open_issues,
+          primary_language: row.metadata_primary_language,
+          license_spdx: row.metadata_license_spdx,
+          topics: row.metadata_topics,
+          observed_at: row.metadata_observed_at,
+          created_at: row.metadata_created_at,
+          updated_at: row.metadata_updated_at,
+        })
+      : null;
+
+  return {
+    ...repository,
+    metadata,
+  };
+}
+
 function assertGithubRepositoryId(value: string): void {
   if (!/^[1-9]\d*$/.test(value)) {
     throw new Error(
       'githubRepositoryId must be a positive base-10 integer string.',
     );
+  }
+}
+
+function assertMetadata(input: UpsertRepositoryMetadataInput): void {
+  for (const [name, value] of [
+    ['stars', input.stars],
+    ['forks', input.forks],
+    ['openIssues', input.openIssues],
+  ] as const) {
+    if (!Number.isSafeInteger(value) || value < 0) {
+      throw new Error(`${name} must be a nonnegative safe integer.`);
+    }
+  }
+
+  if (
+    input.primaryLanguage !== null &&
+    input.primaryLanguage.trim().length === 0
+  ) {
+    throw new Error('primaryLanguage must be null or non-empty.');
+  }
+
+  if (input.licenseSpdx !== null && input.licenseSpdx.trim().length === 0) {
+    throw new Error('licenseSpdx must be null or non-empty.');
+  }
+
+  if (
+    input.topics.some(
+      (topic) => typeof topic !== 'string' || topic.trim().length === 0,
+    )
+  ) {
+    throw new Error('topics must contain only non-empty strings.');
   }
 }
 
@@ -82,73 +363,8 @@ export class RepositoryStore {
     assertGithubRepositoryId(input.githubRepositoryId);
 
     const result = await this.pool.query<RepositoryRow>(
-      `
-        INSERT INTO repositories (
-          id,
-          github_repository_id,
-          owner,
-          name,
-          full_name,
-          github_url,
-          default_branch,
-          description,
-          is_archived,
-          is_fork,
-          created_at_github,
-          updated_at_github,
-          pushed_at_github,
-          last_synced_at
-        )
-        VALUES (
-          $1,
-          $2,
-          $3,
-          $4,
-          $5,
-          $6,
-          $7,
-          $8,
-          $9,
-          $10,
-          $11,
-          $12,
-          $13,
-          $14
-        )
-        ON CONFLICT (github_repository_id)
-        DO UPDATE SET
-          owner = EXCLUDED.owner,
-          name = EXCLUDED.name,
-          full_name = EXCLUDED.full_name,
-          github_url = EXCLUDED.github_url,
-          default_branch = EXCLUDED.default_branch,
-          description = EXCLUDED.description,
-          is_archived = EXCLUDED.is_archived,
-          is_fork = EXCLUDED.is_fork,
-          created_at_github = EXCLUDED.created_at_github,
-          updated_at_github = EXCLUDED.updated_at_github,
-          pushed_at_github = EXCLUDED.pushed_at_github,
-          last_synced_at = EXCLUDED.last_synced_at,
-          updated_at = current_timestamp
-        WHERE EXCLUDED.last_synced_at >= repositories.last_synced_at
-        RETURNING ${SELECT_COLUMNS}
-      `,
-      [
-        randomUUID(),
-        input.githubRepositoryId,
-        input.owner,
-        input.name,
-        input.fullName,
-        input.githubUrl,
-        input.defaultBranch,
-        input.description,
-        input.isArchived,
-        input.isFork,
-        input.createdAtGithub,
-        input.updatedAtGithub,
-        input.pushedAtGithub,
-        input.lastSyncedAt,
-      ],
+      UPSERT_REPOSITORY_SQL,
+      repositoryParams(input),
     );
 
     const row = result.rows[0];
@@ -168,6 +384,72 @@ export class RepositoryStore {
     }
 
     return current;
+  }
+
+  async upsertWithMetadata(
+    input: UpsertRepositoryInput,
+    metadataInput: UpsertRepositoryMetadataInput,
+  ): Promise<RepositoryRecord> {
+    assertGithubRepositoryId(input.githubRepositoryId);
+    assertMetadata(metadataInput);
+
+    const client = await this.pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      const repository = await this.upsertRepositoryWithClient(client, input);
+
+      if (input.lastSyncedAt.getTime() >= repository.lastSyncedAt.getTime()) {
+        await client.query<RepositoryMetadataRow>(
+          UPSERT_METADATA_SQL,
+          metadataParams(repository.id, metadataInput),
+        );
+      }
+
+      await client.query('COMMIT');
+      return repository;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  private async upsertRepositoryWithClient(
+    client: PoolClient,
+    input: UpsertRepositoryInput,
+  ): Promise<RepositoryRecord> {
+    const result = await client.query<RepositoryRow>(
+      UPSERT_REPOSITORY_SQL,
+      repositoryParams(input),
+    );
+
+    const row = result.rows[0];
+
+    if (row) {
+      return mapRepositoryRow(row);
+    }
+
+    const current = await client.query<RepositoryRow>(
+      `
+        SELECT ${SELECT_COLUMNS}
+        FROM repositories
+        WHERE github_repository_id = $1
+      `,
+      [input.githubRepositoryId],
+    );
+
+    const currentRow = current.rows[0];
+
+    if (!currentRow) {
+      throw new Error(
+        'Repository upsert did not return or resolve an existing repository.',
+      );
+    }
+
+    return mapRepositoryRow(currentRow);
   }
 
   async findByGithubRepositoryId(
@@ -202,22 +484,23 @@ export class RepositoryStore {
     return result.rows.map(mapRepositoryRow);
   }
 
-  async findById(id: string): Promise<RepositoryRecord | null> {
+  async findById(id: string): Promise<RepositoryCatalogRecord | null> {
     if (!isRepositoryId(id)) {
       throw new Error('id must be a valid repository UUID.');
     }
 
-    const result = await this.pool.query<RepositoryRow>(
+    const result = await this.pool.query<RepositoryCatalogRow>(
       `
-        SELECT ${SELECT_COLUMNS}
-        FROM repositories
-        WHERE id = $1
+        SELECT ${CATALOG_SELECT_COLUMNS}
+        FROM repositories r
+        LEFT JOIN repository_metadata m ON m.repository_id = r.id
+        WHERE r.id = $1
       `,
       [id],
     );
 
     const row = result.rows[0];
-    return row ? mapRepositoryRow(row) : null;
+    return row ? mapCatalogRow(row) : null;
   }
 
   async listPage(input: RepositoryPageInput): Promise<RepositoryPage> {
@@ -227,21 +510,23 @@ export class RepositoryStore {
 
     const fetchLimit = input.limit + 1;
     const result = input.cursor
-      ? await this.pool.query<RepositoryRow>(
+      ? await this.pool.query<RepositoryCatalogRow>(
           `
-            SELECT ${SELECT_COLUMNS}
-            FROM repositories
-            WHERE id > $1
-            ORDER BY id ASC
+            SELECT ${CATALOG_SELECT_COLUMNS}
+            FROM repositories r
+            LEFT JOIN repository_metadata m ON m.repository_id = r.id
+            WHERE r.id > $1
+            ORDER BY r.id ASC
             LIMIT $2
           `,
           [input.cursor.id, fetchLimit],
         )
-      : await this.pool.query<RepositoryRow>(
+      : await this.pool.query<RepositoryCatalogRow>(
           `
-            SELECT ${SELECT_COLUMNS}
-            FROM repositories
-            ORDER BY id ASC
+            SELECT ${CATALOG_SELECT_COLUMNS}
+            FROM repositories r
+            LEFT JOIN repository_metadata m ON m.repository_id = r.id
+            ORDER BY r.id ASC
             LIMIT $1
           `,
           [fetchLimit],
@@ -251,7 +536,7 @@ export class RepositoryStore {
     const rows = hasMore ? result.rows.slice(0, input.limit) : result.rows;
 
     return {
-      items: rows.map(mapRepositoryRow),
+      items: rows.map(mapCatalogRow),
       hasMore,
     };
   }
