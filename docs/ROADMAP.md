@@ -171,7 +171,7 @@ Status: in progress
 
 #### Phase 3D.1 — Bounded README content foundation
 
-Status: implemented; verification pending
+Status: complete
 
 - fixed-origin GitHub README fetch;
 - explicit default-branch/ref provenance;
