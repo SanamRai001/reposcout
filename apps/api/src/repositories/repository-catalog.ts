@@ -432,7 +432,7 @@ export function parseRepositorySearchCursor(
 
     return {
       id: parsed.id,
-      query: parsed.query,
+      query,
       filters: parsed.filters,
     };
   } catch {
