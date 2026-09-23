@@ -296,14 +296,29 @@ Status: complete
 
 ### Phase 4B — Structured repository filters
 
+Status: in progress
+
+#### Phase 4B.1 — Scalar search filters
+
+Status: implemented; verification pending
+
+- language exact filter;
+- SPDX license exact filter;
+- fork state;
+- archived state;
+- normalized filter echo;
+- full search-scope cursor binding;
+- parameterized SQL composition;
+- no ranking change;
+- lexical query remains required.
+
+#### Phase 4B.2 — Collection/numeric filters
+
 Next:
-- compose explicit filters with lexical search;
-- start with authoritative metadata only;
-- language;
-- license;
-- topics;
-- fork/archive state;
-- bounded star ranges;
+- topic filters;
+- bounded minimum/maximum stars;
+- evaluate clean filter-only discovery without a lexical query;
+- extend cursor scope to new filters;
 - keep deterministic pagination and sorting.
 
 Later Phase 4 work:
