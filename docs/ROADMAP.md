@@ -314,7 +314,7 @@ Status: complete
 
 #### Phase 4B.2 — Topic and star-range filters
 
-Status: implemented; verification pending
+Status: complete
 
 - repeated topic filters;
 - all-topic containment semantics;
