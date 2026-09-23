@@ -72,12 +72,18 @@ describe('repository catalog contract', () => {
       parseRepositorySearchFilters({
         language: ' TypeScript ',
         license: ' Apache-2.0 ',
+        topic: [' SDK ', 'backend', 'sdk'],
+        minStars: '100',
+        maxStars: '5000',
         fork: 'FALSE',
         archived: 'true',
       }),
     ).toEqual({
       primaryLanguage: 'typescript',
       licenseSpdx: 'apache-2.0',
+      topics: ['backend', 'sdk'],
+      minStars: 100,
+      maxStars: 5000,
       isFork: false,
       isArchived: true,
     });
@@ -86,12 +92,18 @@ describe('repository catalog contract', () => {
       parseRepositorySearchFilters({
         language: undefined,
         license: undefined,
+        topic: undefined,
+        minStars: undefined,
+        maxStars: undefined,
         fork: undefined,
         archived: undefined,
       }),
     ).toEqual({
       primaryLanguage: null,
       licenseSpdx: null,
+      topics: [],
+      minStars: null,
+      maxStars: null,
       isFork: null,
       isArchived: null,
     });
@@ -100,6 +112,9 @@ describe('repository catalog contract', () => {
       parseRepositorySearchFilters({
         language: '---',
         license: undefined,
+        topic: undefined,
+        minStars: undefined,
+        maxStars: undefined,
         fork: undefined,
         archived: undefined,
       }),
@@ -109,16 +124,48 @@ describe('repository catalog contract', () => {
       parseRepositorySearchFilters({
         language: undefined,
         license: undefined,
+        topic: undefined,
+        minStars: undefined,
+        maxStars: undefined,
         fork: 'yes',
         archived: undefined,
       }),
     ).toThrow('filter fork must be true or false.');
+
+    expect(() =>
+      parseRepositorySearchFilters({
+        language: undefined,
+        license: undefined,
+        topic: ['backend'],
+        minStars: '500',
+        maxStars: '100',
+        fork: undefined,
+        archived: undefined,
+      }),
+    ).toThrow(
+      'filter minStars must be less than or equal to maxStars.',
+    );
+
+    expect(() =>
+      parseRepositorySearchFilters({
+        language: undefined,
+        license: undefined,
+        topic: Array.from({ length: 11 }, () => 'backend'),
+        minStars: undefined,
+        maxStars: undefined,
+        fork: undefined,
+        archived: undefined,
+      }),
+    ).toThrow('filter topic may be provided at most 10 times.');
   });
 
   it('binds opaque search cursors to the normalized query and filters', () => {
     const filters = {
       primaryLanguage: 'typescript',
       licenseSpdx: 'mit',
+      topics: ['backend', 'typescript'],
+      minStars: 100,
+      maxStars: 10000,
       isFork: false,
       isArchived: false,
     };
@@ -154,6 +201,7 @@ describe('repository catalog contract', () => {
         'typescript backend',
         {
           ...filters,
+          topics: ['backend'],
           licenseSpdx: 'apache-2.0',
         },
       ),
