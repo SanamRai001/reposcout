@@ -32,6 +32,7 @@ Start here if you are contributing to the project.
 - [PHASE_4A_LEXICAL_SEARCH.md](PHASE_4A_LEXICAL_SEARCH.md) — deterministic PostgreSQL lexical search, query-bound cursors, and backend discovery boundaries.
 - [PHASE_4B1_SCALAR_SEARCH_FILTERS.md](PHASE_4B1_SCALAR_SEARCH_FILTERS.md) — exact language/license/fork/archive filters and full search-scope cursor binding.
 - [PHASE_4B2_TOPIC_STAR_FILTERS.md](PHASE_4B2_TOPIC_STAR_FILTERS.md) — all-topic containment, inclusive star ranges, and expanded cursor scope.
+- [PHASE_4B3_FILTER_ONLY_DISCOVERY.md](PHASE_4B3_FILTER_ONLY_DISCOVERY.md) — optional lexical query, filter-only discovery, and nullable-query cursor scope.
 
 ## Community
 
