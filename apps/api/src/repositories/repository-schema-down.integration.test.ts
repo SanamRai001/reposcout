@@ -24,12 +24,13 @@ afterAll(async () => {
 });
 
 describe('latest migration rollback', () => {
-  it('removes contribution evidence while preserving earlier content tables', async () => {
+  it('removes repository submissions while preserving earlier repository tables', async () => {
     const result = await pool.query<{
       repositories: string | null;
       repository_metadata: string | null;
       repository_readme_content: string | null;
       repository_contribution_evidence: string | null;
+      repository_submissions: string | null;
     }>(
       `
         SELECT
@@ -38,7 +39,9 @@ describe('latest migration rollback', () => {
           to_regclass('public.repository_readme_content')::text
             AS repository_readme_content,
           to_regclass('public.repository_contribution_evidence')::text
-            AS repository_contribution_evidence
+            AS repository_contribution_evidence,
+          to_regclass('public.repository_submissions')::text
+            AS repository_submissions
       `,
     );
 
@@ -46,7 +49,8 @@ describe('latest migration rollback', () => {
       repositories: 'repositories',
       repository_metadata: 'repository_metadata',
       repository_readme_content: 'repository_readme_content',
-      repository_contribution_evidence: null,
+      repository_contribution_evidence: 'repository_contribution_evidence',
+      repository_submissions: null,
     });
   });
 });

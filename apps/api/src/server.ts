@@ -8,6 +8,8 @@ import {
 } from './database/database.js';
 import { logger } from './logger.js';
 import { RepositoryStore } from './repositories/repository-store.js';
+import { RepositorySubmissionService } from './submissions/repository-submission-service.js';
+import { RepositorySubmissionStore } from './submissions/repository-submission-store.js';
 
 async function bootstrap(): Promise<void> {
   const environment = loadEnvironment();
@@ -16,9 +18,17 @@ async function bootstrap(): Promise<void> {
   await verifyDatabaseConnection(databasePool);
 
   const repositoryStore = new RepositoryStore(databasePool);
+  const repositorySubmissionStore = new RepositorySubmissionStore(
+    databasePool,
+  );
+  const repositorySubmissionService = new RepositorySubmissionService(
+    repositoryStore,
+    repositorySubmissionStore,
+  );
   const app = createApp({
     checkReadiness: () => verifyDatabaseConnection(databasePool),
     repositoryCatalog: repositoryStore,
+    repositorySubmissionService,
   });
 
   const server = app.listen(environment.port, () => {

@@ -346,6 +346,36 @@ Snapshots should be append-only measurements, for example:
 
 Do not snapshot every field unnecessarily.
 
+## Community submission intake
+
+Phase 5A introduces the first community write path:
+
+~~~text
+POST /api/submissions
+        |
+strict body validation
+        |
+GitHub URL parser
+        |
+lowercase owner/name intake normalization
+        |
+already-indexed check
+        |
+RepositorySubmissionService
+        |
+RepositorySubmissionStore
+        |
+repository_submissions
+~~~
+
+Important boundaries:
+- intake performs no GitHub API request;
+- intake accepts no free-form metadata;
+- canonical GitHub repository ID is resolved later;
+- database uniqueness prevents concurrent duplicate pending submissions;
+- moderation/approval is not part of the intake transaction;
+- submission endpoints require rate limiting before broad public launch.
+
 ## Security baseline
 
 MUST:

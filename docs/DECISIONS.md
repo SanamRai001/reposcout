@@ -812,3 +812,52 @@ Phase 4C does not sort or rerank repository results in the browser.
 Stars, activity, exact-name similarity, or model output must not silently alter result order client-side.
 
 Any future sort or relevance mode must be an explicit backend/product contract.
+
+
+## D-085 — Phase 5 begins with URL-only submission intake
+
+**Status:** Accepted
+
+The first community write endpoint accepts only a full GitHub repository URL.
+
+Phase 5A does not accept submitter-authored descriptions, tags, categories, reasons, or other free-form metadata.
+
+This keeps the initial trust and abuse surface small.
+
+## D-086 — Normalize submission owner/name for intake duplicate checks, not canonical identity
+
+**Status:** Accepted
+
+Submission owner and repository names are lowercased and stored as a normalized full name.
+
+This supports case-insensitive intake duplicate checks.
+
+GitHub repository ID remains the canonical external identity and must be resolved/rechecked in Phase 5B because repositories can be renamed or transferred.
+
+## D-087 — Enforce one pending submission per normalized repository in PostgreSQL
+
+**Status:** Accepted
+
+Application duplicate checks are not sufficient for concurrent requests.
+
+A partial unique index enforces one `PENDING` row per normalized full name.
+
+Case/.git variants therefore cannot race into duplicate pending rows.
+
+## D-088 — Already-indexed and already-pending are separate API conflicts
+
+**Status:** Accepted
+
+Phase 5A returns:
+- `409 repository_already_indexed` when the canonical catalog already contains the current owner/name;
+- `409 submission_already_pending` when an intake record is already pending.
+
+These conflicts remain separate so the UI can explain them accurately.
+
+## D-089 — Submission intake is not launch-ready before abuse controls
+
+**Status:** Accepted
+
+Phase 5A creates the backend write contract but does not claim broad-public readiness.
+
+Rate limiting, spam/abuse controls, deterministic GitHub validation, moderation, and operational review remain required before broad launch.

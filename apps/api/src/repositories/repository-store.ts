@@ -492,6 +492,23 @@ export class RepositoryStore {
     return result.rows.map(mapRepositoryRow);
   }
 
+  async existsByNormalizedFullName(
+    normalizedFullName: string,
+  ): Promise<boolean> {
+    const result = await this.pool.query<{ exists: boolean }>(
+      `
+        SELECT EXISTS (
+          SELECT 1
+          FROM repositories
+          WHERE lower(full_name) = $1
+        ) AS exists
+      `,
+      [normalizedFullName],
+    );
+
+    return result.rows[0]?.exists ?? false;
+  }
+
   async findById(id: string): Promise<RepositoryCatalogRecord | null> {
     if (!isRepositoryId(id)) {
       throw new Error('id must be a valid repository UUID.');

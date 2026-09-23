@@ -22,6 +22,7 @@ const environment: DatabaseEnvironment = {
 const pool = createDatabasePool(environment);
 
 beforeEach(async () => {
+  await pool.query('DELETE FROM repository_submissions');
   await pool.query('DELETE FROM repositories');
 });
 
@@ -307,6 +308,119 @@ describe('repositories schema', () => {
         is_nullable: 'NO',
       },
     ]);
+  });
+
+  it('creates repository submission intake storage with normalized identity fields', async () => {
+    const result = await pool.query<{
+      column_name: string;
+      data_type: string;
+      is_nullable: 'YES' | 'NO';
+    }>(
+      `
+        SELECT column_name, data_type, is_nullable
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'repository_submissions'
+        ORDER BY ordinal_position
+      `,
+    );
+
+    expect(result.rows).toEqual([
+      { column_name: 'id', data_type: 'uuid', is_nullable: 'NO' },
+      { column_name: 'submitted_url', data_type: 'text', is_nullable: 'NO' },
+      { column_name: 'normalized_owner', data_type: 'text', is_nullable: 'NO' },
+      { column_name: 'normalized_name', data_type: 'text', is_nullable: 'NO' },
+      { column_name: 'normalized_full_name', data_type: 'text', is_nullable: 'NO' },
+      { column_name: 'status', data_type: 'text', is_nullable: 'NO' },
+      {
+        column_name: 'created_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'updated_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+    ]);
+  });
+
+  it('rejects malformed normalized submission identity at the database boundary', async () => {
+    await expect(
+      pool.query(
+        `
+          INSERT INTO repository_submissions (
+            id,
+            submitted_url,
+            normalized_owner,
+            normalized_name,
+            normalized_full_name,
+            status
+          )
+          VALUES (
+            $1,
+            'https://github.com/Example/Project',
+            'Example',
+            'project',
+            'Example/project',
+            'PENDING'
+          )
+        `,
+        [randomUUID()],
+      ),
+    ).rejects.toMatchObject({
+      code: '23514',
+    });
+  });
+
+  it('enforces one pending submission per normalized repository', async () => {
+    const values = [
+      randomUUID(),
+      'https://github.com/example/project',
+      'example',
+      'project',
+      'example/project',
+    ];
+
+    await pool.query(
+      `
+        INSERT INTO repository_submissions (
+          id,
+          submitted_url,
+          normalized_owner,
+          normalized_name,
+          normalized_full_name,
+          status
+        )
+        VALUES ($1, $2, $3, $4, $5, 'PENDING')
+      `,
+      values,
+    );
+
+    await expect(
+      pool.query(
+        `
+          INSERT INTO repository_submissions (
+            id,
+            submitted_url,
+            normalized_owner,
+            normalized_name,
+            normalized_full_name,
+            status
+          )
+          VALUES ($1, $2, $3, $4, $5, 'PENDING')
+        `,
+        [
+          randomUUID(),
+          'https://github.com/example/project',
+          'example',
+          'project',
+          'example/project',
+        ],
+      ),
+    ).rejects.toMatchObject({
+      code: '23505',
+    });
   });
 
   it('rejects unsupported-fork evidence that invents contribution files', async () => {

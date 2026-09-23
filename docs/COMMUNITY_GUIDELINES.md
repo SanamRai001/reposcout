@@ -44,6 +44,25 @@ Examples:
 
 Rejection from RepoScout is not a statement that the developer or repository is “bad.”
 
+## Current submission intake boundary
+
+Phase 5A accepts only a GitHub repository URL.
+
+The intake endpoint:
+- normalizes owner/repository casing;
+- rejects repositories already present in the current catalog by owner/name;
+- rejects duplicate pending submissions;
+- stores a pending record for later validation/review.
+
+It does not yet:
+- verify GitHub availability/public visibility;
+- approve the repository;
+- collect submitter-authored metadata;
+- run model analysis;
+- expose a public moderation queue.
+
+A pending submission means only **received for later validation**, not endorsed or approved.
+
 ## Moderation
 
 Initial moderation is maintainer-led.
