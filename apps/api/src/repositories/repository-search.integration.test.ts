@@ -409,6 +409,176 @@ describe('repository lexical search API with PostgreSQL', () => {
     ]);
   });
 
+  it('supports filter-only discovery over authoritative repository metadata', async () => {
+    const match = await repositoryStore.upsertWithMetadata(
+      createInput(
+        '500000061',
+        'filter-only-match',
+        'Description does not need to contain the filter values.',
+        { isFork: false, isArchived: false },
+      ),
+      {
+        stars: 750,
+        forks: 30,
+        openIssues: 4,
+        primaryLanguage: 'TypeScript',
+        licenseSpdx: 'MIT',
+        topics: ['backend', 'sdk'],
+        observedAt: new Date('2026-09-21T00:00:00.000Z'),
+      },
+    );
+
+    await repositoryStore.upsertWithMetadata(
+      createInput(
+        '500000062',
+        'wrong-language',
+        'Another repository.',
+      ),
+      {
+        stars: 750,
+        forks: 20,
+        openIssues: 2,
+        primaryLanguage: 'Go',
+        licenseSpdx: 'MIT',
+        topics: ['backend', 'sdk'],
+        observedAt: new Date('2026-09-21T00:00:00.000Z'),
+      },
+    );
+
+    await repositoryStore.upsertWithMetadata(
+      createInput(
+        '500000063',
+        'too-small',
+        'Another repository.',
+      ),
+      {
+        stars: 50,
+        forks: 2,
+        openIssues: 0,
+        primaryLanguage: 'TypeScript',
+        licenseSpdx: 'MIT',
+        topics: ['backend', 'sdk'],
+        observedAt: new Date('2026-09-21T00:00:00.000Z'),
+      },
+    );
+
+    const baseUrl = await startApp();
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?language=typescript&license=mit&topic=backend&topic=sdk&minStars=500&fork=false&archived=false`,
+    );
+    const body = (await response.json()) as {
+      data: Array<{ id: string }>;
+      search: {
+        query: string | null;
+        filters: {
+          language: string | null;
+          license: string | null;
+          topics: string[];
+          minStars: number | null;
+          maxStars: number | null;
+          fork: boolean | null;
+          archived: boolean | null;
+        };
+      };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.search).toEqual({
+      query: null,
+      filters: {
+        language: 'typescript',
+        license: 'mit',
+        topics: ['backend', 'sdk'],
+        minStars: 500,
+        maxStars: null,
+        fork: false,
+        archived: false,
+      },
+    });
+    expect(body.data.map((item) => item.id)).toEqual([match.id]);
+  });
+
+  it('paginates filter-only discovery and binds the cursor to its scope', async () => {
+    const created = [];
+
+    for (const [id, name] of [
+      ['500000064', 'filter-page-one'],
+      ['500000065', 'filter-page-two'],
+    ] as const) {
+      created.push(
+        await repositoryStore.upsertWithMetadata(
+          createInput(
+            id,
+            name,
+            'Filter-only pagination fixture.',
+          ),
+          {
+            stars: 200,
+            forks: 5,
+            openIssues: 1,
+            primaryLanguage: 'TypeScript',
+            licenseSpdx: 'MIT',
+            topics: ['backend'],
+            observedAt: new Date('2026-09-21T00:00:00.000Z'),
+          },
+        ),
+      );
+    }
+
+    const expectedIds = created.map((item) => item.id).sort();
+    const baseUrl = await startApp();
+
+    const firstResponse = await fetch(
+      `${baseUrl}/api/repositories/search?language=typescript&topic=backend&minStars=100&limit=1`,
+    );
+    const firstBody = (await firstResponse.json()) as {
+      data: Array<{ id: string }>;
+      pagination: { nextCursor: string | null };
+    };
+
+    expect(firstResponse.status).toBe(200);
+    expect(firstBody.data.map((item) => item.id)).toEqual([
+      expectedIds[0],
+    ]);
+    expect(firstBody.pagination.nextCursor).toEqual(expect.any(String));
+
+    const secondResponse = await fetch(
+      `${baseUrl}/api/repositories/search?language=typescript&topic=backend&minStars=100&limit=1&cursor=${encodeURIComponent(
+        firstBody.pagination.nextCursor as string,
+      )}`,
+    );
+    const secondBody = (await secondResponse.json()) as {
+      data: Array<{ id: string }>;
+      pagination: { nextCursor: string | null };
+    };
+
+    expect(secondResponse.status).toBe(200);
+    expect(secondBody.data.map((item) => item.id)).toEqual([
+      expectedIds[1],
+    ]);
+    expect(secondBody.pagination.nextCursor).toBeNull();
+
+    const changedScopeResponse = await fetch(
+      `${baseUrl}/api/repositories/search?language=typescript&topic=backend&minStars=101&limit=1&cursor=${encodeURIComponent(
+        firstBody.pagination.nextCursor as string,
+      )}`,
+    );
+    const changedScopeBody = (await changedScopeResponse.json()) as {
+      error: string;
+    };
+
+    expect(changedScopeResponse.status).toBe(400);
+    expect(changedScopeBody.error).toBe('invalid_pagination');
+
+    const lexicalReuseResponse = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend&language=typescript&topic=backend&minStars=100&limit=1&cursor=${encodeURIComponent(
+        firstBody.pagination.nextCursor as string,
+      )}`,
+    );
+
+    expect(lexicalReuseResponse.status).toBe(400);
+  });
+
   it('rejects a cursor when only topic or star scope changes', async () => {
     for (const [id, name] of [
       ['500000049', 'topic-cursor-one'],
