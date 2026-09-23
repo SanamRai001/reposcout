@@ -134,6 +134,9 @@ describe('repository lexical search API with PostgreSQL', () => {
         filters: {
           language: string | null;
           license: string | null;
+          topics: string[];
+          minStars: number | null;
+          maxStars: number | null;
           fork: boolean | null;
           archived: boolean | null;
         };
@@ -291,6 +294,9 @@ describe('repository lexical search API with PostgreSQL', () => {
         filters: {
           language: string | null;
           license: string | null;
+          topics: string[];
+          minStars: number | null;
+          maxStars: number | null;
           fork: boolean | null;
           archived: boolean | null;
         };
@@ -303,6 +309,9 @@ describe('repository lexical search API with PostgreSQL', () => {
       filters: {
         language: 'typescript',
         license: 'mit',
+        topics: [],
+        minStars: null,
+        maxStars: null,
         fork: false,
         archived: false,
       },
@@ -310,6 +319,145 @@ describe('repository lexical search API with PostgreSQL', () => {
     expect(body.data.map((item) => item.id)).toEqual([
       activeTyped.id,
     ]);
+  });
+
+  it('applies all-topic containment and inclusive star ranges', async () => {
+    const exactMatch = await repositoryStore.upsertWithMetadata(
+      createInput(
+        '500000045',
+        'topic-star-match',
+        'Backend SDK for production services.',
+      ),
+      {
+        stars: 500,
+        forks: 40,
+        openIssues: 3,
+        primaryLanguage: 'TypeScript',
+        licenseSpdx: 'MIT',
+        topics: ['backend', 'sdk', 'typescript'],
+        observedAt: new Date('2026-09-21T00:00:00.000Z'),
+      },
+    );
+
+    await repositoryStore.upsertWithMetadata(
+      createInput(
+        '500000046',
+        'missing-topic',
+        'Backend SDK without every requested topic.',
+      ),
+      {
+        stars: 500,
+        forks: 20,
+        openIssues: 2,
+        primaryLanguage: 'TypeScript',
+        licenseSpdx: 'MIT',
+        topics: ['backend', 'typescript'],
+        observedAt: new Date('2026-09-21T00:00:00.000Z'),
+      },
+    );
+
+    await repositoryStore.upsertWithMetadata(
+      createInput(
+        '500000047',
+        'too-popular',
+        'Backend SDK above the requested star range.',
+      ),
+      {
+        stars: 5001,
+        forks: 300,
+        openIssues: 10,
+        primaryLanguage: 'TypeScript',
+        licenseSpdx: 'MIT',
+        topics: ['backend', 'sdk', 'typescript'],
+        observedAt: new Date('2026-09-21T00:00:00.000Z'),
+      },
+    );
+
+    await repositoryStore.upsert(
+      createInput(
+        '500000048',
+        'metadata-pending-range',
+        'Backend SDK without metadata.',
+      ),
+    );
+
+    const baseUrl = await startApp();
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend%20sdk&topic=SDK&topic=backend&minStars=500&maxStars=500`,
+    );
+    const body = (await response.json()) as {
+      data: Array<{ id: string }>;
+      search: {
+        filters: {
+          topics: string[];
+          minStars: number | null;
+          maxStars: number | null;
+        };
+      };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.search.filters).toEqual(
+      expect.objectContaining({
+        topics: ['backend', 'sdk'],
+        minStars: 500,
+        maxStars: 500,
+      }),
+    );
+    expect(body.data.map((item) => item.id)).toEqual([
+      exactMatch.id,
+    ]);
+  });
+
+  it('rejects a cursor when only topic or star scope changes', async () => {
+    for (const [id, name] of [
+      ['500000049', 'topic-cursor-one'],
+      ['500000050', 'topic-cursor-two'],
+    ] as const) {
+      await repositoryStore.upsertWithMetadata(
+        createInput(
+          id,
+          name,
+          'Backend SDK for cursor filtering.',
+        ),
+        {
+          stars: 200,
+          forks: 5,
+          openIssues: 1,
+          primaryLanguage: 'TypeScript',
+          licenseSpdx: 'MIT',
+          topics: ['backend', 'sdk'],
+          observedAt: new Date('2026-09-21T00:00:00.000Z'),
+        },
+      );
+    }
+
+    const baseUrl = await startApp();
+    const firstResponse = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend%20sdk&topic=backend&minStars=100&maxStars=500&limit=1`,
+    );
+    const firstBody = (await firstResponse.json()) as {
+      pagination: { nextCursor: string | null };
+    };
+
+    expect(firstResponse.status).toBe(200);
+    expect(firstBody.pagination.nextCursor).toEqual(expect.any(String));
+
+    const changedTopicResponse = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend%20sdk&topic=sdk&minStars=100&maxStars=500&limit=1&cursor=${encodeURIComponent(
+        firstBody.pagination.nextCursor as string,
+      )}`,
+    );
+
+    expect(changedTopicResponse.status).toBe(400);
+
+    const changedStarsResponse = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend%20sdk&topic=backend&minStars=101&maxStars=500&limit=1&cursor=${encodeURIComponent(
+        firstBody.pagination.nextCursor as string,
+      )}`,
+    );
+
+    expect(changedStarsResponse.status).toBe(400);
   });
 
   it('rejects a cursor when only the search filter scope changes', async () => {
@@ -407,6 +555,9 @@ describe('repository lexical search API with PostgreSQL', () => {
         filters: {
           language: null,
           license: null,
+          topics: [],
+          minStars: null,
+          maxStars: null,
           fork: null,
           archived: null,
         },
