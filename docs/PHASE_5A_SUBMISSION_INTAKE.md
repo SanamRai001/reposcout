@@ -246,6 +246,12 @@ Tests cover:
 - submission schema constraints;
 - migration rollback preserving earlier repository/content tables.
 
+## Status
+
+Complete.
+
+The Phase 5A branch passed application verification, migration apply/rollback/reapply, submission schema constraints, repository/content/ingestion/catalog/search regressions, concurrent submission integration, and PostgreSQL connectivity.
+
 ## Next checkpoints
 
 ### Phase 5B — Deterministic submission validation
