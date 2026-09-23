@@ -31,6 +31,7 @@ Start here if you are contributing to the project.
 - [PHASE_3E2_LIVE_JEV_ADAPTER.md](PHASE_3E2_LIVE_JEV_ADAPTER.md) — verified TypeSafe wire contract, live Jev provider adapter, and credential-gated smoke evaluation.
 - [PHASE_4A_LEXICAL_SEARCH.md](PHASE_4A_LEXICAL_SEARCH.md) — deterministic PostgreSQL lexical search, query-bound cursors, and backend discovery boundaries.
 - [PHASE_4B1_SCALAR_SEARCH_FILTERS.md](PHASE_4B1_SCALAR_SEARCH_FILTERS.md) — exact language/license/fork/archive filters and full search-scope cursor binding.
+- [PHASE_4B2_TOPIC_STAR_FILTERS.md](PHASE_4B2_TOPIC_STAR_FILTERS.md) — all-topic containment, inclusive star ranges, and expanded cursor scope.
 
 ## Community
 
