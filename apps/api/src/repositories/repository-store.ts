@@ -359,6 +359,10 @@ function assertMetadata(input: UpsertRepositoryMetadataInput): void {
   }
 }
 
+function sqlParameter(position: number): string {
+  return String.fromCharCode(36) + String(position);
+}
+
 export class RepositoryStore {
   public constructor(private readonly pool: DatabasePool) {}
 
@@ -594,18 +598,22 @@ export class RepositoryStore {
     if (filters.topics.length > 0) {
       values.push([...filters.topics]);
       conditions.push(
-        'm.topics @> 
+        `m.topics @> ${sqlParameter(values.length)}::text[]`,
       );
     }
 
     if (filters.minStars !== null) {
       values.push(filters.minStars);
-      conditions.push('m.stars >= 
+      conditions.push(
+        `m.stars >= ${sqlParameter(values.length)}::bigint`,
+      );
     }
 
     if (filters.maxStars !== null) {
       values.push(filters.maxStars);
-      conditions.push('m.stars <= 
+      conditions.push(
+        `m.stars <= ${sqlParameter(values.length)}::bigint`,
+      );
     }
 
     if (filters.isFork !== null) {
