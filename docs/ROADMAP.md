@@ -378,7 +378,7 @@ This is the first major community loop.
 
 ### Phase 5A — Submission intake
 
-Status: implemented; verification pending
+Status: complete
 
 - `POST /api/submissions`;
 - full HTTPS GitHub repository URL only;
