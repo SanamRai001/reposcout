@@ -105,6 +105,10 @@ RepoScout now collects measured stars, forks, GitHub open issue/PR count, primar
 
 **Phase 4C — web discovery UI:** complete. The browser now exposes lexical/filter discovery with URL-backed state, back/forward restoration, active-scope chips, deterministic load-more behavior, and no client-side relevance ranking.
 
+**Phase 4 — deterministic discovery:** complete.
+
+**Phase 5A — community submission intake:** implemented and under verification. RepoScout now accepts URL-only GitHub repository submissions, normalizes owner/name, rejects already-indexed and already-pending duplicates, and persists a race-safe `PENDING` intake record. GitHub validation, moderation, rate limiting, and the submission UI remain later phases.
+
 See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
 
 ## Contributing
