@@ -231,6 +231,12 @@ Phase 4B.1 does not add:
 - frontend filter controls;
 - Jev reranking.
 
+## Status
+
+Complete.
+
+The Phase 4B.1 branch passed application verification, route/contract tests, PostgreSQL scalar-filter integration, migration rollback/reapply, persistence, repository-content evidence, ingestion, catalog/search regressions, and PostgreSQL connectivity.
+
 ## Next checkpoint
 
 Phase 4B.2 should add collection/numeric filters and complete the backend discovery filter surface:
