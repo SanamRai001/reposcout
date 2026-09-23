@@ -255,29 +255,48 @@ Rules:
 
 Community request to add a repository.
 
+Phase 5A implements the intake subset:
+
 ```text
 id
 submitted_url
 normalized_owner
 normalized_name
-resolved_github_repository_id
-submitter_user_id nullable
-reason nullable
+normalized_full_name
 status
-duplicate_repository_id nullable
 created_at
-reviewed_at nullable
-reviewed_by nullable
-rejection_reason nullable
+updated_at
 ```
 
-Status:
+Status vocabulary:
+
 ```text
 PENDING
 APPROVED
 REJECTED
 DUPLICATE
 INVALID
+```
+
+Phase 5A creates only `PENDING`.
+
+Rules:
+- submitted URL is normalized to `https://github.com/{owner}/{repository}`;
+- normalized owner/name are lowercase intake identifiers;
+- at most one `PENDING` row may exist for a normalized full name;
+- normalized owner/name are not a replacement for canonical GitHub repository ID;
+- GitHub ID resolution happens in a later deterministic validation phase.
+
+Future moderation/resolution fields may include:
+
+```text
+resolved_github_repository_id
+submitter_user_id nullable
+reason nullable
+duplicate_repository_id nullable
+reviewed_at nullable
+reviewed_by nullable
+rejection_reason nullable
 ```
 
 ### User
