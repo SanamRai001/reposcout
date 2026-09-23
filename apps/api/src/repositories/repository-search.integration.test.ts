@@ -53,6 +53,7 @@ function createInput(
   githubRepositoryId: string,
   name: string,
   description: string,
+  overrides: Partial<UpsertRepositoryInput> = {},
 ): UpsertRepositoryInput {
   return {
     githubRepositoryId,
@@ -68,6 +69,7 @@ function createInput(
     updatedAtGithub: new Date('2026-09-20T00:00:00.000Z'),
     pushedAtGithub: new Date('2026-09-20T01:00:00.000Z'),
     lastSyncedAt: new Date('2026-09-21T00:00:00.000Z'),
+    ...overrides,
   };
 }
 
@@ -127,7 +129,15 @@ describe('repository lexical search API with PostgreSQL', () => {
         fullName: string;
         metadata: null | { stars: number };
       }>;
-      search: { query: string };
+      search: {
+        query: string;
+        filters: {
+          language: string | null;
+          license: string | null;
+          fork: boolean | null;
+          archived: boolean | null;
+        };
+      };
       pagination: { nextCursor: string | null };
     };
 
@@ -208,6 +218,147 @@ describe('repository lexical search API with PostgreSQL', () => {
     expect(new Set(allIds).size).toBe(2);
   });
 
+  it('applies language, license, fork, and archived filters exactly', async () => {
+    const activeTyped = await repositoryStore.upsertWithMetadata(
+      createInput(
+        '500000041',
+        'typed-active',
+        'Backend service for production workloads.',
+      ),
+      {
+        stars: 200,
+        forks: 20,
+        openIssues: 5,
+        primaryLanguage: 'TypeScript',
+        licenseSpdx: 'MIT',
+        topics: ['backend'],
+        observedAt: new Date('2026-09-21T00:00:00.000Z'),
+      },
+    );
+
+    await repositoryStore.upsertWithMetadata(
+      createInput(
+        '500000042',
+        'typed-archived',
+        'Backend service kept for historical reference.',
+        { isArchived: true },
+      ),
+      {
+        stars: 80,
+        forks: 8,
+        openIssues: 1,
+        primaryLanguage: 'TypeScript',
+        licenseSpdx: 'MIT',
+        topics: ['backend'],
+        observedAt: new Date('2026-09-21T00:00:00.000Z'),
+      },
+    );
+
+    await repositoryStore.upsertWithMetadata(
+      createInput(
+        '500000043',
+        'go-fork',
+        'Backend service implemented in Go.',
+        { isFork: true },
+      ),
+      {
+        stars: 50,
+        forks: 5,
+        openIssues: 2,
+        primaryLanguage: 'Go',
+        licenseSpdx: 'Apache-2.0',
+        topics: ['backend'],
+        observedAt: new Date('2026-09-21T00:00:00.000Z'),
+      },
+    );
+
+    await repositoryStore.upsert(
+      createInput(
+        '500000044',
+        'metadata-pending',
+        'Backend service without captured metadata yet.',
+      ),
+    );
+
+    const baseUrl = await startApp();
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend&language=%20TYPESCRIPT%20&license=mit&fork=false&archived=false`,
+    );
+    const body = (await response.json()) as {
+      data: Array<{ id: string }>;
+      search: {
+        query: string;
+        filters: {
+          language: string | null;
+          license: string | null;
+          fork: boolean | null;
+          archived: boolean | null;
+        };
+      };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.search).toEqual({
+      query: 'backend',
+      filters: {
+        language: 'typescript',
+        license: 'mit',
+        fork: false,
+        archived: false,
+      },
+    });
+    expect(body.data.map((item) => item.id)).toEqual([
+      activeTyped.id,
+    ]);
+  });
+
+  it('rejects a cursor when only the search filter scope changes', async () => {
+    for (const [id, name] of [
+      ['500000051', 'typed-one'],
+      ['500000052', 'typed-two'],
+    ] as const) {
+      await repositoryStore.upsertWithMetadata(
+        createInput(
+          id,
+          name,
+          'Backend service with stable metadata.',
+        ),
+        {
+          stars: 10,
+          forks: 1,
+          openIssues: 0,
+          primaryLanguage: 'TypeScript',
+          licenseSpdx: 'MIT',
+          topics: ['backend'],
+          observedAt: new Date('2026-09-21T00:00:00.000Z'),
+        },
+      );
+    }
+
+    const baseUrl = await startApp();
+    const firstResponse = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend&language=typescript&license=mit&fork=false&archived=false&limit=1`,
+    );
+    const firstBody = (await firstResponse.json()) as {
+      pagination: { nextCursor: string | null };
+    };
+
+    expect(firstResponse.status).toBe(200);
+    expect(firstBody.pagination.nextCursor).toEqual(expect.any(String));
+
+    const changedFilterResponse = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend&language=typescript&license=mit&fork=false&archived=true&limit=1&cursor=${encodeURIComponent(
+        firstBody.pagination.nextCursor as string,
+      )}`,
+    );
+    const changedFilterBody = (await changedFilterResponse.json()) as {
+      error: string;
+    };
+
+    expect(changedFilterResponse.status).toBe(400);
+    expect(changedFilterBody.error).toBe('invalid_pagination');
+  });
+
   it('matches repository identity fields without metadata/search enrichment', async () => {
     const repository = await repositoryStore.upsert(
       createInput(
@@ -253,6 +404,12 @@ describe('repository lexical search API with PostgreSQL', () => {
       data: [],
       search: {
         query: 'rust compiler',
+        filters: {
+          language: null,
+          license: null,
+          fork: null,
+          archived: null,
+        },
       },
       pagination: {
         limit: 20,
