@@ -696,3 +696,46 @@ The opaque lexical-search cursor is bound to the normalized query plus language,
 Changing any scope field invalidates the cursor.
 
 This preserves deterministic pagination as structured filters are composed with lexical retrieval.
+
+
+## D-074 — Topic filters use normalized all-topic containment
+
+**Status:** Accepted
+
+Clients may repeat `topic` up to 10 times.
+
+RepoScout trims, lowercases, deduplicates, and sorts requested topics before retrieval/cursor creation.
+
+A repository must contain every requested topic.
+
+Phase 4B.2 does not introduce OR-topic or fuzzy topic semantics.
+
+## D-075 — Star filters are inclusive bounds over measured metadata
+
+**Status:** Accepted
+
+`minStars` and `maxStars` are nonnegative safe integers.
+
+Matching uses inclusive bounds.
+
+If both are supplied, `minStars` must be less than or equal to `maxStars`.
+
+Repositories with missing metadata do not satisfy star-range filters.
+
+## D-076 — Keep lexical query required in Phase 4B.2
+
+**Status:** Accepted
+
+Filter-only discovery changes the retrieval contract enough to deserve its own phase.
+
+Phase 4B.2 therefore keeps `q` required while completing topic and numeric metadata filtering.
+
+A later phase may make the query optional after defining empty-query and cursor behavior explicitly.
+
+## D-077 — Search cursors include topic and star filter scope
+
+**Status:** Accepted
+
+Search cursors bind the canonical topic list and min/max star values in addition to the existing query/scalar filter scope.
+
+Changing any of those values invalidates pagination.
