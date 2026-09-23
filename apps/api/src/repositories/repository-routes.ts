@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import {
+  assertRepositoryDiscoveryScope,
   encodeRepositoryCursor,
   encodeRepositorySearchCursor,
   isRepositoryId,
@@ -53,7 +54,6 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
 
   router.get('/search', async (request, response, next) => {
     try {
-      const query = parseRepositorySearchQuery(request.query.q);
       const filters = parseRepositorySearchFilters({
         language: request.query.language,
         license: request.query.license,
@@ -63,6 +63,8 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
         fork: request.query.fork,
         archived: request.query.archived,
       });
+      const query = parseRepositorySearchQuery(request.query.q);
+      assertRepositoryDiscoveryScope(query, filters);
       const limit = parseRepositoryPageLimit(request.query.limit);
       const cursor = parseRepositorySearchCursor(
         request.query.cursor,
@@ -105,6 +107,17 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
         },
       });
     } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.startsWith('search requires ')
+      ) {
+        response.status(400).json({
+          error: 'invalid_search_scope',
+          message: error.message,
+        });
+        return;
+      }
+
       if (
         error instanceof Error &&
         error.message.startsWith('q ')

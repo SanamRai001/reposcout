@@ -457,4 +457,32 @@ Topic and star filters depend on measured repository metadata.
 
 Missing metadata never satisfies these filters.
 
-The lexical query remains required in Phase 4B.2; filter-only discovery is intentionally deferred to a separate contract decision.
+Phase 4B.2 keeps the lexical query required.
+
+## Phase 4B.3 filter-only discovery boundary
+
+Phase 4B.3 keeps the same discovery endpoint and PostgreSQL path while allowing the lexical query to be absent when structured filters provide the retrieval scope.
+
+~~~text
+GET /api/repositories/search
+        |
+optional lexical query
+        +
+one or more normalized filters
+        |
+nullable-query + filter scoped cursor
+        |
+RepositoryStore.searchPage
+        |
+PostgreSQL
+  optional canonical text match
+  + authoritative filter predicates
+        |
+stable UUID page
+~~~
+
+An empty discovery scope with neither query nor filters is rejected because `GET /api/repositories` already provides unscoped catalog traversal.
+
+Filter-only cursors bind `query = null` together with the complete normalized filter set, so they cannot be reused across lexical/filter scope changes.
+
+No relevance ordering, model reranking, or client-side ranking is introduced.

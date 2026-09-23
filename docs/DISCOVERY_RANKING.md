@@ -16,6 +16,8 @@ Current discovery foundation:
 - Phase 4A matches canonical owner/name/full-name/description text with PostgreSQL `plainto_tsquery`;
 - Phase 4B.1 composes exact language, license, fork, and archived filters;
 - Phase 4B.2 adds all-topic containment plus inclusive star-range filters;
+- Phase 4B.3 allows structured filter-only discovery when no lexical query is supplied;
+- an unscoped discovery request with neither query nor filters is rejected;
 - missing metadata never satisfies a metadata filter;
 - matching repositories remain in stable internal UUID order;
 - opaque cursors are bound to the complete normalized search scope;

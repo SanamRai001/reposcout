@@ -306,6 +306,92 @@ describe('repository catalog routes', () => {
     });
   });
 
+  it('supports filter-only discovery without a lexical query', async () => {
+    const searchPage = vi.fn().mockResolvedValue({
+      items: [repository],
+      hasMore: false,
+    });
+    const repositoryCatalog = createCatalog({ searchPage });
+    const { baseUrl } = await startApp(repositoryCatalog);
+
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?language=%20TypeScript%20&topic=SDK&minStars=100&fork=false`,
+    );
+    const body = (await response.json()) as {
+      data: Array<{ id: string }>;
+      search: {
+        query: string | null;
+        filters: {
+          language: string | null;
+          license: string | null;
+          topics: string[];
+          minStars: number | null;
+          maxStars: number | null;
+          fork: boolean | null;
+          archived: boolean | null;
+        };
+      };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.search).toEqual({
+      query: null,
+      filters: {
+        language: 'typescript',
+        license: null,
+        topics: ['sdk'],
+        minStars: 100,
+        maxStars: null,
+        fork: false,
+        archived: null,
+      },
+    });
+    expect(searchPage).toHaveBeenCalledWith({
+      query: null,
+      filters: {
+        primaryLanguage: 'typescript',
+        licenseSpdx: null,
+        topics: ['sdk'],
+        minStars: 100,
+        maxStars: null,
+        isFork: false,
+        isArchived: null,
+      },
+      limit: 20,
+      cursor: null,
+    });
+  });
+
+  it('rejects discovery with neither query nor filters', async () => {
+    const searchPage = vi.fn();
+    const repositoryCatalog = createCatalog({ searchPage });
+    const { baseUrl } = await startApp(repositoryCatalog);
+
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search`,
+    );
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe('invalid_search_scope');
+    expect(searchPage).not.toHaveBeenCalled();
+  });
+
+  it('keeps an explicitly blank query invalid even when filters exist', async () => {
+    const searchPage = vi.fn();
+    const repositoryCatalog = createCatalog({ searchPage });
+    const { baseUrl } = await startApp(repositoryCatalog);
+
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?q=%20%20&language=typescript`,
+    );
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe('invalid_search_query');
+    expect(searchPage).not.toHaveBeenCalled();
+  });
+
   it('rejects invalid scalar search filters before persistence lookup', async () => {
     const searchPage = vi.fn();
     const repositoryCatalog = createCatalog({ searchPage });

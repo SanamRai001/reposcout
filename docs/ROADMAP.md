@@ -330,11 +330,26 @@ Status: complete
 
 #### Phase 4B.3 — Filter-only discovery
 
+Status: complete
+
+- existing `/api/repositories/search` endpoint reused;
+- lexical query becomes optional only when at least one structured filter exists;
+- empty discovery scope rejected;
+- explicit invalid/blank query still rejected;
+- filter-only PostgreSQL retrieval;
+- nullable query included in cursor scope;
+- deterministic UUID ordering unchanged;
+- no duplicate discovery endpoint.
+
+### Phase 4C — Web discovery UI
+
 Next:
-- decide whether `q` should become optional on the existing discovery endpoint;
-- define empty-query/cursor semantics explicitly;
-- preserve the same authoritative filters and deterministic ordering;
-- avoid creating a second competing discovery contract.
+- expose lexical search in the catalog UI;
+- expose structured filters;
+- shareable URL-backed discovery state;
+- loading/empty/error states for discovery;
+- cursor-aware load more;
+- no client-side ranking or fake relevance claims.
 
 Later Phase 4 work:
 - lexical search;

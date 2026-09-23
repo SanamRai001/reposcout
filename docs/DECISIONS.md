@@ -739,3 +739,37 @@ A later phase may make the query optional after defining empty-query and cursor 
 Search cursors bind the canonical topic list and min/max star values in addition to the existing query/scalar filter scope.
 
 Changing any of those values invalidates pagination.
+
+
+## D-078 — Use the existing search endpoint for filter-only discovery
+
+**Status:** Accepted
+
+RepoScout does not create a second structured-discovery endpoint.
+
+`GET /api/repositories/search` now supports either:
+- a normalized lexical query;
+- one or more structured filters;
+- both.
+
+This keeps pagination, response shape, URL semantics, and future sorting on one discovery contract.
+
+## D-079 — Reject empty discovery scope
+
+**Status:** Accepted
+
+A request to `/api/repositories/search` with neither a lexical query nor any structured filter returns `400 invalid_search_scope`.
+
+Unscoped repository traversal remains the responsibility of `GET /api/repositories`.
+
+An explicitly supplied invalid or blank `q` remains invalid and is not silently treated as omitted.
+
+## D-080 — Filter-only cursors bind a null lexical query
+
+**Status:** Accepted
+
+Search cursors now treat the lexical query as nullable.
+
+For filter-only discovery, the cursor records `query = null` together with the complete normalized filter scope and last repository UUID.
+
+A filter-only cursor cannot be reused with a lexical query or changed filters.
