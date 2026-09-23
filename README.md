@@ -103,6 +103,8 @@ RepoScout now collects measured stars, forks, GitHub open issue/PR count, primar
 
 **Phase 4B.1 — scalar search filters:** complete. Search can compose exact language, SPDX license, fork, and archived filters. **Phase 4B.2 — topic and star-range filters:** complete, adding all-topic containment and inclusive star bounds while preserving deterministic scope-bound pagination. **Phase 4B.3 — filter-only discovery:** complete, allowing structured discovery without a lexical query while keeping empty search scope invalid.
 
+**Phase 4C — web discovery UI:** implemented and under verification. The browser now exposes lexical/filter discovery with URL-backed state, back/forward restoration, active-scope chips, deterministic load-more behavior, and no client-side relevance ranking.
+
 See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
 
 ## Contributing
