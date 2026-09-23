@@ -80,5 +80,8 @@ jobs:
       - name: Verify repository lexical search
         run: npm run test:search -w @reposcout/api
 
+      - name: Verify repository submission intake
+        run: npm run test:submissions -w @reposcout/api
+
       - name: Verify PostgreSQL connection
         run: npm run test:db -w @reposcout/api
