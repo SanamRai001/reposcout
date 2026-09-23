@@ -343,7 +343,7 @@ Status: complete
 
 ### Phase 4C — Web discovery UI
 
-Status: implemented; verification pending
+Status: complete
 
 - lexical search form;
 - structured language/license/topic/star/fork/archive controls;
