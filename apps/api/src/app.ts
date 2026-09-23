@@ -3,10 +3,13 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import { logger } from './logger.js';
 import type { RepositoryCatalogReader } from './repositories/repository-catalog.js';
 import { createRepositoryRouter } from './repositories/repository-routes.js';
+import type { RepositorySubmissionService } from './submissions/repository-submission-service.js';
+import { createRepositorySubmissionRouter } from './submissions/repository-submission-routes.js';
 
 export type AppDependencies = Readonly<{
   checkReadiness?: () => Promise<void>;
   repositoryCatalog?: RepositoryCatalogReader;
+  repositorySubmissionService?: RepositorySubmissionService;
 }>;
 
 export function createApp(dependencies: AppDependencies = {}) {
@@ -49,6 +52,15 @@ export function createApp(dependencies: AppDependencies = {}) {
     app.use(
       '/api/repositories',
       createRepositoryRouter(dependencies.repositoryCatalog),
+    );
+  }
+
+  if (dependencies.repositorySubmissionService) {
+    app.use(
+      '/api/submissions',
+      createRepositorySubmissionRouter(
+        dependencies.repositorySubmissionService,
+      ),
     );
   }
 
