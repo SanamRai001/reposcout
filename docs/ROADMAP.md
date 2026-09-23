@@ -330,7 +330,7 @@ Status: complete
 
 #### Phase 4B.3 — Filter-only discovery
 
-Status: implemented; verification pending
+Status: complete
 
 - existing `/api/repositories/search` endpoint reused;
 - lexical query becomes optional only when at least one structured filter exists;
