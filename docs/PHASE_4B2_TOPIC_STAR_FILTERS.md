@@ -246,6 +246,12 @@ Phase 4B.2 does not add:
 - frontend search/filter controls;
 - Jev reranking.
 
+## Status
+
+Complete.
+
+The Phase 4B.2 branch passed application verification, Jev-harness regression checks, migration apply/rollback/reapply, persistence, content evidence, ingestion, catalog, dedicated PostgreSQL lexical-search filtering, and PostgreSQL connectivity.
+
 ## Next checkpoint
 
 Phase 4B.3 should decide and implement clean filter-only discovery, if we still want it, without changing the deterministic filter semantics established here.
