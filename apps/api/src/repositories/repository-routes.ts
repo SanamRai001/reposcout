@@ -37,17 +37,6 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
     } catch (error) {
       if (
         error instanceof Error &&
-        error.message.startsWith('filter ')
-      ) {
-        response.status(400).json({
-          error: 'invalid_search_filter',
-          message: error.message,
-        });
-        return;
-      }
-
-      if (
-        error instanceof Error &&
         (error.message.startsWith('limit ') ||
           error.message.startsWith('cursor '))
       ) {
@@ -116,6 +105,17 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
       ) {
         response.status(400).json({
           error: 'invalid_search_query',
+          message: error.message,
+        });
+        return;
+      }
+
+      if (
+        error instanceof Error &&
+        error.message.startsWith('filter ')
+      ) {
+        response.status(400).json({
+          error: 'invalid_search_filter',
           message: error.message,
         });
         return;
