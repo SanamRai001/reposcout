@@ -188,7 +188,9 @@ Phase 4B.3 does not add:
 
 ## Status
 
-Implemented; verification pending.
+Complete.
+
+The Phase 4B.3 branch passed application verification, Jev-harness regression checks, migration apply/rollback/reapply, persistence, content evidence, ingestion, catalog, dedicated PostgreSQL discovery/search integration, and PostgreSQL connectivity.
 
 ## Next checkpoint
 
