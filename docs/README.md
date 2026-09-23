@@ -33,6 +33,8 @@ Start here if you are contributing to the project.
 - [PHASE_4B1_SCALAR_SEARCH_FILTERS.md](PHASE_4B1_SCALAR_SEARCH_FILTERS.md) — exact language/license/fork/archive filters and full search-scope cursor binding.
 - [PHASE_4B2_TOPIC_STAR_FILTERS.md](PHASE_4B2_TOPIC_STAR_FILTERS.md) — all-topic containment, inclusive star ranges, and expanded cursor scope.
 - [PHASE_4B3_FILTER_ONLY_DISCOVERY.md](PHASE_4B3_FILTER_ONLY_DISCOVERY.md) — optional lexical query, filter-only discovery, and nullable-query cursor scope.
+- [PHASE_4C_WEB_DISCOVERY_UI.md](PHASE_4C_WEB_DISCOVERY_UI.md) — URL-backed browser discovery, structured controls, and deterministic load-more behavior.
+- [PHASE_5A_SUBMISSION_INTAKE.md](PHASE_5A_SUBMISSION_INTAKE.md) — URL-only community submission intake, duplicate protection, persistence, and API boundaries.
 
 ## Community
 
