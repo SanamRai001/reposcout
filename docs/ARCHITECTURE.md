@@ -296,6 +296,30 @@ Architectural rules:
 
 See [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md).
 
+## Browser discovery flow
+
+Phase 4C exposes deterministic discovery in the web application:
+
+~~~text
+browser URL / discovery form
+        |
+normalized discovery scope
+        |
+same-origin /api/repositories/search
+        |
+server-owned deterministic order + opaque cursor
+        |
+repository cards
+~~~
+
+Browser rules:
+- discovery scope is shareable in URL parameters;
+- pagination cursor remains ephemeral component state;
+- applying discovery updates browser history;
+- back/forward restores discovery scope;
+- frontend preserves backend order;
+- no client-side ranking or hidden relevance heuristic is allowed.
+
 ## Search evolution
 
 ### MVP

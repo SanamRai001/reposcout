@@ -343,11 +343,17 @@ Status: complete
 
 ### Phase 4C — Web discovery UI
 
-Next:
-- expose lexical search in the catalog UI;
-- expose structured filters;
-- shareable URL-backed discovery state;
-- loading/empty/error states for discovery;
+Status: complete
+
+- lexical search form;
+- structured language/license/topic/star/fork/archive controls;
+- filter-only discovery;
+- apply-on-submit request model;
+- URL-backed normalized discovery scope;
+- browser back/forward restoration;
+- active-scope chips;
+- separate catalog/discovery empty states;
+- initial and load-more error handling;
 - cursor-aware load more;
 - no client-side ranking or fake relevance claims.
 

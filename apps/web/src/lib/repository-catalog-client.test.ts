@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   fetchRepositoryCatalogPage,
+  fetchRepositoryDiscoveryPage,
+  normalizeRepositoryDiscoveryScope,
+  repositoryDiscoveryScopeFromSearch,
+  repositoryDiscoveryScopeToSearch,
   RepositoryCatalogError,
 } from './repository-catalog-client.js';
 
@@ -136,6 +140,152 @@ describe('fetchRepositoryCatalogPage', () => {
 
     await expect(
       fetchRepositoryCatalogPage({ fetchImplementation }),
+    ).rejects.toBeInstanceOf(RepositoryCatalogError);
+  });
+});
+
+
+describe('repository discovery client', () => {
+  it('normalizes and serializes a shareable discovery scope deterministically', () => {
+    const scope = normalizeRepositoryDiscoveryScope({
+      query: '  TypeScript   Backend ',
+      language: ' TypeScript ',
+      license: ' MIT ',
+      topics: [' SDK ', 'backend', 'sdk'],
+      minStars: 100,
+      maxStars: 5000,
+      fork: false,
+      archived: false,
+    });
+
+    expect(scope).toEqual({
+      query: 'typescript backend',
+      filters: {
+        language: 'typescript',
+        license: 'mit',
+        topics: ['backend', 'sdk'],
+        minStars: 100,
+        maxStars: 5000,
+        fork: false,
+        archived: false,
+      },
+    });
+
+    expect(repositoryDiscoveryScopeToSearch(scope)).toBe(
+      'q=typescript+backend&language=typescript&license=mit&topic=backend&topic=sdk&minStars=100&maxStars=5000&fork=false&archived=false',
+    );
+  });
+
+  it('reads filter-only discovery scope from browser search params', () => {
+    expect(
+      repositoryDiscoveryScopeFromSearch(
+        '?language=typescript&topic=sdk&topic=backend&minStars=50&archived=false',
+      ),
+    ).toEqual({
+      query: null,
+      filters: {
+        language: 'typescript',
+        license: null,
+        topics: ['backend', 'sdk'],
+        minStars: 50,
+        maxStars: null,
+        fork: null,
+        archived: false,
+      },
+    });
+  });
+
+  it('returns null for an unscoped browser URL', () => {
+    expect(repositoryDiscoveryScopeFromSearch('')).toBeNull();
+  });
+
+  it('requests discovery with repeated topics and pagination cursor', async () => {
+    const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: [repository()],
+          search: {
+            query: 'backend sdk',
+            filters: {
+              language: 'typescript',
+              license: 'mit',
+              topics: ['backend', 'sdk'],
+              minStars: 100,
+              maxStars: null,
+              fork: false,
+              archived: false,
+            },
+          },
+          pagination: {
+            limit: 12,
+            nextCursor: 'next-discovery',
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const scope = normalizeRepositoryDiscoveryScope({
+      query: 'backend sdk',
+      language: 'typescript',
+      license: 'mit',
+      topics: ['backend', 'sdk'],
+      minStars: 100,
+      fork: false,
+      archived: false,
+    });
+
+    if (!scope) {
+      throw new Error('Expected discovery scope.');
+    }
+
+    const page = await fetchRepositoryDiscoveryPage({
+      scope,
+      limit: 12,
+      cursor: 'opaque cursor',
+      fetchImplementation,
+    });
+
+    expect(fetchImplementation.mock.calls[0]?.[0]).toBe(
+      '/api/repositories/search?q=backend+sdk&language=typescript&license=mit&topic=backend&topic=sdk&minStars=100&fork=false&archived=false&limit=12&cursor=opaque+cursor',
+    );
+    expect(page.search).toEqual(scope);
+    expect(page.pagination.nextCursor).toBe('next-discovery');
+  });
+
+  it('rejects malformed successful discovery responses', async () => {
+    const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: [repository()],
+          search: {
+            query: 'typescript',
+            filters: {
+              language: null,
+            },
+          },
+          pagination: {
+            limit: 12,
+            nextCursor: null,
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const scope = normalizeRepositoryDiscoveryScope({
+      query: 'typescript',
+    });
+
+    if (!scope) {
+      throw new Error('Expected discovery scope.');
+    }
+
+    await expect(
+      fetchRepositoryDiscoveryPage({
+        scope,
+        fetchImplementation,
+      }),
     ).rejects.toBeInstanceOf(RepositoryCatalogError);
   });
 });

@@ -773,3 +773,42 @@ Search cursors now treat the lexical query as nullable.
 For filter-only discovery, the cursor records `query = null` together with the complete normalized filter scope and last repository UUID.
 
 A filter-only cursor cannot be reused with a lexical query or changed filters.
+
+
+## D-081 — Browser URLs describe discovery scope, not pagination state
+
+**Status:** Accepted
+
+Phase 4C stores normalized lexical/filter discovery state in the browser URL.
+
+Opaque pagination cursors remain transient client state and are not placed in shareable URLs.
+
+This keeps copied links stable descriptions of discovery intent rather than one pagination session.
+
+## D-082 — Discovery controls apply on explicit submit
+
+**Status:** Accepted
+
+The Phase 4C browser does not send discovery requests on every keystroke.
+
+Users apply the current lexical/filter form explicitly.
+
+This keeps request volume bounded, browser history intentional, and incomplete filter edits from producing unnecessary API traffic.
+
+## D-083 — Browser back/forward restores discovery state
+
+**Status:** Accepted
+
+Phase 4C listens for browser history navigation and rebuilds the active discovery scope/form from the current URL.
+
+Navigation resets loaded pages and refetches the corresponding deterministic result set.
+
+## D-084 — The web client preserves backend ordering exactly
+
+**Status:** Accepted
+
+Phase 4C does not sort or rerank repository results in the browser.
+
+Stars, activity, exact-name similarity, or model output must not silently alter result order client-side.
+
+Any future sort or relevance mode must be an explicit backend/product contract.
