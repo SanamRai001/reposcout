@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { RepositoryCatalogRecord } from './repository-catalog.js';
 import {
+  assertRepositoryDiscoveryScope,
   encodeRepositoryCursor,
   encodeRepositorySearchCursor,
   parseRepositoryCursor,
@@ -59,12 +60,49 @@ describe('repository catalog contract', () => {
       'typescript backend',
     );
 
-    expect(() => parseRepositorySearchQuery(undefined)).toThrow(
-      'q must be a string between 2 and 120 characters.',
-    );
+    expect(parseRepositorySearchQuery(undefined)).toBeNull();
+    expect(parseRepositorySearchQuery(null)).toBeNull();
     expect(() => parseRepositorySearchQuery('a')).toThrow();
     expect(() => parseRepositorySearchQuery('---')).toThrow();
     expect(() => parseRepositorySearchQuery('x'.repeat(121))).toThrow();
+  });
+
+  it('requires either a lexical query or at least one structured filter', () => {
+    expect(() =>
+      assertRepositoryDiscoveryScope(null, {
+        primaryLanguage: null,
+        licenseSpdx: null,
+        topics: [],
+        minStars: null,
+        maxStars: null,
+        isFork: null,
+        isArchived: null,
+      }),
+    ).toThrow('search requires q or at least one filter.');
+
+    expect(() =>
+      assertRepositoryDiscoveryScope('backend', {
+        primaryLanguage: null,
+        licenseSpdx: null,
+        topics: [],
+        minStars: null,
+        maxStars: null,
+        isFork: null,
+        isArchived: null,
+      }),
+    ).not.toThrow();
+
+    expect(() =>
+      assertRepositoryDiscoveryScope(null, {
+        primaryLanguage: 'typescript',
+        licenseSpdx: null,
+        topics: [],
+        minStars: null,
+        maxStars: null,
+        isFork: null,
+        isArchived: null,
+      }),
+    ).not.toThrow();
   });
 
   it('normalizes scalar search filters', () => {
@@ -204,6 +242,39 @@ describe('repository catalog contract', () => {
           topics: ['backend'],
           licenseSpdx: 'apache-2.0',
         },
+      ),
+    ).toThrow('cursor is invalid.');
+  });
+
+  it('binds filter-only cursors to null query plus normalized filters', () => {
+    const filters = {
+      primaryLanguage: 'typescript',
+      licenseSpdx: null,
+      topics: ['backend'],
+      minStars: 100,
+      maxStars: null,
+      isFork: false,
+      isArchived: false,
+    };
+    const cursor = encodeRepositorySearchCursor(
+      repository,
+      null,
+      filters,
+    );
+
+    expect(
+      parseRepositorySearchCursor(cursor, null, filters),
+    ).toEqual({
+      id: repository.id,
+      query: null,
+      filters,
+    });
+
+    expect(() =>
+      parseRepositorySearchCursor(
+        cursor,
+        'backend',
+        filters,
       ),
     ).toThrow('cursor is invalid.');
   });
