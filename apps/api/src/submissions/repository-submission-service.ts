@@ -1,4 +1,7 @@
-import { parseGithubRepositoryReference } from '../github/github-repository-reference.js';
+import {
+  parseGithubRepositoryReference,
+  type GithubRepositoryReference,
+} from '../github/github-repository-reference.js';
 import type {
   CreateRepositorySubmissionInput,
   RepositorySubmissionRecord,
@@ -70,7 +73,7 @@ export function normalizeRepositorySubmissionUrl(
     );
   }
 
-  let reference;
+  let reference: GithubRepositoryReference;
 
   try {
     reference = parseGithubRepositoryReference(candidate);
