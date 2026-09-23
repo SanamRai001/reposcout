@@ -277,7 +277,7 @@ Repository detail UI remains deferred until there is enough intelligence to just
 
 ## Phase 4 — Discovery
 
-Status: next active product phase
+Status: complete
 
 ### Phase 4A — Deterministic lexical search foundation
 
@@ -296,7 +296,7 @@ Status: complete
 
 ### Phase 4B — Structured repository filters
 
-Status: in progress
+Status: complete
 
 #### Phase 4B.1 — Scalar search filters
 
@@ -372,19 +372,62 @@ Verify deterministic discovery first. Model-assisted reranking should improve an
 
 ## Phase 5 — Community submission
 
-- submit GitHub URL;
-- duplicate validation;
-- deterministic eligibility checks;
-- repository metadata/content collection;
-- optional model-assisted triage if already validated;
-- pending moderation queue;
-- approve/reject;
-- abuse/rate limits;
-- audit events.
-
-Model output must remain advisory for permanent moderation decisions.
+Status: in progress
 
 This is the first major community loop.
+
+### Phase 5A — Submission intake
+
+Status: implemented; verification pending
+
+- `POST /api/submissions`;
+- full HTTPS GitHub repository URL only;
+- case-insensitive owner/name normalization;
+- canonical submitted URL;
+- pending submission persistence;
+- already-indexed duplicate guard;
+- race-safe one-pending-submission constraint;
+- stable 201/400/409 API contract;
+- no free-form community metadata;
+- no GitHub API call during intake;
+- no approval/moderation behavior yet.
+
+### Phase 5B — Deterministic submission validation
+
+Next:
+- resolve submitted repositories through GitHub;
+- verify repository is reachable/public;
+- capture canonical GitHub repository ID;
+- re-check duplicate identity using GitHub ID;
+- persist deterministic INVALID / DUPLICATE outcomes;
+- prepare valid submissions for evidence collection.
+
+### Phase 5C — Moderation workflow
+
+Later:
+- pending moderation queue;
+- approve/reject;
+- reviewer reason;
+- authorization;
+- append-only moderation events.
+
+### Phase 5D — Submission web UI
+
+Later:
+- simple Add a Repository form;
+- success/duplicate/error states;
+- moderation expectations.
+
+### Phase 5E — Abuse/launch hardening
+
+Before broad public launch:
+- rate limits;
+- spam/abuse controls;
+- operational cleanup/retention;
+- observability;
+- security review.
+
+Model output must remain advisory for permanent moderation decisions.
 
 ## Phase 6 — Historical snapshots
 
