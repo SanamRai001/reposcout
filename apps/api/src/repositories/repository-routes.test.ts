@@ -155,6 +155,9 @@ describe('repository catalog routes', () => {
         filters: {
           language: string | null;
           license: string | null;
+          topics: string[];
+          minStars: number | null;
+          maxStars: number | null;
           fork: boolean | null;
           archived: boolean | null;
         };
@@ -169,6 +172,9 @@ describe('repository catalog routes', () => {
       filters: {
         language: null,
         license: null,
+        topics: [],
+        minStars: null,
+        maxStars: null,
         fork: null,
         archived: null,
       },
@@ -182,6 +188,9 @@ describe('repository catalog routes', () => {
       filters: {
         primaryLanguage: null,
         licenseSpdx: null,
+        topics: [],
+        minStars: null,
+        maxStars: null,
         isFork: null,
         isArchived: null,
       },
@@ -207,6 +216,9 @@ describe('repository catalog routes', () => {
         filters: {
           language: string | null;
           license: string | null;
+          topics: string[];
+          minStars: number | null;
+          maxStars: number | null;
           fork: boolean | null;
           archived: boolean | null;
         };
@@ -219,6 +231,9 @@ describe('repository catalog routes', () => {
       filters: {
         language: 'typescript',
         license: 'mit',
+        topics: [],
+        minStars: null,
+        maxStars: null,
         fork: false,
         archived: true,
       },
@@ -228,8 +243,63 @@ describe('repository catalog routes', () => {
       filters: {
         primaryLanguage: 'typescript',
         licenseSpdx: 'mit',
+        topics: [],
+        minStars: null,
+        maxStars: null,
         isFork: false,
         isArchived: true,
+      },
+      limit: 20,
+      cursor: null,
+    });
+  });
+
+  it('normalizes repeated topics and star-range filters', async () => {
+    const searchPage = vi.fn().mockResolvedValue({
+      items: [repository],
+      hasMore: false,
+    });
+    const repositoryCatalog = createCatalog({ searchPage });
+    const { baseUrl } = await startApp(repositoryCatalog);
+
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend&topic=%20SDK%20&topic=backend&topic=sdk&minStars=100&maxStars=5000`,
+    );
+    const body = (await response.json()) as {
+      search: {
+        query: string;
+        filters: {
+          language: string | null;
+          license: string | null;
+          topics: string[];
+          minStars: number | null;
+          maxStars: number | null;
+          fork: boolean | null;
+          archived: boolean | null;
+        };
+      };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.search.filters).toEqual({
+      language: null,
+      license: null,
+      topics: ['backend', 'sdk'],
+      minStars: 100,
+      maxStars: 5000,
+      fork: null,
+      archived: null,
+    });
+    expect(searchPage).toHaveBeenCalledWith({
+      query: 'backend',
+      filters: {
+        primaryLanguage: null,
+        licenseSpdx: null,
+        topics: ['backend', 'sdk'],
+        minStars: 100,
+        maxStars: 5000,
+        isFork: null,
+        isArchived: null,
       },
       limit: 20,
       cursor: null,
@@ -243,6 +313,21 @@ describe('repository catalog routes', () => {
 
     const response = await fetch(
       `${baseUrl}/api/repositories/search?q=backend&fork=maybe`,
+    );
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe('invalid_search_filter');
+    expect(searchPage).not.toHaveBeenCalled();
+  });
+
+  it('rejects an invalid star range before persistence lookup', async () => {
+    const searchPage = vi.fn();
+    const repositoryCatalog = createCatalog({ searchPage });
+    const { baseUrl } = await startApp(repositoryCatalog);
+
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend&minStars=500&maxStars=100`,
     );
     const body = (await response.json()) as { error: string };
 
