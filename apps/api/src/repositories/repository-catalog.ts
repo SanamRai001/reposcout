@@ -10,6 +10,7 @@ export const DEFAULT_REPOSITORY_PAGE_SIZE = 20;
 export const MAX_REPOSITORY_PAGE_SIZE = 50;
 export const MIN_REPOSITORY_SEARCH_QUERY_LENGTH = 2;
 export const MAX_REPOSITORY_SEARCH_QUERY_LENGTH = 120;
+export const MAX_REPOSITORY_SEARCH_FILTER_LENGTH = 64;
 
 export type RepositoryCursor = Readonly<{
   id: string;
@@ -20,10 +21,31 @@ export type RepositoryPageInput = Readonly<{
   cursor: RepositoryCursor | null;
 }>;
 
+export type RepositorySearchFilters = Readonly<{
+  primaryLanguage: string | null;
+  licenseSpdx: string | null;
+  isFork: boolean | null;
+  isArchived: boolean | null;
+}>;
+
+export const EMPTY_REPOSITORY_SEARCH_FILTERS: RepositorySearchFilters = {
+  primaryLanguage: null,
+  licenseSpdx: null,
+  isFork: null,
+  isArchived: null,
+};
+
+export type RepositorySearchCursor = Readonly<{
+  id: string;
+  query: string;
+  filters: RepositorySearchFilters;
+}>;
+
 export type RepositorySearchPageInput = Readonly<{
   query: string;
+  filters: RepositorySearchFilters;
   limit: number;
-  cursor: RepositoryCursor | null;
+  cursor: RepositorySearchCursor | null;
 }>;
 
 export type RepositoryPage = Readonly<{
@@ -72,6 +94,7 @@ type EncodedCursor = Readonly<{
 type EncodedSearchCursor = Readonly<{
   id: string;
   query: string;
+  filters: RepositorySearchFilters;
 }>;
 
 const UUID_PATTERN =
@@ -121,6 +144,95 @@ export function parseRepositorySearchQuery(value: unknown): string {
   return normalized;
 }
 
+function parseOptionalSearchTextFilter(
+  value: unknown,
+  field: 'language' | 'license',
+): string | null {
+  if (value === undefined) {
+    return null;
+  }
+
+  if (typeof value !== 'string') {
+    throw new Error(
+      `filter ${field} must be a string between 1 and 64 characters.`,
+    );
+  }
+
+  const normalized = value.trim().replace(/\s+/g, ' ').toLowerCase();
+
+  if (
+    normalized.length < 1 ||
+    normalized.length > MAX_REPOSITORY_SEARCH_FILTER_LENGTH ||
+    !/[\p{L}\p{N}]/u.test(normalized)
+  ) {
+    throw new Error(
+      `filter ${field} must be a string between 1 and 64 characters.`,
+    );
+  }
+
+  return normalized;
+}
+
+function parseOptionalSearchBooleanFilter(
+  value: unknown,
+  field: 'fork' | 'archived',
+): boolean | null {
+  if (value === undefined) {
+    return null;
+  }
+
+  if (typeof value !== 'string') {
+    throw new Error(`filter ${field} must be true or false.`);
+  }
+
+  const normalized = value.trim().toLowerCase();
+
+  if (normalized === 'true') {
+    return true;
+  }
+
+  if (normalized === 'false') {
+    return false;
+  }
+
+  throw new Error(`filter ${field} must be true or false.`);
+}
+
+export function parseRepositorySearchFilters(input: Readonly<{
+  language: unknown;
+  license: unknown;
+  fork: unknown;
+  archived: unknown;
+}>): RepositorySearchFilters {
+  return {
+    primaryLanguage: parseOptionalSearchTextFilter(
+      input.language,
+      'language',
+    ),
+    licenseSpdx: parseOptionalSearchTextFilter(
+      input.license,
+      'license',
+    ),
+    isFork: parseOptionalSearchBooleanFilter(input.fork, 'fork'),
+    isArchived: parseOptionalSearchBooleanFilter(
+      input.archived,
+      'archived',
+    ),
+  };
+}
+
+function repositorySearchFiltersEqual(
+  left: RepositorySearchFilters,
+  right: RepositorySearchFilters,
+): boolean {
+  return (
+    left.primaryLanguage === right.primaryLanguage &&
+    left.licenseSpdx === right.licenseSpdx &&
+    left.isFork === right.isFork &&
+    left.isArchived === right.isArchived
+  );
+}
+
 export function encodeRepositoryCursor(
   repository: Pick<RepositoryRecord, 'id'>,
 ): string {
@@ -160,10 +272,12 @@ export function parseRepositoryCursor(value: unknown): RepositoryCursor | null {
 export function encodeRepositorySearchCursor(
   repository: Pick<RepositoryRecord, 'id'>,
   query: string,
+  filters: RepositorySearchFilters,
 ): string {
   const payload: EncodedSearchCursor = {
     id: repository.id,
     query,
+    filters,
   };
 
   return Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
@@ -172,7 +286,8 @@ export function encodeRepositorySearchCursor(
 export function parseRepositorySearchCursor(
   value: unknown,
   query: string,
-): RepositoryCursor | null {
+  filters: RepositorySearchFilters,
+): RepositorySearchCursor | null {
   if (value === undefined) {
     return null;
   }
@@ -189,13 +304,17 @@ export function parseRepositorySearchCursor(
     if (
       typeof parsed.id !== 'string' ||
       !isRepositoryId(parsed.id) ||
-      parsed.query !== query
+      parsed.query !== query ||
+      !parsed.filters ||
+      !repositorySearchFiltersEqual(parsed.filters, filters)
     ) {
       throw new Error('invalid search cursor fields');
     }
 
     return {
       id: parsed.id,
+      query: parsed.query,
+      filters: parsed.filters,
     };
   } catch {
     throw new Error('cursor is invalid.');

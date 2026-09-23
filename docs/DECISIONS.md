@@ -663,3 +663,36 @@ The initial curated RepoScout index is intentionally small.
 Phase 4A computes the PostgreSQL text vector at query time rather than adding a generated vector column or GIN index immediately.
 
 A dedicated search index should be introduced only after realistic repository volume, query plans, and latency show that it is useful.
+
+
+## D-071 — Phase 4B.1 uses exact scalar filters over authoritative stored fields
+
+**Status:** Accepted
+
+The first structured search filters are:
+- primary language;
+- SPDX license;
+- fork state;
+- archived state.
+
+Language and license use exact case-insensitive matching over stored metadata. Fork/archive use exact canonical booleans.
+
+No fuzzy filter interpretation is introduced.
+
+## D-072 — Missing metadata does not satisfy metadata filters
+
+**Status:** Accepted
+
+A repository with unavailable/not-yet-collected language or license metadata is excluded when the corresponding filter is active.
+
+RepoScout does not guess missing values or treat missing metadata as a wildcard.
+
+## D-073 — Search cursors bind the complete normalized filter scope
+
+**Status:** Accepted
+
+The opaque lexical-search cursor is bound to the normalized query plus language, license, fork, and archived values.
+
+Changing any scope field invalidates the cursor.
+
+This preserves deterministic pagination as structured filters are composed with lexical retrieval.

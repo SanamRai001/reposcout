@@ -5,6 +5,7 @@ import type { PoolClient } from 'pg';
 import type { DatabasePool } from '../database/database.js';
 import {
   isRepositoryId,
+  parseRepositorySearchFilters,
   parseRepositorySearchQuery,
   type RepositoryCatalogRecord,
   type RepositoryPage,
@@ -513,6 +514,32 @@ export class RepositoryStore {
     }
 
     const query = parseRepositorySearchQuery(input.query);
+    const filters = parseRepositorySearchFilters({
+      language: input.filters.primaryLanguage ?? undefined,
+      license: input.filters.licenseSpdx ?? undefined,
+      fork:
+        input.filters.isFork === null
+          ? undefined
+          : String(input.filters.isFork),
+      archived:
+        input.filters.isArchived === null
+          ? undefined
+          : String(input.filters.isArchived),
+    });
+
+    if (
+      input.cursor &&
+      (
+        input.cursor.query !== query ||
+        input.cursor.filters.primaryLanguage !== filters.primaryLanguage ||
+        input.cursor.filters.licenseSpdx !== filters.licenseSpdx ||
+        input.cursor.filters.isFork !== filters.isFork ||
+        input.cursor.filters.isArchived !== filters.isArchived
+      )
+    ) {
+      throw new Error('cursor is invalid.');
+    }
+
     const fetchLimit = input.limit + 1;
     const searchVector = `
       to_tsvector(
@@ -527,30 +554,54 @@ export class RepositoryStore {
       )
     `;
 
-    const result = input.cursor
-      ? await this.pool.query<RepositoryCatalogRow>(
-          `
-            SELECT ${CATALOG_SELECT_COLUMNS}
-            FROM repositories r
-            LEFT JOIN repository_metadata m ON m.repository_id = r.id
-            WHERE ${searchVector} @@ plainto_tsquery('simple', $1)
-              AND r.id > $2
-            ORDER BY r.id ASC
-            LIMIT $3
-          `,
-          [query, input.cursor.id, fetchLimit],
-        )
-      : await this.pool.query<RepositoryCatalogRow>(
-          `
-            SELECT ${CATALOG_SELECT_COLUMNS}
-            FROM repositories r
-            LEFT JOIN repository_metadata m ON m.repository_id = r.id
-            WHERE ${searchVector} @@ plainto_tsquery('simple', $1)
-            ORDER BY r.id ASC
-            LIMIT $2
-          `,
-          [query, fetchLimit],
-        );
+    const values: unknown[] = [query];
+    const conditions = [
+      `${searchVector} @@ plainto_tsquery('simple', $1)`,
+    ];
+
+    if (filters.primaryLanguage !== null) {
+      values.push(filters.primaryLanguage);
+      conditions.push(
+        `lower(m.primary_language) = $${values.length}`,
+      );
+    }
+
+    if (filters.licenseSpdx !== null) {
+      values.push(filters.licenseSpdx);
+      conditions.push(
+        `lower(m.license_spdx) = $${values.length}`,
+      );
+    }
+
+    if (filters.isFork !== null) {
+      values.push(filters.isFork);
+      conditions.push(`r.is_fork = $${values.length}`);
+    }
+
+    if (filters.isArchived !== null) {
+      values.push(filters.isArchived);
+      conditions.push(`r.is_archived = $${values.length}`);
+    }
+
+    if (input.cursor) {
+      values.push(input.cursor.id);
+      conditions.push(`r.id > $${values.length}`);
+    }
+
+    values.push(fetchLimit);
+    const limitParameter = values.length;
+
+    const result = await this.pool.query<RepositoryCatalogRow>(
+      `
+        SELECT ${CATALOG_SELECT_COLUMNS}
+        FROM repositories r
+        LEFT JOIN repository_metadata m ON m.repository_id = r.id
+        WHERE ${conditions.join('\n          AND ')}
+        ORDER BY r.id ASC
+        LIMIT $${limitParameter}
+      `,
+      values,
+    );
 
     const hasMore = result.rows.length > input.limit;
     const rows = hasMore ? result.rows.slice(0, input.limit) : result.rows;

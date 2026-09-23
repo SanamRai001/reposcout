@@ -150,25 +150,108 @@ describe('repository catalog routes', () => {
     );
     const body = (await response.json()) as {
       data: Array<{ id: string }>;
-      search: { query: string };
+      search: {
+        query: string;
+        filters: {
+          language: string | null;
+          license: string | null;
+          fork: boolean | null;
+          archived: boolean | null;
+        };
+      };
       pagination: { limit: number; nextCursor: string | null };
     };
 
     expect(response.status).toBe(200);
     expect(body.data).toHaveLength(1);
-    expect(body.search.query).toBe('typescript backend');
+    expect(body.search).toEqual({
+      query: 'typescript backend',
+      filters: {
+        language: null,
+        license: null,
+        fork: null,
+        archived: null,
+      },
+    });
     expect(body.pagination).toEqual({
       limit: 5,
       nextCursor: null,
     });
     expect(searchPage).toHaveBeenCalledWith({
       query: 'typescript backend',
+      filters: {
+        primaryLanguage: null,
+        licenseSpdx: null,
+        isFork: null,
+        isArchived: null,
+      },
       limit: 5,
       cursor: null,
     });
   });
 
-  it('returns a search cursor bound to the normalized query', async () => {
+  it('normalizes and forwards scalar search filters', async () => {
+    const searchPage = vi.fn().mockResolvedValue({
+      items: [repository],
+      hasMore: false,
+    });
+    const repositoryCatalog = createCatalog({ searchPage });
+    const { baseUrl } = await startApp(repositoryCatalog);
+
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend&language=%20TypeScript%20&license=MIT&fork=FALSE&archived=true`,
+    );
+    const body = (await response.json()) as {
+      search: {
+        query: string;
+        filters: {
+          language: string | null;
+          license: string | null;
+          fork: boolean | null;
+          archived: boolean | null;
+        };
+      };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.search).toEqual({
+      query: 'backend',
+      filters: {
+        language: 'typescript',
+        license: 'mit',
+        fork: false,
+        archived: true,
+      },
+    });
+    expect(searchPage).toHaveBeenCalledWith({
+      query: 'backend',
+      filters: {
+        primaryLanguage: 'typescript',
+        licenseSpdx: 'mit',
+        isFork: false,
+        isArchived: true,
+      },
+      limit: 20,
+      cursor: null,
+    });
+  });
+
+  it('rejects invalid scalar search filters before persistence lookup', async () => {
+    const searchPage = vi.fn();
+    const repositoryCatalog = createCatalog({ searchPage });
+    const { baseUrl } = await startApp(repositoryCatalog);
+
+    const response = await fetch(
+      `${baseUrl}/api/repositories/search?q=backend&fork=maybe`,
+    );
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe('invalid_search_filter');
+    expect(searchPage).not.toHaveBeenCalled();
+  });
+
+  it('returns a search cursor bound to the normalized query and filters', async () => {
     const repositoryCatalog = createCatalog({
       searchPage: vi.fn().mockResolvedValue({
         items: [repository],

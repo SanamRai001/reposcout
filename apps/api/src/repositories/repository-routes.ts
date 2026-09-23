@@ -7,6 +7,7 @@ import {
   parseRepositoryCursor,
   parseRepositoryPageLimit,
   parseRepositorySearchCursor,
+  parseRepositorySearchFilters,
   parseRepositorySearchQuery,
   toRepositoryResponse,
   type RepositoryCatalogReader,
@@ -53,13 +54,21 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
   router.get('/search', async (request, response, next) => {
     try {
       const query = parseRepositorySearchQuery(request.query.q);
+      const filters = parseRepositorySearchFilters({
+        language: request.query.language,
+        license: request.query.license,
+        fork: request.query.fork,
+        archived: request.query.archived,
+      });
       const limit = parseRepositoryPageLimit(request.query.limit);
       const cursor = parseRepositorySearchCursor(
         request.query.cursor,
         query,
+        filters,
       );
       const page = await repositoryCatalog.searchPage({
         query,
+        filters,
         limit,
         cursor,
       });
@@ -69,6 +78,7 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
           ? encodeRepositorySearchCursor(
               page.items[page.items.length - 1]!,
               query,
+              filters,
             )
           : null;
 
@@ -76,6 +86,12 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
         data: page.items.map(toRepositoryResponse),
         search: {
           query,
+          filters: {
+            language: filters.primaryLanguage,
+            license: filters.licenseSpdx,
+            fork: filters.isFork,
+            archived: filters.isArchived,
+          },
         },
         pagination: {
           limit,
@@ -89,6 +105,17 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
       ) {
         response.status(400).json({
           error: 'invalid_search_query',
+          message: error.message,
+        });
+        return;
+      }
+
+      if (
+        error instanceof Error &&
+        error.message.startsWith('filter ')
+      ) {
+        response.status(400).json({
+          error: 'invalid_search_filter',
           message: error.message,
         });
         return;

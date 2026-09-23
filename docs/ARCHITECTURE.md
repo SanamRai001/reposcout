@@ -397,3 +397,35 @@ Searchable Phase 4A text:
 Search cursors include the normalized query as well as the last repository UUID so a cursor cannot silently cross query boundaries.
 
 Phase 4A intentionally does not add relevance rank ordering or a persisted/generated search vector. RepoScout should measure realistic query plans and latency before introducing GIN/search-index migration complexity.
+
+
+## Phase 4B.1 scalar filter boundary
+
+Scalar filters compose with the Phase 4A lexical retrieval path:
+
+~~~text
+GET /api/repositories/search
+        |
+query normalization
+        |
+scalar filter normalization
+        |
+query + filter scoped cursor
+        |
+RepositoryStore.searchPage
+        |
+PostgreSQL
+  lexical match
+  + language/license metadata predicates
+  + fork/archive canonical predicates
+        |
+stable UUID page
+~~~
+
+Language/license filters depend only on captured authoritative metadata.
+
+Missing metadata does not satisfy those filters.
+
+Fork/archive filters use canonical repository columns.
+
+The route/store remain independent of GitHub refresh and model providers.

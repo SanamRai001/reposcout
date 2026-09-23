@@ -7,6 +7,7 @@ import {
   parseRepositoryCursor,
   parseRepositoryPageLimit,
   parseRepositorySearchCursor,
+  parseRepositorySearchFilters,
   parseRepositorySearchQuery,
   toRepositoryResponse,
 } from './repository-catalog.js';
@@ -66,20 +67,96 @@ describe('repository catalog contract', () => {
     expect(() => parseRepositorySearchQuery('x'.repeat(121))).toThrow();
   });
 
-  it('binds opaque search cursors to the normalized query', () => {
-    const cursor = encodeRepositorySearchCursor(
-      repository,
-      'typescript backend',
-    );
+  it('normalizes scalar search filters', () => {
+    expect(
+      parseRepositorySearchFilters({
+        language: ' TypeScript ',
+        license: ' Apache-2.0 ',
+        fork: 'FALSE',
+        archived: 'true',
+      }),
+    ).toEqual({
+      primaryLanguage: 'typescript',
+      licenseSpdx: 'apache-2.0',
+      isFork: false,
+      isArchived: true,
+    });
 
     expect(
-      parseRepositorySearchCursor(cursor, 'typescript backend'),
+      parseRepositorySearchFilters({
+        language: undefined,
+        license: undefined,
+        fork: undefined,
+        archived: undefined,
+      }),
     ).toEqual({
-      id: repository.id,
+      primaryLanguage: null,
+      licenseSpdx: null,
+      isFork: null,
+      isArchived: null,
     });
 
     expect(() =>
-      parseRepositorySearchCursor(cursor, 'react frontend'),
+      parseRepositorySearchFilters({
+        language: '---',
+        license: undefined,
+        fork: undefined,
+        archived: undefined,
+      }),
+    ).toThrow('filter language');
+
+    expect(() =>
+      parseRepositorySearchFilters({
+        language: undefined,
+        license: undefined,
+        fork: 'yes',
+        archived: undefined,
+      }),
+    ).toThrow('filter fork must be true or false.');
+  });
+
+  it('binds opaque search cursors to the normalized query and filters', () => {
+    const filters = {
+      primaryLanguage: 'typescript',
+      licenseSpdx: 'mit',
+      isFork: false,
+      isArchived: false,
+    };
+    const cursor = encodeRepositorySearchCursor(
+      repository,
+      'typescript backend',
+      filters,
+    );
+
+    expect(
+      parseRepositorySearchCursor(
+        cursor,
+        'typescript backend',
+        filters,
+      ),
+    ).toEqual({
+      id: repository.id,
+      query: 'typescript backend',
+      filters,
+    });
+
+    expect(() =>
+      parseRepositorySearchCursor(
+        cursor,
+        'react frontend',
+        filters,
+      ),
+    ).toThrow('cursor is invalid.');
+
+    expect(() =>
+      parseRepositorySearchCursor(
+        cursor,
+        'typescript backend',
+        {
+          ...filters,
+          licenseSpdx: 'apache-2.0',
+        },
+      ),
     ).toThrow('cursor is invalid.');
   });
 
