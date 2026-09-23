@@ -429,3 +429,32 @@ Missing metadata does not satisfy those filters.
 Fork/archive filters use canonical repository columns.
 
 The route/store remain independent of GitHub refresh and model providers.
+
+
+## Phase 4B.2 collection/numeric filter boundary
+
+Phase 4B.2 extends the same deterministic PostgreSQL retrieval path:
+
+~~~text
+lexical query
+        |
+normalized scalar filters
+        |
+normalized topic collection + star range
+        |
+scope-bound opaque cursor
+        |
+PostgreSQL
+  canonical text match
+  + metadata scalar predicates
+  + topic containment
+  + inclusive star bounds
+        |
+stable UUID page
+~~~
+
+Topic and star filters depend on measured repository metadata.
+
+Missing metadata never satisfies these filters.
+
+The lexical query remains required in Phase 4B.2; filter-only discovery is intentionally deferred to a separate contract decision.
