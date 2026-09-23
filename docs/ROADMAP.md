@@ -300,7 +300,7 @@ Status: in progress
 
 #### Phase 4B.1 — Scalar search filters
 
-Status: implemented; verification pending
+Status: complete
 
 - language exact filter;
 - SPDX license exact filter;
