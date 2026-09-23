@@ -1,11 +1,31 @@
-import { useEffect, useState } from 'react';
+import {
+  type FormEvent,
+  useEffect,
+  useState,
+} from 'react';
 
 import {
   fetchRepositoryCatalogPage,
+  fetchRepositoryDiscoveryPage,
+  normalizeRepositoryDiscoveryScope,
+  repositoryDiscoveryScopeFromSearch,
+  repositoryDiscoveryScopeToSearch,
   type RepositoryCatalogItem,
+  type RepositoryDiscoveryScope,
 } from './lib/repository-catalog-client';
 
 const PAGE_SIZE = 12;
+
+type DiscoveryFormState = Readonly<{
+  query: string;
+  language: string;
+  license: string;
+  topics: string;
+  minStars: string;
+  maxStars: string;
+  fork: '' | 'true' | 'false';
+  archived: '' | 'true' | 'false';
+}>;
 
 const compactNumber = new Intl.NumberFormat(undefined, {
   notation: 'compact',
@@ -28,6 +48,180 @@ function formatSyncDate(value: string): string {
     day: 'numeric',
     year: 'numeric',
   }).format(date)}`;
+}
+
+function formFromScope(
+  scope: RepositoryDiscoveryScope | null,
+): DiscoveryFormState {
+  return {
+    query: scope?.query ?? '',
+    language: scope?.filters.language ?? '',
+    license: scope?.filters.license ?? '',
+    topics: scope?.filters.topics.join(', ') ?? '',
+    minStars:
+      scope?.filters.minStars !== null &&
+      scope?.filters.minStars !== undefined
+        ? String(scope.filters.minStars)
+        : '',
+    maxStars:
+      scope?.filters.maxStars !== null &&
+      scope?.filters.maxStars !== undefined
+        ? String(scope.filters.maxStars)
+        : '',
+    fork:
+      scope?.filters.fork === null || scope?.filters.fork === undefined
+        ? ''
+        : String(scope.filters.fork) as 'true' | 'false',
+    archived:
+      scope?.filters.archived === null ||
+      scope?.filters.archived === undefined
+        ? ''
+        : String(scope.filters.archived) as 'true' | 'false',
+  };
+}
+
+function parseOptionalInteger(
+  value: string,
+  label: string,
+): number | null {
+  const normalized = value.trim();
+
+  if (!normalized) {
+    return null;
+  }
+
+  if (!/^\d+$/.test(normalized)) {
+    throw new Error(`${label} must be a nonnegative whole number.`);
+  }
+
+  const parsed = Number(normalized);
+
+  if (!Number.isSafeInteger(parsed)) {
+    throw new Error(`${label} is too large.`);
+  }
+
+  return parsed;
+}
+
+function scopeFromForm(
+  form: DiscoveryFormState,
+): RepositoryDiscoveryScope | null {
+  const minStars = parseOptionalInteger(form.minStars, 'Minimum stars');
+  const maxStars = parseOptionalInteger(form.maxStars, 'Maximum stars');
+
+  if (
+    minStars !== null &&
+    maxStars !== null &&
+    minStars > maxStars
+  ) {
+    throw new Error(
+      'Minimum stars must be less than or equal to maximum stars.',
+    );
+  }
+
+  const topics = form.topics
+    .split(',')
+    .map((topic) => topic.trim())
+    .filter(Boolean);
+
+  if (topics.length > 10) {
+    throw new Error('Use at most 10 topics.');
+  }
+
+  const scope = normalizeRepositoryDiscoveryScope({
+    query: form.query,
+    language: form.language,
+    license: form.license,
+    topics,
+    minStars,
+    maxStars,
+    fork: form.fork === '' ? null : form.fork === 'true',
+    archived:
+      form.archived === '' ? null : form.archived === 'true',
+  });
+
+  if (scope?.query && scope.query.length < 2) {
+    throw new Error('Search text must contain at least 2 characters.');
+  }
+
+  if (scope?.query && scope.query.length > 120) {
+    throw new Error('Search text must be 120 characters or fewer.');
+  }
+
+  for (const [label, value] of [
+    ['Language', scope?.filters.language],
+    ['License', scope?.filters.license],
+    ...((scope?.filters.topics ?? []).map(
+      (topic) => ['Topic', topic] as const,
+    )),
+  ] as const) {
+    if (value && value.length > 64) {
+      throw new Error(`${label} must be 64 characters or fewer.`);
+    }
+  }
+
+  return scope;
+}
+
+function browserScope(): RepositoryDiscoveryScope | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  return repositoryDiscoveryScopeFromSearch(window.location.search);
+}
+
+function updateBrowserScope(scope: RepositoryDiscoveryScope | null): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  const search = repositoryDiscoveryScopeToSearch(scope);
+  const url = search
+    ? `${window.location.pathname}?${search}`
+    : window.location.pathname;
+
+  window.history.pushState(null, '', url);
+}
+
+function discoveryLabels(
+  scope: RepositoryDiscoveryScope,
+): string[] {
+  const labels: string[] = [];
+
+  if (scope.query) {
+    labels.push(`Search: ${scope.query}`);
+  }
+
+  if (scope.filters.language) {
+    labels.push(`Language: ${scope.filters.language}`);
+  }
+
+  if (scope.filters.license) {
+    labels.push(`License: ${scope.filters.license}`);
+  }
+
+  for (const topic of scope.filters.topics) {
+    labels.push(`#${topic}`);
+  }
+
+  if (scope.filters.minStars !== null) {
+    labels.push(`≥ ${scope.filters.minStars} stars`);
+  }
+
+  if (scope.filters.maxStars !== null) {
+    labels.push(`≤ ${scope.filters.maxStars} stars`);
+  }
+
+  if (scope.filters.fork !== null) {
+    labels.push(scope.filters.fork ? 'Forks' : 'Not forks');
+  }
+
+  if (scope.filters.archived !== null) {
+    labels.push(scope.filters.archived ? 'Archived' : 'Not archived');
+  }
+
+  return labels;
 }
 
 function RepositoryCard({
@@ -128,20 +322,34 @@ function CatalogSkeleton() {
 }
 
 export function App() {
+  const initialScope = browserScope();
+  const [activeScope, setActiveScope] =
+    useState<RepositoryDiscoveryScope | null>(initialScope);
+  const [form, setForm] = useState<DiscoveryFormState>(
+    formFromScope(initialScope),
+  );
   const [repositories, setRepositories] = useState<RepositoryCatalogItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
+    const request = activeScope
+      ? fetchRepositoryDiscoveryPage({
+          scope: activeScope,
+          limit: PAGE_SIZE,
+          signal: controller.signal,
+        })
+      : fetchRepositoryCatalogPage({
+          limit: PAGE_SIZE,
+          signal: controller.signal,
+        });
 
-    void fetchRepositoryCatalogPage({
-      limit: PAGE_SIZE,
-      signal: controller.signal,
-    })
+    void request
       .then((page) => {
         setRepositories(page.data);
         setNextCursor(page.pagination.nextCursor);
@@ -156,7 +364,9 @@ export function App() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : 'Unable to load repositories right now.',
+            : activeScope
+              ? 'Unable to search repositories right now.'
+              : 'Unable to load repositories right now.',
         );
       })
       .finally(() => {
@@ -166,7 +376,54 @@ export function App() {
       });
 
     return () => controller.abort();
-  }, [reloadToken]);
+  }, [activeScope, reloadToken]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const scope = browserScope();
+      setInitialLoading(true);
+      setLoadingMore(false);
+      setErrorMessage(null);
+      setFormError(null);
+      setRepositories([]);
+      setNextCursor(null);
+      setActiveScope(scope);
+      setForm(formFromScope(scope));
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  function commitScope(scope: RepositoryDiscoveryScope | null): void {
+    updateBrowserScope(scope);
+    setInitialLoading(true);
+    setLoadingMore(false);
+    setErrorMessage(null);
+    setFormError(null);
+    setRepositories([]);
+    setNextCursor(null);
+    setActiveScope(scope);
+    setForm(formFromScope(scope));
+  }
+
+  function submitDiscovery(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+
+    try {
+      commitScope(scopeFromForm(form));
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : 'Check the discovery filters and try again.',
+      );
+    }
+  }
+
+  function clearDiscovery(): void {
+    commitScope(null);
+  }
 
   function retryCatalog(): void {
     setInitialLoading(true);
@@ -183,10 +440,16 @@ export function App() {
     setErrorMessage(null);
 
     try {
-      const page = await fetchRepositoryCatalogPage({
-        cursor: nextCursor,
-        limit: PAGE_SIZE,
-      });
+      const page = activeScope
+        ? await fetchRepositoryDiscoveryPage({
+            scope: activeScope,
+            cursor: nextCursor,
+            limit: PAGE_SIZE,
+          })
+        : await fetchRepositoryCatalogPage({
+            cursor: nextCursor,
+            limit: PAGE_SIZE,
+          });
 
       setRepositories((current) => {
         const existingIds = new Set(
@@ -203,7 +466,9 @@ export function App() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Unable to load more repositories right now.',
+          : activeScope
+            ? 'Unable to load more matches right now.'
+            : 'Unable to load more repositories right now.',
       );
     } finally {
       setLoadingMore(false);
@@ -211,6 +476,8 @@ export function App() {
   }
 
   const hasRepositories = repositories.length > 0;
+  const isDiscovery = activeScope !== null;
+  const activeLabels = activeScope ? discoveryLabels(activeScope) : [];
 
   return (
     <main className="app-shell">
@@ -224,29 +491,220 @@ export function App() {
           <span>RepoScout</span>
         </a>
 
-        <span className="phase-badge">Catalog · Phase 3C</span>
+        <span className="phase-badge">Discovery · Phase 4C</span>
       </header>
 
       <section className="catalog-intro" aria-labelledby="catalog-title">
-        <p className="eyebrow">Repository index</p>
+        <p className="eyebrow">Open-source discovery</p>
         <div className="catalog-intro-grid">
           <div>
             <h1 id="catalog-title">Discover open source worth knowing.</h1>
           </div>
           <p>
-            Browse the first repositories indexed by RepoScout. These are
-            canonical repository facts and measured GitHub metadata from our
-            own catalog—still without popularity ranking, AI scoring, or hidden
-            recommendation logic.
+            Search canonical repository text or narrow the index with measured
+            language, license, topic, star, fork, and archive filters. Results
+            are deterministic matches—not an AI score or hidden relevance rank.
           </p>
         </div>
+      </section>
+
+      <section
+        className="discovery-section"
+        aria-labelledby="discovery-heading"
+      >
+        <div className="discovery-heading">
+          <div>
+            <p className="catalog-kicker">Discovery controls</p>
+            <h2 id="discovery-heading">Find a useful repository</h2>
+          </div>
+          <p>
+            Leave search text empty to discover by filters only. Topic filters
+            use all-topic matching.
+          </p>
+        </div>
+
+        <form className="discovery-panel" onSubmit={submitDiscovery}>
+          <div className="discovery-search-row">
+            <label className="discovery-field discovery-field-search">
+              <span>Search</span>
+              <input
+                type="search"
+                value={form.query}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    query: event.target.value,
+                  }))
+                }
+                placeholder="TypeScript backend SDK"
+                maxLength={120}
+              />
+            </label>
+
+            <button className="primary-button" type="submit">
+              Apply discovery
+            </button>
+
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={clearDiscovery}
+            >
+              Clear
+            </button>
+          </div>
+
+          <div className="discovery-filter-grid">
+            <label className="discovery-field">
+              <span>Language</span>
+              <input
+                value={form.language}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    language: event.target.value,
+                  }))
+                }
+                placeholder="typescript"
+                maxLength={64}
+              />
+            </label>
+
+            <label className="discovery-field">
+              <span>License</span>
+              <input
+                value={form.license}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    license: event.target.value,
+                  }))
+                }
+                placeholder="mit"
+                maxLength={64}
+              />
+            </label>
+
+            <label className="discovery-field discovery-field-topics">
+              <span>Topics</span>
+              <input
+                value={form.topics}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    topics: event.target.value,
+                  }))
+                }
+                placeholder="backend, sdk"
+              />
+            </label>
+
+            <label className="discovery-field">
+              <span>Min stars</span>
+              <input
+                inputMode="numeric"
+                value={form.minStars}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    minStars: event.target.value,
+                  }))
+                }
+                placeholder="100"
+              />
+            </label>
+
+            <label className="discovery-field">
+              <span>Max stars</span>
+              <input
+                inputMode="numeric"
+                value={form.maxStars}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    maxStars: event.target.value,
+                  }))
+                }
+                placeholder="5000"
+              />
+            </label>
+
+            <label className="discovery-field">
+              <span>Fork state</span>
+              <select
+                value={form.fork}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    fork: event.target.value as DiscoveryFormState['fork'],
+                  }))
+                }
+              >
+                <option value="">Any</option>
+                <option value="false">Not forks</option>
+                <option value="true">Forks only</option>
+              </select>
+            </label>
+
+            <label className="discovery-field">
+              <span>Archive state</span>
+              <select
+                value={form.archived}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    archived:
+                      event.target.value as DiscoveryFormState['archived'],
+                  }))
+                }
+              >
+                <option value="">Any</option>
+                <option value="false">Active only</option>
+                <option value="true">Archived only</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="discovery-panel-footer">
+            <span>
+              Results currently use stable traversal order, not relevance
+              ranking.
+            </span>
+            <span>Up to 10 comma-separated topics.</span>
+          </div>
+
+          {formError ? (
+            <div className="inline-error discovery-form-error" role="alert">
+              <span
+                className="state-signal state-signal-error"
+                aria-hidden="true"
+              />
+              <span>{formError}</span>
+            </div>
+          ) : null}
+        </form>
+
+        {activeLabels.length > 0 ? (
+          <div className="active-discovery" aria-label="Active discovery scope">
+            <span className="active-discovery-label">Active</span>
+            <div className="active-discovery-chips">
+              {activeLabels.map((label) => (
+                <span key={label}>{label}</span>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </section>
 
       <section className="catalog-section" aria-labelledby="catalog-heading">
         <div className="catalog-heading-row">
           <div>
-            <p className="catalog-kicker">Live catalog</p>
-            <h2 id="catalog-heading">Indexed repositories</h2>
+            <p className="catalog-kicker">
+              {isDiscovery ? 'Discovery matches' : 'Live catalog'}
+            </p>
+            <h2 id="catalog-heading">
+              {isDiscovery ? 'Matching repositories' : 'Indexed repositories'}
+            </h2>
           </div>
 
           {!initialLoading && hasRepositories ? (
@@ -262,8 +720,13 @@ export function App() {
 
           {!initialLoading && errorMessage && !hasRepositories ? (
             <div className="catalog-state catalog-state-error">
-              <span className="state-signal state-signal-error" aria-hidden="true" />
-              <h3>Catalog unavailable</h3>
+              <span
+                className="state-signal state-signal-error"
+                aria-hidden="true"
+              />
+              <h3>
+                {isDiscovery ? 'Discovery unavailable' : 'Catalog unavailable'}
+              </h3>
               <p>{errorMessage}</p>
               <button
                 className="secondary-button"
@@ -278,11 +741,25 @@ export function App() {
           {!initialLoading && !errorMessage && !hasRepositories ? (
             <div className="catalog-state">
               <span className="state-signal" aria-hidden="true" />
-              <h3>No repositories indexed yet</h3>
+              <h3>
+                {isDiscovery
+                  ? 'No repositories match this discovery scope'
+                  : 'No repositories indexed yet'}
+              </h3>
               <p>
-                The catalog API is ready. Repositories will appear here as they
-                are ingested into RepoScout.
+                {isDiscovery
+                  ? 'Try a broader search, remove a filter, or return to the full catalog.'
+                  : 'The catalog API is ready. Repositories will appear here as they are ingested into RepoScout.'}
               </p>
+              {isDiscovery ? (
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={clearDiscovery}
+                >
+                  Browse full catalog
+                </button>
+              ) : null}
             </div>
           ) : null}
 
@@ -299,7 +776,10 @@ export function App() {
 
               {errorMessage ? (
                 <div className="inline-error" role="status">
-                  <span className="state-signal state-signal-error" aria-hidden="true" />
+                  <span
+                    className="state-signal state-signal-error"
+                    aria-hidden="true"
+                  />
                   <span>{errorMessage}</span>
                 </div>
               ) : null}
@@ -312,12 +792,18 @@ export function App() {
                     disabled={loadingMore}
                     onClick={() => void loadMore()}
                   >
-                    {loadingMore ? 'Loading repositories…' : 'Load more'}
+                    {loadingMore
+                      ? isDiscovery
+                        ? 'Loading matches…'
+                        : 'Loading repositories…'
+                      : 'Load more'}
                   </button>
                 ) : (
                   <span className="catalog-end">
                     <span className="signal-dot" aria-hidden="true" />
-                    You reached the end of the current index.
+                    {isDiscovery
+                      ? 'You reached the end of these matches.'
+                      : 'You reached the end of the current index.'}
                   </span>
                 )}
               </div>
@@ -327,7 +813,7 @@ export function App() {
       </section>
 
       <footer className="catalog-footer">
-        <span>Measured facts first. Discovery signals come next.</span>
+        <span>Deterministic search and filters. No hidden ranking.</span>
         <span>RepoScout · open-source repository intelligence</span>
       </footer>
     </main>
