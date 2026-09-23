@@ -101,7 +101,7 @@ RepoScout now collects measured stars, forks, GitHub open issue/PR count, primar
 
 **Phase 4A — deterministic lexical search API:** complete. It adds PostgreSQL-backed search over canonical repository text with bounded normalized queries and query-bound opaque pagination, without Jev or relevance ranking.
 
-**Phase 4B.1 — scalar search filters:** implemented and under verification. Search can now compose exact language, SPDX license, fork, and archived filters while preserving deterministic scope-bound pagination.
+**Phase 4B.1 — scalar search filters:** complete. Search can now compose exact language, SPDX license, fork, and archived filters while preserving deterministic scope-bound pagination.
 
 See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
 
