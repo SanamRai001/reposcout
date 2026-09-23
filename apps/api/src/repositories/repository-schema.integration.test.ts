@@ -22,6 +22,7 @@ const environment: DatabaseEnvironment = {
 const pool = createDatabasePool(environment);
 
 beforeEach(async () => {
+  await pool.query('DELETE FROM repository_submissions');
   await pool.query('DELETE FROM repositories');
 });
 
