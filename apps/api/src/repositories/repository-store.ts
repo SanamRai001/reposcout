@@ -584,7 +584,7 @@ export class RepositoryStore {
     if (query !== null) {
       values.push(query);
       conditions.push(
-        `${searchVector} @@ plainto_tsquery('simple', ${values.length})`,
+        `${searchVector} @@ plainto_tsquery('simple', ${sqlParameter(values.length)})`,
       );
     }
 
