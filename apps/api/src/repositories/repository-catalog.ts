@@ -134,7 +134,7 @@ export function parseRepositoryPageLimit(value: unknown): number {
 }
 
 export function parseRepositorySearchQuery(value: unknown): string | null {
-  if (value === undefined) {
+  if (value === undefined || value === null) {
     return null;
   }
 
