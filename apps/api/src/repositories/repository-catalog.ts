@@ -11,6 +11,7 @@ export const MAX_REPOSITORY_PAGE_SIZE = 50;
 export const MIN_REPOSITORY_SEARCH_QUERY_LENGTH = 2;
 export const MAX_REPOSITORY_SEARCH_QUERY_LENGTH = 120;
 export const MAX_REPOSITORY_SEARCH_FILTER_LENGTH = 64;
+export const MAX_REPOSITORY_SEARCH_TOPICS = 10;
 
 export type RepositoryCursor = Readonly<{
   id: string;
@@ -24,6 +25,9 @@ export type RepositoryPageInput = Readonly<{
 export type RepositorySearchFilters = Readonly<{
   primaryLanguage: string | null;
   licenseSpdx: string | null;
+  topics: readonly string[];
+  minStars: number | null;
+  maxStars: number | null;
   isFork: boolean | null;
   isArchived: boolean | null;
 }>;
@@ -31,6 +35,9 @@ export type RepositorySearchFilters = Readonly<{
 export const EMPTY_REPOSITORY_SEARCH_FILTERS: RepositorySearchFilters = {
   primaryLanguage: null,
   licenseSpdx: null,
+  topics: [],
+  minStars: null,
+  maxStars: null,
   isFork: null,
   isArchived: null,
 };
@@ -146,7 +153,7 @@ export function parseRepositorySearchQuery(value: unknown): string {
 
 function parseOptionalSearchTextFilter(
   value: unknown,
-  field: 'language' | 'license',
+  field: 'language' | 'license' | 'topic',
 ): string | null {
   if (value === undefined) {
     return null;
@@ -198,12 +205,90 @@ function parseOptionalSearchBooleanFilter(
   throw new Error(`filter ${field} must be true or false.`);
 }
 
+function parseSearchTopics(value: unknown): readonly string[] {
+  if (value === undefined) {
+    return [];
+  }
+
+  const rawValues = Array.isArray(value) ? value : [value];
+
+  if (
+    rawValues.length === 0 ||
+    rawValues.length > MAX_REPOSITORY_SEARCH_TOPICS
+  ) {
+    throw new Error(
+      `filter topic may be provided at most ${MAX_REPOSITORY_SEARCH_TOPICS} times.`,
+    );
+  }
+
+  const topics = rawValues.map((item) => {
+    const topic = parseOptionalSearchTextFilter(item, 'topic');
+
+    if (topic === null) {
+      throw new Error('filter topic must be non-empty.');
+    }
+
+    return topic;
+  });
+
+  return [...new Set(topics)].sort((left, right) =>
+    left.localeCompare(right),
+  );
+}
+
+function parseOptionalSearchIntegerFilter(
+  value: unknown,
+  field: 'minStars' | 'maxStars',
+): number | null {
+  if (value === undefined) {
+    return null;
+  }
+
+  if (typeof value !== 'string' || !/^\d+$/.test(value)) {
+    throw new Error(
+      `filter ${field} must be a nonnegative safe integer.`,
+    );
+  }
+
+  const parsed = Number(value);
+
+  if (!Number.isSafeInteger(parsed) || parsed < 0) {
+    throw new Error(
+      `filter ${field} must be a nonnegative safe integer.`,
+    );
+  }
+
+  return parsed;
+}
+
 export function parseRepositorySearchFilters(input: Readonly<{
   language: unknown;
   license: unknown;
+  topic: unknown;
+  minStars: unknown;
+  maxStars: unknown;
   fork: unknown;
   archived: unknown;
 }>): RepositorySearchFilters {
+  const minStars = parseOptionalSearchIntegerFilter(
+    input.minStars,
+    'minStars',
+  );
+  const maxStars = parseOptionalSearchIntegerFilter(
+    input.maxStars,
+    'maxStars',
+  );
+
+  if (
+    minStars !== null &&
+    maxStars !== null &&
+    minStars > maxStars
+  ) {
+    throw new Error(
+      'filter minStars must be less than or equal to maxStars.',
+    );
+  }
+
   return {
     primaryLanguage: parseOptionalSearchTextFilter(
       input.language,
@@ -213,6 +298,9 @@ export function parseRepositorySearchFilters(input: Readonly<{
       input.license,
       'license',
     ),
+    topics: parseSearchTopics(input.topic),
+    minStars,
+    maxStars,
     isFork: parseOptionalSearchBooleanFilter(input.fork, 'fork'),
     isArchived: parseOptionalSearchBooleanFilter(
       input.archived,
@@ -228,6 +316,10 @@ function repositorySearchFiltersEqual(
   return (
     left.primaryLanguage === right.primaryLanguage &&
     left.licenseSpdx === right.licenseSpdx &&
+    left.topics.length === right.topics.length &&
+    left.topics.every((topic, index) => topic === right.topics[index]) &&
+    left.minStars === right.minStars &&
+    left.maxStars === right.maxStars &&
     left.isFork === right.isFork &&
     left.isArchived === right.isArchived
   );
@@ -292,7 +384,7 @@ export function parseRepositorySearchCursor(
     return null;
   }
 
-  if (typeof value !== 'string' || value.length === 0 || value.length > 768) {
+  if (typeof value !== 'string' || value.length === 0 || value.length > 2048) {
     throw new Error('cursor is invalid.');
   }
 

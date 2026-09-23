@@ -57,6 +57,9 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
       const filters = parseRepositorySearchFilters({
         language: request.query.language,
         license: request.query.license,
+        topic: request.query.topic,
+        minStars: request.query.minStars,
+        maxStars: request.query.maxStars,
         fork: request.query.fork,
         archived: request.query.archived,
       });
@@ -89,6 +92,9 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
           filters: {
             language: filters.primaryLanguage,
             license: filters.licenseSpdx,
+            topics: filters.topics,
+            minStars: filters.minStars,
+            maxStars: filters.maxStars,
             fork: filters.isFork,
             archived: filters.isArchived,
           },

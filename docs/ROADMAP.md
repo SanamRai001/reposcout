@@ -312,14 +312,29 @@ Status: complete
 - no ranking change;
 - lexical query remains required.
 
-#### Phase 4B.2 — Collection/numeric filters
+#### Phase 4B.2 — Topic and star-range filters
+
+Status: complete
+
+- repeated topic filters;
+- all-topic containment semantics;
+- topic normalization/deduplication/sorting;
+- maximum 10 requested topics;
+- inclusive minimum stars;
+- inclusive maximum stars;
+- invalid range rejection;
+- missing metadata exclusion;
+- full cursor scope binding for topics/star ranges;
+- deterministic UUID ordering unchanged;
+- lexical query still required.
+
+#### Phase 4B.3 — Filter-only discovery
 
 Next:
-- topic filters;
-- bounded minimum/maximum stars;
-- evaluate clean filter-only discovery without a lexical query;
-- extend cursor scope to new filters;
-- keep deterministic pagination and sorting.
+- decide whether `q` should become optional on the existing discovery endpoint;
+- define empty-query/cursor semantics explicitly;
+- preserve the same authoritative filters and deterministic ordering;
+- avoid creating a second competing discovery contract.
 
 Later Phase 4 work:
 - lexical search;
