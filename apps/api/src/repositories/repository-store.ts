@@ -4,6 +4,7 @@ import type { PoolClient } from 'pg';
 
 import type { DatabasePool } from '../database/database.js';
 import {
+  assertRepositoryDiscoveryScope,
   isRepositoryId,
   parseRepositorySearchFilters,
   parseRepositorySearchQuery,
@@ -542,6 +543,7 @@ export class RepositoryStore {
           ? undefined
           : String(input.filters.isArchived),
     });
+    assertRepositoryDiscoveryScope(query, filters);
 
     if (
       input.cursor &&
@@ -576,10 +578,15 @@ export class RepositoryStore {
       )
     `;
 
-    const values: unknown[] = [query];
-    const conditions = [
-      `${searchVector} @@ plainto_tsquery('simple', $1)`,
-    ];
+    const values: unknown[] = [];
+    const conditions: string[] = [];
+
+    if (query !== null) {
+      values.push(query);
+      conditions.push(
+        `${searchVector} @@ plainto_tsquery('simple', ${values.length})`,
+      );
+    }
 
     if (filters.primaryLanguage !== null) {
       values.push(filters.primaryLanguage);
