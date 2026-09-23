@@ -552,6 +552,164 @@ button {
   margin-top: auto;
 }
 
+.discovery-section {
+  padding: 42px 0 12px;
+}
+
+.discovery-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(280px, 0.55fr);
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 18px;
+}
+
+.discovery-heading h2 {
+  margin: 7px 0 0;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  letter-spacing: -0.04em;
+}
+
+.discovery-heading > p {
+  margin: 0;
+  color: var(--rs-muted);
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+.discovery-panel {
+  padding: 18px;
+  border: 1px solid var(--rs-border);
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgb(87 230 177 / 3%), transparent 45%),
+    rgb(13 23 20 / 86%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 2%);
+}
+
+.discovery-search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.discovery-filter-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(130px, 1fr)
+    minmax(130px, 1fr)
+    minmax(190px, 1.35fr)
+    minmax(110px, 0.7fr)
+    minmax(110px, 0.7fr)
+    minmax(130px, 0.8fr)
+    minmax(130px, 0.8fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.discovery-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.discovery-field > span {
+  color: #81978f;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.discovery-field input,
+.discovery-field select {
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 12px;
+  border: 1px solid var(--rs-border);
+  border-radius: 10px;
+  outline: none;
+  color: var(--rs-text);
+  background: rgb(7 17 14 / 72%);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease;
+}
+
+.discovery-field input::placeholder {
+  color: #5e746c;
+}
+
+.discovery-field input:focus,
+.discovery-field select:focus {
+  border-color: rgb(87 230 177 / 56%);
+  background: rgb(7 17 14 / 92%);
+  box-shadow: 0 0 0 3px rgb(87 230 177 / 8%);
+}
+
+.discovery-field select {
+  cursor: pointer;
+}
+
+.discovery-panel .primary-button,
+.discovery-panel .secondary-button {
+  min-height: 43px;
+  margin-top: 0;
+  white-space: nowrap;
+}
+
+.discovery-panel-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 13px;
+  padding-top: 13px;
+  border-top: 1px solid rgb(36 54 47 / 58%);
+  color: #71877f;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.discovery-form-error {
+  margin-top: 12px;
+}
+
+.active-discovery {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.active-discovery-label {
+  flex: 0 0 auto;
+  padding-top: 5px;
+  color: var(--rs-primary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.active-discovery-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.active-discovery-chips span {
+  padding: 5px 8px;
+  border: 1px solid rgb(92 200 255 / 22%);
+  border-radius: 999px;
+  color: #9fc7d8;
+  background: rgb(92 200 255 / 5%);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.68rem;
+}
+
 .catalog-footer {
   display: flex;
   justify-content: space-between;
@@ -573,6 +731,19 @@ button {
 }
 
 @media (max-width: 940px) {
+  .discovery-heading {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .discovery-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .discovery-field-topics {
+    grid-column: span 2;
+  }
+
   .repository-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -588,6 +759,29 @@ button {
 }
 
 @media (max-width: 640px) {
+  .discovery-section {
+    padding-top: 34px;
+  }
+
+  .discovery-search-row,
+  .discovery-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .discovery-field-topics {
+    grid-column: auto;
+  }
+
+  .discovery-panel-footer,
+  .active-discovery {
+    flex-direction: column;
+  }
+
+  .discovery-panel .primary-button,
+  .discovery-panel .secondary-button {
+    width: 100%;
+  }
+
   .app-shell {
     width: min(100% - 24px, 1180px);
   }
