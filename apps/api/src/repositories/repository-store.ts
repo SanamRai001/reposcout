@@ -517,6 +517,18 @@ export class RepositoryStore {
     const filters = parseRepositorySearchFilters({
       language: input.filters.primaryLanguage ?? undefined,
       license: input.filters.licenseSpdx ?? undefined,
+      topic:
+        input.filters.topics.length === 0
+          ? undefined
+          : [...input.filters.topics],
+      minStars:
+        input.filters.minStars === null
+          ? undefined
+          : String(input.filters.minStars),
+      maxStars:
+        input.filters.maxStars === null
+          ? undefined
+          : String(input.filters.maxStars),
       fork:
         input.filters.isFork === null
           ? undefined
@@ -533,6 +545,12 @@ export class RepositoryStore {
         input.cursor.query !== query ||
         input.cursor.filters.primaryLanguage !== filters.primaryLanguage ||
         input.cursor.filters.licenseSpdx !== filters.licenseSpdx ||
+        input.cursor.filters.topics.length !== filters.topics.length ||
+        input.cursor.filters.topics.some(
+          (topic, index) => topic !== filters.topics[index],
+        ) ||
+        input.cursor.filters.minStars !== filters.minStars ||
+        input.cursor.filters.maxStars !== filters.maxStars ||
         input.cursor.filters.isFork !== filters.isFork ||
         input.cursor.filters.isArchived !== filters.isArchived
       )
@@ -571,6 +589,23 @@ export class RepositoryStore {
       conditions.push(
         `lower(m.license_spdx) = $${values.length}`,
       );
+    }
+
+    if (filters.topics.length > 0) {
+      values.push([...filters.topics]);
+      conditions.push(
+        `m.topics @> ${values.length}::text[]`,
+      );
+    }
+
+    if (filters.minStars !== null) {
+      values.push(filters.minStars);
+      conditions.push(`m.stars >= ${values.length}::bigint`);
+    }
+
+    if (filters.maxStars !== null) {
+      values.push(filters.maxStars);
+      conditions.push(`m.stars <= ${values.length}::bigint`);
     }
 
     if (filters.isFork !== null) {
