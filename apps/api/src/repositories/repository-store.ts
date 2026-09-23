@@ -562,30 +562,30 @@ export class RepositoryStore {
     if (filters.primaryLanguage !== null) {
       values.push(filters.primaryLanguage);
       conditions.push(
-        `lower(m.primary_language) = ${values.length}`,
+        `lower(m.primary_language) = $${values.length}`,
       );
     }
 
     if (filters.licenseSpdx !== null) {
       values.push(filters.licenseSpdx);
       conditions.push(
-        `lower(m.license_spdx) = ${values.length}`,
+        `lower(m.license_spdx) = $${values.length}`,
       );
     }
 
     if (filters.isFork !== null) {
       values.push(filters.isFork);
-      conditions.push(`r.is_fork = ${values.length}`);
+      conditions.push(`r.is_fork = $${values.length}`);
     }
 
     if (filters.isArchived !== null) {
       values.push(filters.isArchived);
-      conditions.push(`r.is_archived = ${values.length}`);
+      conditions.push(`r.is_archived = $${values.length}`);
     }
 
     if (input.cursor) {
       values.push(input.cursor.id);
-      conditions.push(`r.id > ${values.length}`);
+      conditions.push(`r.id > $${values.length}`);
     }
 
     values.push(fetchLimit);
@@ -598,7 +598,7 @@ export class RepositoryStore {
         LEFT JOIN repository_metadata m ON m.repository_id = r.id
         WHERE ${conditions.join('\n          AND ')}
         ORDER BY r.id ASC
-        LIMIT ${limitParameter}
+        LIMIT $${limitParameter}
       `,
       values,
     );
