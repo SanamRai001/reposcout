@@ -44,12 +44,12 @@ export const EMPTY_REPOSITORY_SEARCH_FILTERS: RepositorySearchFilters = {
 
 export type RepositorySearchCursor = Readonly<{
   id: string;
-  query: string;
+  query: string | null;
   filters: RepositorySearchFilters;
 }>;
 
 export type RepositorySearchPageInput = Readonly<{
-  query: string;
+  query: string | null;
   filters: RepositorySearchFilters;
   limit: number;
   cursor: RepositorySearchCursor | null;
@@ -100,7 +100,7 @@ type EncodedCursor = Readonly<{
 
 type EncodedSearchCursor = Readonly<{
   id: string;
-  query: string;
+  query: string | null;
   filters: RepositorySearchFilters;
 }>;
 
@@ -133,7 +133,11 @@ export function parseRepositoryPageLimit(value: unknown): number {
   return parsed;
 }
 
-export function parseRepositorySearchQuery(value: unknown): string {
+export function parseRepositorySearchQuery(value: unknown): string | null {
+  if (value === undefined) {
+    return null;
+  }
+
   if (typeof value !== 'string') {
     throw new Error('q must be a string between 2 and 120 characters.');
   }
@@ -309,6 +313,29 @@ export function parseRepositorySearchFilters(input: Readonly<{
   };
 }
 
+export function hasRepositorySearchFilters(
+  filters: RepositorySearchFilters,
+): boolean {
+  return (
+    filters.primaryLanguage !== null ||
+    filters.licenseSpdx !== null ||
+    filters.topics.length > 0 ||
+    filters.minStars !== null ||
+    filters.maxStars !== null ||
+    filters.isFork !== null ||
+    filters.isArchived !== null
+  );
+}
+
+export function assertRepositoryDiscoveryScope(
+  query: string | null,
+  filters: RepositorySearchFilters,
+): void {
+  if (query === null && !hasRepositorySearchFilters(filters)) {
+    throw new Error('search requires q or at least one filter.');
+  }
+}
+
 function repositorySearchFiltersEqual(
   left: RepositorySearchFilters,
   right: RepositorySearchFilters,
@@ -363,7 +390,7 @@ export function parseRepositoryCursor(value: unknown): RepositoryCursor | null {
 
 export function encodeRepositorySearchCursor(
   repository: Pick<RepositoryRecord, 'id'>,
-  query: string,
+  query: string | null,
   filters: RepositorySearchFilters,
 ): string {
   const payload: EncodedSearchCursor = {
@@ -377,7 +404,7 @@ export function encodeRepositorySearchCursor(
 
 export function parseRepositorySearchCursor(
   value: unknown,
-  query: string,
+  query: string | null,
   filters: RepositorySearchFilters,
 ): RepositorySearchCursor | null {
   if (value === undefined) {
