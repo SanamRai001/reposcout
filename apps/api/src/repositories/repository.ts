@@ -1,3 +1,8 @@
+export type RepositoryDiscoveryStatus =
+  | 'DISCOVERABLE'
+  | 'PENDING_MODERATION'
+  | 'REJECTED';
+
 export type RepositoryRecord = Readonly<{
   id: string;
   githubRepositoryId: string;
@@ -9,6 +14,7 @@ export type RepositoryRecord = Readonly<{
   description: string | null;
   isArchived: boolean;
   isFork: boolean;
+  discoveryStatus: RepositoryDiscoveryStatus;
   createdAtGithub: Date;
   updatedAtGithub: Date;
   pushedAtGithub: Date | null;
@@ -27,6 +33,7 @@ export type UpsertRepositoryInput = Readonly<{
   description: string | null;
   isArchived: boolean;
   isFork: boolean;
+  discoveryStatus: RepositoryDiscoveryStatus;
   createdAtGithub: Date;
   updatedAtGithub: Date;
   pushedAtGithub: Date | null;
