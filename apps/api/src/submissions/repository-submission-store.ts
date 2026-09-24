@@ -216,12 +216,12 @@ export class RepositorySubmissionStore {
       throw new Error('Submission id must be a valid UUID.');
     }
 
-    let result;
+    let updated: RepositorySubmissionRow | undefined;
 
     if (input.kind === 'valid') {
       assertResolvedRepository(input.repository);
 
-      result = await this.pool.query<RepositorySubmissionRow>(
+      const result = await this.pool.query<RepositorySubmissionRow>(
         `
           UPDATE repository_submissions
           SET
@@ -250,6 +250,7 @@ export class RepositorySubmissionStore {
           input.validatedAt,
         ],
       );
+      updated = result.rows[0];
     } else if (input.kind === 'duplicate') {
       assertResolvedRepository(input.repository);
 
@@ -257,7 +258,7 @@ export class RepositorySubmissionStore {
         throw new Error('Duplicate repository id must be a valid UUID.');
       }
 
-      result = await this.pool.query<RepositorySubmissionRow>(
+      const result = await this.pool.query<RepositorySubmissionRow>(
         `
           UPDATE repository_submissions
           SET
@@ -287,8 +288,9 @@ export class RepositorySubmissionStore {
           input.validatedAt,
         ],
       );
+      updated = result.rows[0];
     } else {
-      result = await this.pool.query<RepositorySubmissionRow>(
+      const result = await this.pool.query<RepositorySubmissionRow>(
         `
           UPDATE repository_submissions
           SET
@@ -309,9 +311,8 @@ export class RepositorySubmissionStore {
         `,
         [input.submissionId, input.validatedAt],
       );
+      updated = result.rows[0];
     }
-
-    const updated = result.rows[0];
 
     if (updated) {
       return mapRow(updated);
