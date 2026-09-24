@@ -164,7 +164,43 @@ describe('repositories schema', () => {
         data_type: 'timestamp with time zone',
         is_nullable: 'NO',
       },
+      {
+        column_name: 'discovery_status',
+        data_type: 'text',
+        is_nullable: 'NO',
+      },
     ]);
+  });
+
+  it('defaults canonical repositories to discoverable and rejects invalid discovery states', async () => {
+    const repository = createRepositoryFixture({
+      githubRepositoryId: '123456780',
+    });
+    await insertRepository(repository);
+
+    const current = await pool.query<{ discovery_status: string }>(
+      `
+        SELECT discovery_status
+        FROM repositories
+        WHERE id = $1
+      `,
+      [repository.id],
+    );
+
+    expect(current.rows[0]?.discovery_status).toBe('DISCOVERABLE');
+
+    await expect(
+      pool.query(
+        `
+          UPDATE repositories
+          SET discovery_status = 'UNREVIEWED'
+          WHERE id = $1
+        `,
+        [repository.id],
+      ),
+    ).rejects.toMatchObject({
+      code: '23514',
+    });
   });
 
   it('creates repository metadata with separate measured facts', async () => {
