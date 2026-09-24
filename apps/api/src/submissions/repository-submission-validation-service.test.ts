@@ -162,6 +162,40 @@ describe('RepositorySubmissionValidationService', () => {
     });
   });
 
+  it('records a token-visible private repository as INVALID before duplicate lookup', async () => {
+    const validatedAt = new Date('2026-09-24T02:30:00Z');
+    const recordValidation = vi.fn().mockResolvedValue({
+      ...pendingSubmission,
+      status: 'INVALID',
+      validationOutcome: 'INVALID',
+      validatedAt,
+    });
+    const findByGithubRepositoryId = vi.fn();
+    const service = new RepositorySubmissionValidationService(
+      {
+        fetchRepository: vi.fn().mockResolvedValue({
+          ...snapshot,
+          isPrivate: true,
+        }),
+      },
+      { findByGithubRepositoryId },
+      {
+        findById: vi.fn().mockResolvedValue(pendingSubmission),
+        recordValidation,
+      },
+      () => validatedAt,
+    );
+
+    await service.validate(pendingSubmission.id);
+
+    expect(findByGithubRepositoryId).not.toHaveBeenCalled();
+    expect(recordValidation).toHaveBeenCalledWith({
+      kind: 'invalid',
+      submissionId: pendingSubmission.id,
+      validatedAt,
+    });
+  });
+
   it('classifies canonical GitHub identity already in the index as DUPLICATE', async () => {
     const validatedAt = new Date('2026-09-24T03:00:00Z');
     const duplicate: RepositorySubmissionRecord = {
