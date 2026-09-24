@@ -190,6 +190,30 @@ export class RepositorySubmissionStore {
     return row ? mapRow(row) : null;
   }
 
+  async listPendingValidationCandidates(
+    limit: number,
+  ): Promise<RepositorySubmissionRecord[]> {
+    if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
+      throw new Error(
+        'Validation candidate limit must be an integer between 1 and 50.',
+      );
+    }
+
+    const result = await this.pool.query<RepositorySubmissionRow>(
+      `
+        SELECT ${SELECT_COLUMNS}
+        FROM repository_submissions
+        WHERE status = 'PENDING'
+          AND validation_outcome IS NULL
+        ORDER BY created_at ASC, id ASC
+        LIMIT $1
+      `,
+      [limit],
+    );
+
+    return result.rows.map(mapRow);
+  }
+
   async findPendingByNormalizedFullName(
     normalizedFullName: string,
   ): Promise<RepositorySubmissionRecord | null> {
