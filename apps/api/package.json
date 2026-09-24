@@ -27,7 +27,8 @@
     "eval:jev:benchmark": "tsx src/cli/print-jev-benchmark.ts",
     "eval:jev:live": "tsx src/cli/run-live-jev-evaluation.ts",
     "test:search": "vitest run src/repositories/repository-search.integration.test.ts",
-    "test:submissions": "vitest run src/submissions/repository-submission.integration.test.ts src/submissions/repository-submission-validation.integration.test.ts --maxWorkers=1"
+    "test:submissions": "vitest run src/submissions/repository-submission.integration.test.ts src/submissions/repository-submission-validation.integration.test.ts src/submissions/repository-submission-validation-orchestrator.integration.test.ts --maxWorkers=1",
+    "validate:submissions": "tsx src/cli/validate-pending-submissions.ts"
   },
   "dependencies": {
     "dotenv": "18.0.1",
