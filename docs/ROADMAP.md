@@ -417,7 +417,7 @@ Status: in progress
 
 ##### Phase 5B.2A — Validation orchestration
 
-Status: implemented; verification pending
+Status: complete
 
 - bounded oldest-first selection of PENDING + unvalidated submissions;
 - default batch size 10, maximum 50;
