@@ -394,7 +394,7 @@ Status: complete
 
 ### Phase 5B — Deterministic submission validation
 
-Status: in progress
+Status: complete
 
 #### Phase 5B.1 — Validation core and deterministic state
 
@@ -413,7 +413,7 @@ Status: complete
 
 #### Phase 5B.2 — Validation orchestration and evidence handoff
 
-Status: in progress
+Status: complete
 
 ##### Phase 5B.2A — Validation orchestration
 
@@ -433,7 +433,7 @@ Status: complete
 
 ##### Phase 5B.2B — Evidence handoff
 
-Status: implemented; verification pending
+Status: complete
 
 - bounded oldest-first selection of PENDING + VALID + incomplete submissions;
 - durable handoff link to the canonical repository;
