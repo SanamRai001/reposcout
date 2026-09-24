@@ -19,6 +19,7 @@ const repository: RepositoryRecord = {
   description: 'Repository fixture',
   isArchived: false,
   isFork: false,
+  discoveryStatus: 'PENDING_MODERATION',
   createdAtGithub: new Date('2025-01-01T00:00:00Z'),
   updatedAtGithub: new Date('2026-09-24T00:00:00Z'),
   pushedAtGithub: new Date('2026-09-24T01:00:00Z'),
@@ -88,6 +89,7 @@ describe('RepositorySubmissionEvidenceHandoffService', () => {
       'https://github.com/CanonicalOrg/Project',
       {
         expectedGithubRepositoryId: '987654321',
+        initialDiscoveryStatus: 'PENDING_MODERATION',
       },
     );
     expect(refreshReadme).toHaveBeenCalledWith(repository);
