@@ -272,9 +272,9 @@ The `docs/` directory contains the product specification, MVP boundaries, archit
 
 ## License
 
-RepoScout is being built publicly and is intended to become an open-source project.
+RepoScout is open source and licensed under the [MIT License](LICENSE).
 
-A formal open-source license has **not yet been selected**. Until a license is added, normal copyright rules apply to the source code.
+You are free to use, modify, distribute, and build on RepoScout under the terms of the MIT License.
 
 ---
 
