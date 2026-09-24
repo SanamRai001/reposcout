@@ -280,24 +280,40 @@ INVALID
 
 Phase 5A creates only `PENDING`.
 
+Phase 5B.1 adds deterministic validation fields:
+
+~~~text
+validation_outcome nullable   VALID | DUPLICATE | INVALID
+github_repository_id nullable
+resolved_owner nullable
+resolved_name nullable
+resolved_full_name nullable
+resolved_github_url nullable
+duplicate_repository_id nullable
+validated_at nullable
+~~~
+
 Rules:
 - submitted URL is normalized to `https://github.com/{owner}/{repository}`;
 - normalized owner/name are lowercase intake identifiers;
 - at most one `PENDING` row may exist for a normalized full name;
-- normalized owner/name are not a replacement for canonical GitHub repository ID;
-- GitHub ID resolution happens in a later deterministic validation phase.
+- intake identity is preserved after validation;
+- resolved GitHub identity is stored separately from intake identity;
+- canonical GitHub repository ID is authoritative for duplicate detection;
+- VALID remains status PENDING until a later workflow/moderator acts;
+- DUPLICATE and INVALID are deterministic terminal validation states;
+- transient GitHub failures do not set a validation outcome;
+- duplicate_repository_id links a duplicate submission to the indexed RepoScout repository.
 
-Future moderation/resolution fields may include:
+Future moderation fields may include:
 
-```text
-resolved_github_repository_id
+~~~text
 submitter_user_id nullable
 reason nullable
-duplicate_repository_id nullable
 reviewed_at nullable
 reviewed_by nullable
 rejection_reason nullable
-```
+~~~
 
 ### User
 

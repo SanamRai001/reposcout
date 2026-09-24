@@ -66,6 +66,7 @@ export type GithubRepositorySnapshot = Readonly<{
   description: string | null;
   isArchived: boolean;
   isFork: boolean;
+  isPrivate: boolean;
   createdAtGithub: Date;
   updatedAtGithub: Date;
   pushedAtGithub: Date | null;
@@ -506,6 +507,7 @@ function normalizeRepository(payload: unknown): GithubRepositorySnapshot {
     description: nullableString(payload, 'description'),
     isArchived: requiredBoolean(payload, 'archived'),
     isFork: requiredBoolean(payload, 'fork'),
+    isPrivate: requiredBoolean(payload, 'private'),
     createdAtGithub: requiredDate(payload, 'created_at'),
     updatedAtGithub: requiredDate(payload, 'updated_at'),
     pushedAtGithub: nullableDate(payload, 'pushed_at'),

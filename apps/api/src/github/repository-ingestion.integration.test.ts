@@ -41,6 +41,7 @@ function githubResponse(overrides: Record<string, unknown> = {}) {
     description: 'A useful project that deserves discovery.',
     archived: false,
     fork: false,
+    private: false,
     created_at: '2025-01-01T00:00:00Z',
     updated_at: '2026-09-20T00:00:00Z',
     pushed_at: '2026-09-20T03:00:00Z',

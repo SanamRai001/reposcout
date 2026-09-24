@@ -394,13 +394,30 @@ Status: complete
 
 ### Phase 5B — Deterministic submission validation
 
+Status: in progress
+
+#### Phase 5B.1 — Validation core and deterministic state
+
+Status: complete
+
+- resolve pending submissions through the existing GitHub client;
+- distinguish public availability from token visibility;
+- persist canonical GitHub repository ID/current identity;
+- re-check indexed duplicates using canonical GitHub ID;
+- VALID keeps the submission PENDING for later workflow;
+- DUPLICATE transitions submission status to DUPLICATE;
+- inaccessible/private repositories transition to INVALID;
+- rate-limit/network/provider failures remain retryable and do not alter state;
+- validation writes are race-safe/idempotent;
+- no moderation or model decision.
+
+#### Phase 5B.2 — Validation orchestration and evidence handoff
+
 Next:
-- resolve submitted repositories through GitHub;
-- verify repository is reachable/public;
-- capture canonical GitHub repository ID;
-- re-check duplicate identity using GitHub ID;
-- persist deterministic INVALID / DUPLICATE outcomes;
-- prepare valid submissions for evidence collection.
+- add a safe internal execution path for pending validation;
+- hand VALID submissions toward metadata/content evidence collection;
+- add retry/observability behavior around transient failures;
+- do not automatically approve repositories.
 
 ### Phase 5C — Moderation workflow
 

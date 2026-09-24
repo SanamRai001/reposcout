@@ -376,6 +376,38 @@ Important boundaries:
 - moderation/approval is not part of the intake transaction;
 - submission endpoints require rate limiting before broad public launch.
 
+## Deterministic submission validation
+
+Phase 5B.1 adds an internal validation boundary after intake:
+
+~~~text
+PENDING unvalidated submission
+        |
+RepositorySubmissionValidationService
+        |
+existing fixed-origin GithubClient.fetchRepository
+        |
+        +-- 404/inaccessible ----------> INVALID
+        |
+        +-- private=true --------------> INVALID
+        |
+        +-- transient provider failure -> unchanged / retryable
+        |
+        +-- public repository
+                |
+        canonical GitHub repository ID
+                |
+        RepositoryStore.findByGithubRepositoryId
+                |
+        +-- exists --------------------> DUPLICATE
+        |
+        +-- absent --------------------> VALID + still PENDING
+~~~
+
+The original intake identity is preserved. GitHub-resolved current identity is stored separately.
+
+Validation is authoritative/deterministic only. It does not call Jev, approve repositories, or perform moderation.
+
 ## Security baseline
 
 MUST:

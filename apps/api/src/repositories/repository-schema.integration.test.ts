@@ -342,7 +342,88 @@ describe('repositories schema', () => {
         data_type: 'timestamp with time zone',
         is_nullable: 'NO',
       },
+      {
+        column_name: 'validation_outcome',
+        data_type: 'text',
+        is_nullable: 'YES',
+      },
+      {
+        column_name: 'github_repository_id',
+        data_type: 'bigint',
+        is_nullable: 'YES',
+      },
+      {
+        column_name: 'resolved_owner',
+        data_type: 'text',
+        is_nullable: 'YES',
+      },
+      {
+        column_name: 'resolved_name',
+        data_type: 'text',
+        is_nullable: 'YES',
+      },
+      {
+        column_name: 'resolved_full_name',
+        data_type: 'text',
+        is_nullable: 'YES',
+      },
+      {
+        column_name: 'resolved_github_url',
+        data_type: 'text',
+        is_nullable: 'YES',
+      },
+      {
+        column_name: 'duplicate_repository_id',
+        data_type: 'uuid',
+        is_nullable: 'YES',
+      },
+      {
+        column_name: 'validated_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'YES',
+      },
     ]);
+  });
+
+  it('rejects incomplete deterministic submission validation state', async () => {
+    const submissionId = randomUUID();
+
+    await pool.query(
+      `
+        INSERT INTO repository_submissions (
+          id,
+          submitted_url,
+          normalized_owner,
+          normalized_name,
+          normalized_full_name,
+          status
+        )
+        VALUES (
+          $1,
+          'https://github.com/example/validation-project',
+          'example',
+          'validation-project',
+          'example/validation-project',
+          'PENDING'
+        )
+      `,
+      [submissionId],
+    );
+
+    await expect(
+      pool.query(
+        `
+          UPDATE repository_submissions
+          SET
+            validation_outcome = 'VALID',
+            validated_at = current_timestamp
+          WHERE id = $1
+        `,
+        [submissionId],
+      ),
+    ).rejects.toMatchObject({
+      code: '23514',
+    });
   });
 
   it('rejects malformed normalized submission identity at the database boundary', async () => {

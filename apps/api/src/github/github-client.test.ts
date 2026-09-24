@@ -17,6 +17,7 @@ function validPayload(overrides: Record<string, unknown> = {}) {
     description: 'Official JavaScript / TypeScript library for the OpenAI API',
     archived: false,
     fork: false,
+    private: false,
     created_at: '2023-04-19T00:00:00Z',
     updated_at: '2026-09-20T00:00:00Z',
     pushed_at: '2026-09-20T01:00:00Z',

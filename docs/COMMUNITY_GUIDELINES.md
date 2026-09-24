@@ -63,6 +63,8 @@ It does not yet:
 
 A pending submission means only **received for later validation**, not endorsed or approved.
 
+Phase 5B.1 deterministic validation may later mark an intake as INVALID or DUPLICATE, or record it as VALID while keeping it PENDING. VALID means the repository resolved as public and was not already indexed by canonical GitHub ID; it still does not mean approved.
+
 ## Moderation
 
 Initial moderation is maintainer-led.
