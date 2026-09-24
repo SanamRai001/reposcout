@@ -25,7 +25,6 @@ export function up(pgm: MigrationBuilder): void {
     duplicate_repository_id: {
       type: 'uuid',
       references: 'repositories',
-      onDelete: 'SET NULL',
     },
     validated_at: {
       type: 'timestamptz',
