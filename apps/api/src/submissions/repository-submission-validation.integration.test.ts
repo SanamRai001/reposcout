@@ -172,6 +172,38 @@ describe('repository submission validation with PostgreSQL', () => {
     );
   });
 
+  it('records an authenticated-but-private repository as INVALID', async () => {
+    const submission = await intakeService.submit(
+      'https://github.com/example/private-project',
+    );
+    const validatedAt = new Date('2026-09-24T02:30:00Z');
+    const service = validationService(
+      vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(
+          JSON.stringify(
+            githubPayload({
+              private: true,
+            }),
+          ),
+          { status: 200 },
+        ),
+      ),
+      validatedAt,
+    );
+
+    const result = await service.validate(submission.id);
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        status: 'INVALID',
+        validationOutcome: 'INVALID',
+        resolvedRepository: null,
+        duplicateRepositoryId: null,
+        validatedAt,
+      }),
+    );
+  });
+
   it('records GitHub 404 as INVALID without resolved identity', async () => {
     const submission = await intakeService.submit(
       'https://github.com/example/missing-project',
