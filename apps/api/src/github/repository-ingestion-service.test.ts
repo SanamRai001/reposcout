@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { GithubRepositorySnapshot } from './github-client.js';
-import { RepositoryIngestionService } from './repository-ingestion-service.js';
+import {
+  RepositoryIngestionIdentityMismatchError,
+  RepositoryIngestionService,
+} from './repository-ingestion-service.js';
 import type { UpsertRepositoryMetadataInput } from '../repositories/repository-metadata.js';
 import type {
   RepositoryRecord,
@@ -103,6 +106,29 @@ describe('RepositoryIngestionService', () => {
       },
     );
     expect(result).toBe(persistedRepository);
+  });
+
+  it('rejects an unexpected GitHub repository identity before persistence', async () => {
+    const fetchRepository = vi.fn().mockResolvedValue(fetchedRepository);
+    const upsertWithMetadata = vi.fn();
+    const service = new RepositoryIngestionService(
+      { fetchRepository },
+      { upsertWithMetadata },
+    );
+
+    await expect(
+      service.ingest('openai/openai-node', {
+        expectedGithubRepositoryId: '999999999',
+      }),
+    ).rejects.toEqual(
+      expect.objectContaining({
+        name: 'RepositoryIngestionIdentityMismatchError',
+        expectedGithubRepositoryId: '999999999',
+        actualGithubRepositoryId: '123456789',
+      }) satisfies Partial<RepositoryIngestionIdentityMismatchError>,
+    );
+
+    expect(upsertWithMetadata).not.toHaveBeenCalled();
   });
 
   it('does not persist when the GitHub fetch fails', async () => {
