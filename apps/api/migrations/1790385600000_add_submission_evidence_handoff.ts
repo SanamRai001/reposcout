@@ -26,6 +26,7 @@ export function up(pgm: MigrationBuilder): void {
         (
           handoff_repository_id IS NOT NULL
           AND evidence_handoff_completed_at IS NOT NULL
+          AND validation_outcome IS NOT NULL
           AND validation_outcome = 'VALID'
         )
       `,
