@@ -15,6 +15,7 @@ const repository: RepositoryRecord = {
   description: 'OpenAI Node SDK',
   isArchived: false,
   isFork: false,
+  discoveryStatus: 'DISCOVERABLE',
   createdAtGithub: new Date('2023-04-19T00:00:00Z'),
   updatedAtGithub: new Date('2026-09-20T00:00:00Z'),
   pushedAtGithub: new Date('2026-09-20T01:00:00Z'),
