@@ -316,6 +316,14 @@ Phase 5B.2B does not add:
 - Jev/model triage;
 - submitter notifications.
 
+## Status
+
+Complete.
+
+The Phase 5B.2B branch passed application verification, schema apply/rollback/reapply, repository persistence, existing evidence/ingestion/catalog/search regressions, and the full submission workflow integration gate.
+
+CI also caught and corrected a PostgreSQL CHECK-constraint null-semantics issue before merge: handoff completion now explicitly requires a non-null VALID validation outcome.
+
 ## Next checkpoint
 
 Phase 5C should introduce the human moderation workflow on top of fully validated and handed-off submissions:
