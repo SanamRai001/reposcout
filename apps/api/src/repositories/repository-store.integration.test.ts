@@ -44,6 +44,7 @@ function createInput(
     description: 'A repository persistence fixture.',
     isArchived: false,
     isFork: false,
+    discoveryStatus: 'DISCOVERABLE',
     createdAtGithub: new Date('2026-01-01T00:00:00.000Z'),
     updatedAtGithub: new Date('2026-01-02T00:00:00.000Z'),
     pushedAtGithub: new Date('2026-01-03T00:00:00.000Z'),
