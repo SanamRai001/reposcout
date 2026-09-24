@@ -199,6 +199,12 @@ Phase 5B.2A does not add:
 - submitter notifications;
 - Jev/model triage.
 
+## Status
+
+Complete.
+
+The Phase 5B.2A branch passed application verification, migration rollback/reapply, repository persistence/content/ingestion/catalog/search regressions, the expanded submission integration gate, orchestration unit coverage, and PostgreSQL connectivity.
+
 ## Next checkpoint
 
 ### Phase 5B.2B — Evidence handoff for VALID submissions
