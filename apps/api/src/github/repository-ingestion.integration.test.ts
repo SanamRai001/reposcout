@@ -80,6 +80,7 @@ describe('repository ingestion', () => {
 
     expect(repository.githubRepositoryId).toBe('24681012');
     expect(repository.fullName).toBe('small-org/useful-project');
+    expect(repository.discoveryStatus).toBe('DISCOVERABLE');
     expect(repository.lastSyncedAt.toISOString()).toBe(
       '2026-09-21T10:00:00.000Z',
     );
