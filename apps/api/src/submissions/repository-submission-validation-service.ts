@@ -95,6 +95,14 @@ export class RepositorySubmissionValidationService {
       throw error;
     }
 
+    if (snapshot.isPrivate) {
+      return this.submissionStore.recordValidation({
+        kind: 'invalid',
+        submissionId: submission.id,
+        validatedAt: this.now(),
+      });
+    }
+
     const repository = resolvedIdentity(snapshot);
     const indexed =
       await this.repositoryLookup.findByGithubRepositoryId(
