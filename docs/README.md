@@ -37,6 +37,7 @@ Start here if you are contributing to the project.
 - [PHASE_5A_SUBMISSION_INTAKE.md](PHASE_5A_SUBMISSION_INTAKE.md) — URL-only community submission intake, duplicate protection, persistence, and API boundaries.
 - [PHASE_5B1_SUBMISSION_VALIDATION.md](PHASE_5B1_SUBMISSION_VALIDATION.md) — deterministic GitHub validation, canonical-ID duplicate detection, and retryable provider failures.
 - [PHASE_5B2A_VALIDATION_ORCHESTRATION.md](PHASE_5B2A_VALIDATION_ORCHESTRATION.md) — bounded internal validation batches, retry observability, and rate-limit stop behavior.
+- [PHASE_5B2B_EVIDENCE_HANDOFF.md](PHASE_5B2B_EVIDENCE_HANDOFF.md) — VALID-submission handoff into canonical ingestion, README/contribution evidence, durable completion, and retry boundaries.
 
 ## Community
 
