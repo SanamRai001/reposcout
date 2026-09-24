@@ -861,3 +861,58 @@ These conflicts remain separate so the UI can explain them accurately.
 Phase 5A creates the backend write contract but does not claim broad-public readiness.
 
 Rate limiting, spam/abuse controls, deterministic GitHub validation, moderation, and operational review remain required before broad launch.
+
+
+## D-090 — Preserve submission intake identity separately from GitHub-resolved identity
+
+**Status:** Accepted
+
+Phase 5B.1 does not rewrite the URL/normalized owner/name captured during Phase 5A.
+
+GitHub's resolved repository ID, owner, name, full name, and URL are stored separately so RepoScout can audit what was submitted versus what GitHub authoritatively resolved.
+
+## D-091 — Canonical GitHub repository ID decides deterministic submission duplicates
+
+**Status:** Accepted
+
+Owner/name checks at intake are a convenience only.
+
+After GitHub resolution, RepoScout re-checks the canonical GitHub repository ID against the indexed repository table.
+
+This catches renamed/transferred repositories and records the indexed RepoScout repository UUID on DUPLICATE outcomes.
+
+## D-092 — Token-visible private repositories are invalid community submissions
+
+**Status:** Accepted
+
+GitHub reachability through RepoScout's authenticated server token does not prove public availability.
+
+Phase 5B.1 records a resolved repository with GitHub `private = true` as INVALID.
+
+Public community discovery must not depend on privileged token visibility.
+
+## D-093 — Transient GitHub failures never become deterministic validation outcomes
+
+**Status:** Accepted
+
+Only authoritative not-found/inaccessible or private state becomes INVALID.
+
+Rate limiting, timeout/network errors, GitHub request failures, and malformed external responses leave the submission PENDING and unvalidated so later orchestration can retry safely.
+
+## D-094 — VALID submission validation does not approve the repository
+
+**Status:** Accepted
+
+A successful unique public GitHub resolution records `validation_outcome = VALID` while submission `status` remains PENDING.
+
+Validation establishes factual eligibility only.
+
+Human moderation/approval remains a separate later phase.
+
+## D-095 — Submission validation writes are idempotent and first-writer-safe
+
+**Status:** Accepted
+
+The store only transitions a row while it is PENDING and has no validation outcome.
+
+Concurrent validators cannot overwrite a deterministic outcome. A losing validator reads and returns the already-recorded result.
