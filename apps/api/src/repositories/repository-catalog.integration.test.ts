@@ -52,6 +52,7 @@ afterAll(async () => {
 function createInput(
   githubRepositoryId: string,
   name: string,
+  overrides: Partial<UpsertRepositoryInput> = {},
 ): UpsertRepositoryInput {
   return {
     githubRepositoryId,
@@ -63,10 +64,12 @@ function createInput(
     description: `Catalog fixture ${name}`,
     isArchived: false,
     isFork: false,
+    discoveryStatus: 'DISCOVERABLE',
     createdAtGithub: new Date('2026-01-01T00:00:00.000Z'),
     updatedAtGithub: new Date('2026-09-20T00:00:00.000Z'),
     pushedAtGithub: new Date('2026-09-20T01:00:00.000Z'),
     lastSyncedAt: new Date('2026-09-21T00:00:00.000Z'),
+    ...overrides,
   };
 }
 
@@ -129,6 +132,48 @@ describe('repository catalog API with PostgreSQL', () => {
     ];
 
     expect(new Set(allIds).size).toBe(3);
+  });
+
+  it('keeps staged moderation repositories out of every public catalog surface', async () => {
+    const staged = await repositoryStore.upsert(
+      createInput('399999999', 'pending-review-project', {
+        discoveryStatus: 'PENDING_MODERATION',
+        description: 'Hidden until moderation approves it.',
+      }),
+    );
+    const baseUrl = await startApp();
+
+    const listResponse = await fetch(`${baseUrl}/api/repositories`);
+    const listBody = (await listResponse.json()) as {
+      data: Array<{ id: string }>;
+    };
+
+    expect(listResponse.status).toBe(200);
+    expect(listBody.data).toEqual([]);
+
+    const searchResponse = await fetch(
+      `${baseUrl}/api/repositories/search?q=pending-review-project`,
+    );
+    const searchBody = (await searchResponse.json()) as {
+      data: Array<{ id: string }>;
+    };
+
+    expect(searchResponse.status).toBe(200);
+    expect(searchBody.data).toEqual([]);
+
+    const detailResponse = await fetch(
+      `${baseUrl}/api/repositories/${staged.id}`,
+    );
+
+    expect(detailResponse.status).toBe(404);
+
+    const internal = await repositoryStore.findById(staged.id);
+    expect(internal).toEqual(
+      expect.objectContaining({
+        id: staged.id,
+        discoveryStatus: 'PENDING_MODERATION',
+      }),
+    );
   });
 
   it('returns canonical detail with measured metadata from PostgreSQL', async () => {
