@@ -398,7 +398,7 @@ Status: in progress
 
 #### Phase 5B.1 — Validation core and deterministic state
 
-Status: implemented; verification pending
+Status: complete
 
 - resolve pending submissions through the existing GitHub client;
 - distinguish public availability from token visibility;
