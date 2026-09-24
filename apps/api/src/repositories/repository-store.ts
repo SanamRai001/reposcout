@@ -17,7 +17,11 @@ import type {
   RepositoryMetadataRecord,
   UpsertRepositoryMetadataInput,
 } from './repository-metadata.js';
-import type { RepositoryRecord, UpsertRepositoryInput } from './repository.js';
+import type {
+  RepositoryDiscoveryStatus,
+  RepositoryRecord,
+  UpsertRepositoryInput,
+} from './repository.js';
 
 type RepositoryRow = {
   id: string;
@@ -30,6 +34,7 @@ type RepositoryRow = {
   description: string | null;
   is_archived: boolean;
   is_fork: boolean;
+  discovery_status: RepositoryDiscoveryStatus;
   created_at_github: Date;
   updated_at_github: Date;
   pushed_at_github: Date | null;
@@ -75,6 +80,7 @@ const SELECT_COLUMNS = `
   description,
   is_archived,
   is_fork,
+  discovery_status,
   created_at_github,
   updated_at_github,
   pushed_at_github,
@@ -95,6 +101,7 @@ const UPSERT_REPOSITORY_SQL = `
     description,
     is_archived,
     is_fork,
+    discovery_status,
     created_at_github,
     updated_at_github,
     pushed_at_github,
@@ -114,7 +121,8 @@ const UPSERT_REPOSITORY_SQL = `
     $11,
     $12,
     $13,
-    $14
+    $14,
+    $15
   )
   ON CONFLICT (github_repository_id)
   DO UPDATE SET
@@ -191,6 +199,7 @@ const CATALOG_SELECT_COLUMNS = `
   r.description,
   r.is_archived,
   r.is_fork,
+  r.discovery_status,
   r.created_at_github,
   r.updated_at_github,
   r.pushed_at_github,
@@ -221,6 +230,7 @@ function repositoryParams(input: UpsertRepositoryInput): unknown[] {
     input.description,
     input.isArchived,
     input.isFork,
+    input.discoveryStatus,
     input.createdAtGithub,
     input.updatedAtGithub,
     input.pushedAtGithub,
@@ -256,6 +266,7 @@ function mapRepositoryRow(row: RepositoryRow): RepositoryRecord {
     description: row.description,
     isArchived: row.is_archived,
     isFork: row.is_fork,
+    discoveryStatus: row.discovery_status,
     createdAtGithub: row.created_at_github,
     updatedAtGithub: row.updated_at_github,
     pushedAtGithub: row.pushed_at_github,
@@ -528,6 +539,28 @@ export class RepositoryStore {
     return row ? mapCatalogRow(row) : null;
   }
 
+  async findDiscoverableById(
+    id: string,
+  ): Promise<RepositoryCatalogRecord | null> {
+    if (!isRepositoryId(id)) {
+      throw new Error('id must be a valid repository UUID.');
+    }
+
+    const result = await this.pool.query<RepositoryCatalogRow>(
+      `
+        SELECT ${CATALOG_SELECT_COLUMNS}
+        FROM repositories r
+        LEFT JOIN repository_metadata m ON m.repository_id = r.id
+        WHERE r.id = $1
+          AND r.discovery_status = 'DISCOVERABLE'
+      `,
+      [id],
+    );
+
+    const row = result.rows[0];
+    return row ? mapCatalogRow(row) : null;
+  }
+
   async searchPage(
     input: RepositorySearchPageInput,
   ): Promise<RepositoryPage> {
@@ -596,7 +629,9 @@ export class RepositoryStore {
     `;
 
     const values: unknown[] = [];
-    const conditions: string[] = [];
+    const conditions: string[] = [
+      "r.discovery_status = 'DISCOVERABLE'",
+    ];
 
     if (query !== null) {
       values.push(query);
@@ -691,7 +726,8 @@ export class RepositoryStore {
             SELECT ${CATALOG_SELECT_COLUMNS}
             FROM repositories r
             LEFT JOIN repository_metadata m ON m.repository_id = r.id
-            WHERE r.id > $1
+            WHERE r.discovery_status = 'DISCOVERABLE'
+              AND r.id > $1
             ORDER BY r.id ASC
             LIMIT $2
           `,
@@ -702,6 +738,7 @@ export class RepositoryStore {
             SELECT ${CATALOG_SELECT_COLUMNS}
             FROM repositories r
             LEFT JOIN repository_metadata m ON m.repository_id = r.id
+            WHERE r.discovery_status = 'DISCOVERABLE'
             ORDER BY r.id ASC
             LIMIT $1
           `,
