@@ -293,6 +293,13 @@ duplicate_repository_id nullable
 validated_at nullable
 ~~~
 
+Phase 5B.2B adds durable evidence-handoff state:
+
+~~~text
+handoff_repository_id nullable
+evidence_handoff_completed_at nullable
+~~~
+
 Rules:
 - submitted URL is normalized to `https://github.com/{owner}/{repository}`;
 - normalized owner/name are lowercase intake identifiers;
@@ -303,7 +310,12 @@ Rules:
 - VALID remains status PENDING until a later workflow/moderator acts;
 - DUPLICATE and INVALID are deterministic terminal validation states;
 - transient GitHub failures do not set a validation outcome;
-- duplicate_repository_id links a duplicate submission to the indexed RepoScout repository.
+- duplicate_repository_id links a duplicate submission to the indexed RepoScout repository;
+- handoff_repository_id links a successfully prepared VALID submission to the canonical RepoScout repository;
+- handoff_repository_id and evidence_handoff_completed_at are both null until the full evidence handoff succeeds;
+- evidence handoff completion requires validation_outcome = VALID;
+- evidence handoff does not change status from PENDING and is not approval;
+- partial ingestion/evidence writes may exist while handoff completion remains null, allowing safe retry.
 
 Future moderation fields may include:
 

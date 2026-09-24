@@ -394,7 +394,7 @@ Status: complete
 
 ### Phase 5B — Deterministic submission validation
 
-Status: in progress
+Status: complete
 
 #### Phase 5B.1 — Validation core and deterministic state
 
@@ -413,7 +413,7 @@ Status: complete
 
 #### Phase 5B.2 — Validation orchestration and evidence handoff
 
-Status: in progress
+Status: complete
 
 ##### Phase 5B.2A — Validation orchestration
 
@@ -433,14 +433,22 @@ Status: complete
 
 ##### Phase 5B.2B — Evidence handoff
 
-Next:
-- hand already VALID submissions into canonical repository ingestion;
-- refresh measured metadata;
-- refresh bounded README evidence;
-- refresh contribution-document evidence;
-- isolate evidence failures;
-- keep submission status PENDING;
-- do not automatically approve repositories.
+Status: complete
+
+- bounded oldest-first selection of PENDING + VALID + incomplete submissions;
+- durable handoff link to the canonical repository;
+- durable evidence-handoff completion timestamp;
+- reuse canonical repository ingestion + measured metadata persistence;
+- verify validated GitHub repository ID before ingestion persistence;
+- reuse README evidence refresh;
+- reuse contribution-document evidence refresh;
+- isolate retryable evidence failures;
+- allow safe partial writes without marking handoff complete;
+- rate-limit response stops later provider stages and the remaining selected batch;
+- idempotent already-completed handoff behavior;
+- internal batch CLI;
+- submission remains PENDING;
+- no automatic approval.
 
 ### Phase 5C — Moderation workflow
 

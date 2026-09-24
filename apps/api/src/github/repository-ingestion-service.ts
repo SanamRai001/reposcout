@@ -23,6 +23,22 @@ type RepositoryWriter = Readonly<{
 
 type GithubRepositoryReader = Pick<GithubClient, 'fetchRepository'>;
 
+export type RepositoryIngestionOptions = Readonly<{
+  expectedGithubRepositoryId?: string;
+}>;
+
+export class RepositoryIngestionIdentityMismatchError extends Error {
+  public constructor(
+    public readonly expectedGithubRepositoryId: string,
+    public readonly actualGithubRepositoryId: string,
+  ) {
+    super(
+      `GitHub repository identity changed during ingestion: expected ${expectedGithubRepositoryId}, received ${actualGithubRepositoryId}.`,
+    );
+    this.name = 'RepositoryIngestionIdentityMismatchError';
+  }
+}
+
 function toUpsertInput(
   repository: GithubRepositorySnapshot,
   syncedAt: Date,
@@ -51,11 +67,24 @@ export class RepositoryIngestionService {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  async ingest(referenceValue: string): Promise<RepositoryRecord> {
+  async ingest(
+    referenceValue: string,
+    options: RepositoryIngestionOptions = {},
+  ): Promise<RepositoryRecord> {
     const reference: GithubRepositoryReference =
       parseGithubRepositoryReference(referenceValue);
     const fetchedAt = this.now();
     const repository = await this.githubClient.fetchRepository(reference);
+
+    if (
+      options.expectedGithubRepositoryId &&
+      repository.githubRepositoryId !== options.expectedGithubRepositoryId
+    ) {
+      throw new RepositoryIngestionIdentityMismatchError(
+        options.expectedGithubRepositoryId,
+        repository.githubRepositoryId,
+      );
+    }
 
     return this.repositoryStore.upsertWithMetadata(
       toUpsertInput(repository, fetchedAt),

@@ -66,9 +66,11 @@ The backend currently supports:
 - deterministic submission validation;
 - pending-validation orchestration;
 - retryable-failure reporting;
-- rate-limit-aware early stopping.
+- rate-limit-aware early stopping;
+- VALID-submission evidence handoff into canonical repository ingestion;
+- measured metadata, README, and contribution-evidence refresh for moderation preparation.
 
-Public moderation workflows, abuse controls, evidence handoff, and the final submission UI remain later work.
+Public moderation workflows, abuse controls, and the final submission UI remain later work.
 
 ## Why RepoScout?
 
@@ -202,7 +204,9 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 5A — community submission intake: complete.
 - Phase 5B.1 — deterministic submission validation: complete.
 - Phase 5B.2A — validation orchestration: complete.
-- Evidence handoff, moderation, abuse controls, and the public submission UI remain future phases.
+- Phase 5B.2B — evidence handoff: complete.
+- Phase 5B — deterministic submission validation + evidence preparation: complete.
+- Moderation, abuse controls, and the public submission UI remain future phases.
 
 </details>
 

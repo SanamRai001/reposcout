@@ -955,3 +955,67 @@ The orchestration layer may produce VALID, DUPLICATE, INVALID, or retryable oper
 VALID remains PENDING and only becomes eligible for Phase 5B.2B evidence handoff.
 
 Human moderation remains authoritative for approval in Phase 5C.
+
+
+## D-100 — Evidence handoff completion is separate from approval
+
+**Status:** Accepted
+
+Phase 5B.2B may ingest the repository, refresh measured metadata, and collect evidence for a VALID submission, but it must leave submission status PENDING.
+
+The durable handoff marker means the repository is prepared for moderation. It does not mean RepoScout has approved or endorsed the submission.
+
+Phase 5C human moderation remains authoritative for APPROVED/REJECTED transitions.
+
+## D-101 — Persist only minimal durable handoff state
+
+**Status:** Accepted
+
+RepoScout adds only:
+- `handoff_repository_id`;
+- `evidence_handoff_completed_at`.
+
+A handoff is either incomplete with both fields null or complete with both fields present.
+
+No persistent attempt count, retry schedule, lease, or job table is introduced before background-worker needs justify it.
+
+## D-102 — Re-verify canonical GitHub repository ID before handoff ingestion persistence
+
+**Status:** Accepted
+
+A submission may be validated at one time and handed off later.
+
+The fresh ingestion fetch must match the GitHub repository ID stored by deterministic validation before any new repository state is persisted.
+
+Owner/name is not sufficient because repositories can be renamed/transferred and paths can change.
+
+## D-103 — Partial evidence writes are allowed; completion requires all stages
+
+**Status:** Accepted
+
+Canonical repository/metadata, README evidence, and contribution evidence are separate idempotent/stale-safe persistence boundaries around external GitHub calls.
+
+Phase 5B.2B does not attempt one transaction across those network operations.
+
+A partial provider failure may therefore leave useful already-written evidence, but `evidence_handoff_completed_at` remains null until every required stage succeeds.
+
+The next handoff run safely retries.
+
+## D-104 — Rate limiting stops later handoff provider work and the selected batch
+
+**Status:** Accepted
+
+When any handoff stage receives a GitHub rate-limit response, RepoScout:
+- preserves retryAt when available;
+- skips later GitHub stages for that submission;
+- stops the remaining selected batch.
+
+Other isolated provider request/response failures remain observable and may allow later independent evidence stages to run.
+
+## D-105 — Submission handoff reuses canonical ingestion and evidence services
+
+**Status:** Accepted
+
+Phase 5B.2B must call the existing RepositoryIngestionService, RepositoryReadmeService, and RepositoryContributionEvidenceService.
+
+Submission workflow code must not create parallel repository normalization, metadata, README, or contribution-evidence logic.

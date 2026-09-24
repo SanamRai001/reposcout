@@ -23,6 +23,8 @@ function submission(
     resolvedRepository: null,
     duplicateRepositoryId: null,
     validatedAt: null,
+    handoffRepositoryId: null,
+    evidenceHandoffCompletedAt: null,
     createdAt: new Date('2026-09-24T00:00:00Z'),
     updatedAt: new Date('2026-09-24T00:00:00Z'),
     ...overrides,

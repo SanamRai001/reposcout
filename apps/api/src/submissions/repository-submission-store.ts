@@ -5,6 +5,7 @@ import { isRepositoryId } from '../repositories/repository-catalog.js';
 import type {
   CreateRepositorySubmissionInput,
   CreateRepositorySubmissionResult,
+  RecordRepositorySubmissionEvidenceHandoffInput,
   RecordRepositorySubmissionValidationInput,
   RepositorySubmissionRecord,
   RepositorySubmissionStatus,
@@ -27,6 +28,8 @@ type RepositorySubmissionRow = {
   resolved_github_url: string | null;
   duplicate_repository_id: string | null;
   validated_at: Date | null;
+  handoff_repository_id: string | null;
+  evidence_handoff_completed_at: Date | null;
   created_at: Date;
   updated_at: Date;
 };
@@ -46,6 +49,8 @@ const SELECT_COLUMNS = `
   resolved_github_url,
   duplicate_repository_id,
   validated_at,
+  handoff_repository_id,
+  evidence_handoff_completed_at,
   created_at,
   updated_at
 `;
@@ -84,6 +89,8 @@ function mapRow(row: RepositorySubmissionRow): RepositorySubmissionRecord {
     resolvedRepository: mapResolvedRepository(row),
     duplicateRepositoryId: row.duplicate_repository_id,
     validatedAt: row.validated_at,
+    handoffRepositoryId: row.handoff_repository_id,
+    evidenceHandoffCompletedAt: row.evidence_handoff_completed_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -212,6 +219,86 @@ export class RepositorySubmissionStore {
     );
 
     return result.rows.map(mapRow);
+  }
+
+  async listPendingEvidenceHandoffCandidates(
+    limit: number,
+  ): Promise<RepositorySubmissionRecord[]> {
+    if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
+      throw new Error(
+        'Evidence handoff candidate limit must be an integer between 1 and 50.',
+      );
+    }
+
+    const result = await this.pool.query<RepositorySubmissionRow>(
+      `
+        SELECT ${SELECT_COLUMNS}
+        FROM repository_submissions
+        WHERE status = 'PENDING'
+          AND validation_outcome = 'VALID'
+          AND evidence_handoff_completed_at IS NULL
+        ORDER BY validated_at ASC, id ASC
+        LIMIT $1
+      `,
+      [limit],
+    );
+
+    return result.rows.map(mapRow);
+  }
+
+  async recordEvidenceHandoffComplete(
+    input: RecordRepositorySubmissionEvidenceHandoffInput,
+  ): Promise<RepositorySubmissionRecord> {
+    if (!isRepositoryId(input.submissionId)) {
+      throw new Error('Submission id must be a valid UUID.');
+    }
+
+    if (!isRepositoryId(input.repositoryId)) {
+      throw new Error('Handoff repository id must be a valid UUID.');
+    }
+
+    const result = await this.pool.query<RepositorySubmissionRow>(
+      `
+        UPDATE repository_submissions
+        SET
+          handoff_repository_id = $2,
+          evidence_handoff_completed_at = $3,
+          updated_at = current_timestamp
+        WHERE id = $1
+          AND status = 'PENDING'
+          AND validation_outcome = 'VALID'
+          AND evidence_handoff_completed_at IS NULL
+        RETURNING ${SELECT_COLUMNS}
+      `,
+      [
+        input.submissionId,
+        input.repositoryId,
+        input.completedAt,
+      ],
+    );
+
+    const updated = result.rows[0];
+
+    if (updated) {
+      return mapRow(updated);
+    }
+
+    const current = await this.findById(input.submissionId);
+
+    if (!current) {
+      throw new Error('Submission does not exist.');
+    }
+
+    if (
+      current.handoffRepositoryId !== null &&
+      current.evidenceHandoffCompletedAt !== null
+    ) {
+      return current;
+    }
+
+    throw new Error(
+      'Submission is no longer eligible for evidence handoff.',
+    );
   }
 
   async findPendingByNormalizedFullName(
