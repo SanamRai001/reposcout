@@ -24,12 +24,13 @@ afterAll(async () => {
 });
 
 describe('latest migration rollback', () => {
-  it('removes handoff fields while preserving deterministic validation state', async () => {
+  it('removes moderation discovery status while preserving Phase 5B state', async () => {
     const result = await pool.query<{
       repository_submissions: string | null;
       validation_column_exists: boolean;
       handoff_repository_column_exists: boolean;
       handoff_completed_column_exists: boolean;
+      discovery_status_column_exists: boolean;
       repositories: string | null;
       repository_metadata: string | null;
       repository_readme_content: string | null;
@@ -60,6 +61,13 @@ describe('latest migration rollback', () => {
               AND table_name = 'repository_submissions'
               AND column_name = 'evidence_handoff_completed_at'
           ) AS handoff_completed_column_exists,
+          EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'repositories'
+              AND column_name = 'discovery_status'
+          ) AS discovery_status_column_exists,
           to_regclass('public.repositories')::text AS repositories,
           to_regclass('public.repository_metadata')::text AS repository_metadata,
           to_regclass('public.repository_readme_content')::text
@@ -72,8 +80,9 @@ describe('latest migration rollback', () => {
     expect(result.rows[0]).toEqual({
       repository_submissions: 'repository_submissions',
       validation_column_exists: true,
-      handoff_repository_column_exists: false,
-      handoff_completed_column_exists: false,
+      handoff_repository_column_exists: true,
+      handoff_completed_column_exists: true,
+      discovery_status_column_exists: false,
       repositories: 'repositories',
       repository_metadata: 'repository_metadata',
       repository_readme_content: 'repository_readme_content',
