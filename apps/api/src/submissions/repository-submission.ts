@@ -29,6 +29,8 @@ export type RepositorySubmissionRecord = Readonly<{
   resolvedRepository: ResolvedRepositoryIdentity | null;
   duplicateRepositoryId: string | null;
   validatedAt: Date | null;
+  handoffRepositoryId: string | null;
+  evidenceHandoffCompletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }>;
@@ -69,3 +71,10 @@ export type RecordRepositorySubmissionValidationInput =
       submissionId: string;
       validatedAt: Date;
     }>;
+
+
+export type RecordRepositorySubmissionEvidenceHandoffInput = Readonly<{
+  submissionId: string;
+  repositoryId: string;
+  completedAt: Date;
+}>;
