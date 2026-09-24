@@ -271,6 +271,12 @@ Tests cover:
 - validation migration rollback preserving Phase 5A intake;
 - existing Phase 5A intake regressions.
 
+## Status
+
+Complete.
+
+The Phase 5B.1 branch passed application verification, Jev regression checks, migration apply/rollback/reapply, submission validation schema constraints, canonical ingestion/catalog/search regressions, private-repository handling, combined submission workflow integration, and PostgreSQL connectivity.
+
 ## Next checkpoint
 
 ### Phase 5B.2 — Validation orchestration and evidence handoff
