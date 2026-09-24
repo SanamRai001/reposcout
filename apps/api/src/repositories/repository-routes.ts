@@ -168,7 +168,7 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
         return;
       }
 
-      const repository = await repositoryCatalog.findById(id);
+      const repository = await repositoryCatalog.findDiscoverableById(id);
 
       if (!repository) {
         response.status(404).json({
