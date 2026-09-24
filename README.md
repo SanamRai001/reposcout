@@ -107,7 +107,7 @@ RepoScout now collects measured stars, forks, GitHub open issue/PR count, primar
 
 **Phase 4 — deterministic discovery:** complete.
 
-**Phase 5A — community submission intake:** complete. RepoScout accepts URL-only GitHub repository submissions with normalized, race-safe pending intake. **Phase 5B.1 — deterministic submission validation:** complete, resolving public GitHub identity, detecting canonical-ID duplicates, and keeping transient GitHub failures retryable. Moderation, rate limiting, evidence handoff, and the submission UI remain later phases.
+**Phase 5A — community submission intake:** complete. **Phase 5B.1 — deterministic submission validation:** complete. **Phase 5B.2A — validation orchestration:** implemented and under verification, adding bounded internal pending-validation batches, retryable-failure reporting, and rate-limit-aware early stop. Phase 5B.2B evidence handoff, moderation, abuse controls, and the submission UI remain later phases.
 
 See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
 
