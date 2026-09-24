@@ -10,6 +10,7 @@ import type {
   UpsertRepositoryMetadataInput,
 } from '../repositories/repository-metadata.js';
 import type {
+  RepositoryDiscoveryStatus,
   RepositoryRecord,
   UpsertRepositoryInput,
 } from '../repositories/repository.js';
@@ -25,6 +26,7 @@ type GithubRepositoryReader = Pick<GithubClient, 'fetchRepository'>;
 
 export type RepositoryIngestionOptions = Readonly<{
   expectedGithubRepositoryId?: string;
+  initialDiscoveryStatus?: RepositoryDiscoveryStatus;
 }>;
 
 export class RepositoryIngestionIdentityMismatchError extends Error {
@@ -42,6 +44,7 @@ export class RepositoryIngestionIdentityMismatchError extends Error {
 function toUpsertInput(
   repository: GithubRepositorySnapshot,
   syncedAt: Date,
+  discoveryStatus: RepositoryDiscoveryStatus,
 ): UpsertRepositoryInput {
   return {
     githubRepositoryId: repository.githubRepositoryId,
@@ -53,6 +56,7 @@ function toUpsertInput(
     description: repository.description,
     isArchived: repository.isArchived,
     isFork: repository.isFork,
+    discoveryStatus,
     createdAtGithub: repository.createdAtGithub,
     updatedAtGithub: repository.updatedAtGithub,
     pushedAtGithub: repository.pushedAtGithub,
@@ -87,7 +91,11 @@ export class RepositoryIngestionService {
     }
 
     return this.repositoryStore.upsertWithMetadata(
-      toUpsertInput(repository, fetchedAt),
+      toUpsertInput(
+        repository,
+        fetchedAt,
+        options.initialDiscoveryStatus ?? 'DISCOVERABLE',
+      ),
       {
         stars: repository.metadata.stars,
         forks: repository.metadata.forks,
