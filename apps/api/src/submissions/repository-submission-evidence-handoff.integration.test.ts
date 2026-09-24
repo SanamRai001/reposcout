@@ -189,6 +189,11 @@ describe('repository submission evidence handoff with PostgreSQL', () => {
     const submission = await submissionStore.findById(submissionId);
 
     expect(result.kind).toBe('completed');
+
+    if (result.kind !== 'completed') {
+      throw new Error('Expected completed evidence handoff.');
+    }
+
     expect(submission).toEqual(
       expect.objectContaining({
         id: submissionId,
