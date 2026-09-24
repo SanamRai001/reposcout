@@ -1,42 +1,214 @@
 # RepoScout
 
-> **Discover open source worth knowing.**
+> **Discover GitHub repositories worth exploring, studying, self-hosting, and contributing to.**
 
-RepoScout is an open-source repository discovery and intelligence platform designed to help developers find useful GitHub projects that ordinary keyword search, star counts, and generic AI recommendations can miss.
+RepoScout is a **GitHub repository discovery and repository intelligence platform** being built in public to help developers find useful open-source projects beyond the usual popularity-first results.
 
-The long-term goal is not to build “ChatGPT for GitHub.” RepoScout aims to maintain structured, explainable repository intelligence that can power discovery, comparisons, hidden-gem detection, contributor discovery, and community curation.
+It is designed for people looking for **beginner-friendly open-source projects, actively maintained repositories, self-hosted tools, underrated GitHub projects, contribution opportunities, and useful repositories by language, topic, license, activity, or size**.
+
+RepoScout does not treat star count as the answer. Stars are one signal among many.
+
+## What can RepoScout help you find?
+
+RepoScout is being designed around questions developers actually ask:
+
+- “What are some actively maintained TypeScript backend repositories worth studying?”
+- “Find smaller open-source projects that are useful but not already famous.”
+- “Show me self-hosted GitHub projects that could run on modest infrastructure.”
+- “I know React and Node.js. Where can I make a realistic first open-source contribution?”
+- “Find repositories about this topic that are still actively maintained.”
+- “Which projects have useful contribution docs, recent activity, and a healthy development history?”
+- “What GitHub repositories match these topics, languages, licenses, or star ranges?”
+
+If you are searching for **GitHub repository discovery**, **open-source project discovery**, **hidden GitHub gems**, or **beginner-friendly repositories to contribute to**, that is the problem RepoScout aims to solve.
+
+## What works today?
+
+RepoScout already has a real repository ingestion, catalog, search, metadata, and submission foundation.
+
+### Repository discovery
+
+The current discovery system supports deterministic PostgreSQL-backed search with:
+
+- keyword search;
+- language filtering;
+- SPDX license filtering;
+- topic filtering;
+- minimum and maximum star ranges;
+- fork filtering;
+- archived-repository filtering;
+- filter-only discovery;
+- stable, query-bound pagination.
+
+The web app keeps discovery state in the URL, supports browser back/forward restoration, shows active filters, and loads additional results without introducing client-side ranking.
+
+### Repository intelligence
+
+RepoScout can collect and store repository signals including:
+
+- stars;
+- forks;
+- open issue and pull-request counts;
+- primary language;
+- SPDX license;
+- GitHub topics;
+- README evidence;
+- contribution-document evidence;
+- repository identity and refresh provenance.
+
+README content is handled through a bounded evidence pipeline rather than exposing raw stored content directly.
+
+### Community repository submissions
+
+The backend currently supports:
+
+- repository submission intake;
+- deterministic submission validation;
+- pending-validation orchestration;
+- retryable-failure reporting;
+- rate-limit-aware early stopping.
+
+Public moderation workflows, abuse controls, evidence handoff, and the final submission UI remain later work.
 
 ## Why RepoScout?
 
-Great open-source projects are often difficult to discover.
+GitHub search is powerful when you already know exactly what to search for.
 
-Popular repositories keep getting more visibility, while smaller but actively maintained projects can remain buried. GitHub search is powerful when you already know the right words to search for, but it is less useful when your question looks like:
+Discovery becomes harder when the real question is about **quality, maintenance, contribution readiness, usefulness, or fit** rather than a repository name or exact keyword.
 
-- “Show me actively maintained TypeScript backends worth studying.”
-- “Find a self-hosted alternative that can run on a small VPS.”
-- “What are some promising projects that are growing quickly but are not famous yet?”
-- “I know React and Node.js. Where can I make a realistic first contribution?”
-- “Which repositories like this one are healthier or more actively maintained?”
+Popularity also compounds: popular projects receive more visibility, which produces more stars, which produces even more visibility.
 
-RepoScout is being designed around those questions.
+RepoScout is being built around a different idea:
+
+> **Useful repositories should be discoverable because of relevant, explainable signals — not only because they are already famous.**
 
 ## Product pillars
 
 ### Discover
-Find repositories through structured filters, categories, repository signals, and eventually natural-language intent.
+
+Find GitHub repositories through search, structured filters, repository signals, categories, and eventually natural-language intent.
 
 ### Understand
-See useful signals such as activity, releases, contributors, issues, pull requests, maintenance, license, and contribution readiness.
+
+Inspect measurable repository information such as activity, releases, contributors, issues, pull requests, maintenance signals, license, documentation, and contribution readiness.
 
 ### Surface hidden gems
-Avoid ranking only by total stars. RepoScout will explore transparent signals for identifying healthy, useful projects before they become widely known.
+
+Explore transparent signals for finding healthy and useful repositories before they become widely known.
 
 ### Contribute
-Anyone should be able to help improve discovery. A beginner should be able to contribute simply by submitting a repository we are missing.
+
+Make repository discovery community-improvable. A useful contribution should not require being an expert developer.
+
+## What makes RepoScout different?
+
+RepoScout is intentionally **not** trying to become “ChatGPT for GitHub.”
+
+The long-term goal is to maintain structured and explainable repository intelligence that can power:
+
+- repository discovery;
+- comparisons;
+- hidden-gem detection;
+- contribution discovery;
+- community curation;
+- transparent ranking experiments;
+- machine-readable repository intelligence.
+
+AI can become one interface over that data, but it is not the foundation of the product.
+
+## Architecture and stack
+
+RepoScout is a TypeScript monorepo with separate web and API applications.
+
+| Area | Current stack |
+| --- | --- |
+| Web | React 19, TypeScript, Vite 8, Tailwind CSS 4 |
+| API | Node.js, Express 5, TypeScript |
+| Database | PostgreSQL with node-postgres |
+| Migrations | node-pg-migrate |
+| Testing | Vitest |
+| Tooling | ESLint, npm workspaces |
+
+Repository layout:
+
+```text
+reposcout/
+├── apps/
+│   ├── api/        # ingestion, repository intelligence, discovery, submissions
+│   └── web/        # repository catalog and discovery UI
+├── docs/           # product, architecture, data model, roadmap, decisions
+├── CONTRIBUTING.md
+└── README.md
+```
+
+## Project status
+
+RepoScout has moved beyond the initial documentation prototype and now has working backend and frontend foundations.
+
+| Area | Status |
+| --- | --- |
+| Product and architecture foundation | Complete |
+| PostgreSQL persistence | Complete |
+| GitHub repository ingestion | Complete |
+| Repository catalog API | Complete |
+| Repository catalog UI | Complete |
+| Repository metadata collection | Complete |
+| README evidence | Complete |
+| Contribution-document evidence | Complete |
+| Deterministic discovery API | Complete |
+| Discovery web UI | Complete |
+| Community submission intake | Complete |
+| Submission validation foundation | Complete |
+| Moderation and abuse controls | Planned |
+| Submission UI | Planned |
+| Advanced ranking / hidden-gem scoring | Planned |
+
+<details>
+<summary><strong>Detailed implementation phases</strong></summary>
+
+### Foundation
+
+- Phase 0 — product and architecture foundation: complete.
+- Phase 1A — application foundation: complete.
+- Phase 1B.1 — persistence infrastructure: complete.
+- Phase 1B.2A — canonical repositories schema: complete.
+- Phase 1B.2B — repository persistence layer: complete.
+
+### Repository ingestion and catalog
+
+- Phase 2A — single-repository GitHub ingestion: complete.
+- Phase 2B — ingestion refresh operations: complete.
+- Phase 2 — repository ingestion: complete.
+- Phase 3A — repository catalog/read API: complete.
+- Phase 3B — repository catalog web UI: complete.
+- Phase 3C — authoritative repository metadata foundation: complete.
+- Phase 3D.1 — bounded README content foundation: complete.
+- Phase 3D.2 — contribution-document evidence: complete.
+
+### Evaluation and discovery
+
+- Phase 3E.1 — Jev evaluation harness: complete.
+- Phase 3E.2A — verified live Jev adapter: complete.
+- Phase 3E.2B / 3E.3 — deferred while provider access is unavailable.
+- Phase 4A — deterministic lexical search API: complete.
+- Phase 4B.1 — scalar search filters: complete.
+- Phase 4B.2 — topic and star-range filters: complete.
+- Phase 4B.3 — filter-only discovery: complete.
+- Phase 4C — web discovery UI: complete.
+- Phase 4 — deterministic discovery: complete.
+
+### Community submissions
+
+- Phase 5A — community submission intake: complete.
+- Phase 5B.1 — deterministic submission validation: complete.
+- Phase 5B.2A — validation orchestration: complete.
+- Evidence handoff, moderation, abuse controls, and the public submission UI remain future phases.
+
+</details>
 
 ## Community-first repository submission
 
-A core RepoScout workflow will be:
+The intended contribution flow is:
 
 ```text
 Paste GitHub repository URL
@@ -45,88 +217,44 @@ Automatic metadata collection
         ↓
 Duplicate and eligibility checks
         ↓
-Community/maintainer review
+Validation and moderation
         ↓
 Approved repository enters the index
 ```
 
-Self-submissions will be allowed, but submissions must follow the same quality and safety rules as every other repository.
+Self-submissions are part of the product direction, but they should follow the same validation and quality rules as every other repository.
 
-## MVP
+## MVP direction
 
-The initial product will stay deliberately small:
+RepoScout deliberately starts smaller than “index all of GitHub.”
 
-1. Repository ingestion and normalization.
-2. A curated repository index.
-3. Repository intelligence pages based on measurable signals.
-4. Discovery through search and filters.
-5. Trending and Hidden Gems views.
-6. Community repository submission with moderation.
+The core product is centered on:
 
-AI chat, social feeds, browser extensions, large-scale GitHub crawling, and complicated gamification are **not** MVP requirements.
+1. repository ingestion and normalization;
+2. a curated repository index;
+3. measurable repository intelligence;
+4. search and structured discovery;
+5. transparent hidden-gem and ranking experiments;
+6. community repository submission and moderation.
 
-## Repository status
-
-**Phase 0 — product/architecture foundation:** complete.
-
-**Phase 1A — application foundation:** complete.
-
-**Phase 1B.1 — persistence infrastructure:** complete.
-
-**Phase 1B.2A — canonical repositories schema:** complete.
-
-**Phase 1B.2B — repository persistence layer:** complete.
-
-**Phase 2A — single-repository GitHub ingestion:** complete.
-
-**Phase 2B — ingestion refresh operations:** complete.
-
-The backend now uses PostgreSQL through node-postgres with explicit migration tooling, validated connection configuration, database-backed readiness checks, and PostgreSQL integration tests. Dependency installs are reproducible through the committed root lockfile.
-
-**Phase 2 — repository ingestion:** complete.
-
-**Phase 3A — repository catalog/read API:** complete.
-
-**Phase 3B — repository catalog web UI:** complete.
-
-RepoScout now has a real browser catalog backed by the Phase 3A PostgreSQL read API.
-
-**Phase 3C — authoritative repository metadata foundation:** complete.
-
-RepoScout now collects measured stars, forks, GitHub open issue/PR count, primary language, SPDX license, and topics separately from canonical repository identity.
-
-**Phase 3D.1 — bounded README content foundation:** complete. README evidence uses a separate refresh lifecycle, a 256 KiB storage ceiling, source ref/path/blob-SHA provenance, stale protection, and no raw public exposure. **Phase 3D.2 — contribution-document evidence:** complete. It uses GitHub community-profile evidence for CONTRIBUTING, Code of Conduct, issue/PR templates plus bounded repository-local SECURITY policy checks, without recursive repository crawling.
-
-**Phase 3E.1 — Jev evaluation harness:** complete. **Phase 3E.2A — verified live Jev adapter:** complete. **Phase 3E.2B / 3E.3:** deferred while TypeSafe access is unavailable. RepoScout development continues with **Phase 4 deterministic discovery** rather than waiting on a provider credential.
-
-**Phase 4A — deterministic lexical search API:** complete. It adds PostgreSQL-backed search over canonical repository text with bounded normalized queries and query-bound opaque pagination, without Jev or relevance ranking.
-
-**Phase 4B.1 — scalar search filters:** complete. Search can compose exact language, SPDX license, fork, and archived filters. **Phase 4B.2 — topic and star-range filters:** complete, adding all-topic containment and inclusive star bounds while preserving deterministic scope-bound pagination. **Phase 4B.3 — filter-only discovery:** complete, allowing structured discovery without a lexical query while keeping empty search scope invalid.
-
-**Phase 4C — web discovery UI:** complete. The browser now exposes lexical/filter discovery with URL-backed state, back/forward restoration, active-scope chips, deterministic load-more behavior, and no client-side relevance ranking.
-
-**Phase 4 — deterministic discovery:** complete.
-
-**Phase 5A — community submission intake:** complete. **Phase 5B.1 — deterministic submission validation:** complete. **Phase 5B.2A — validation orchestration:** complete, adding bounded internal pending-validation batches, retryable-failure reporting, and rate-limit-aware early stop. Phase 5B.2B evidence handoff, moderation, abuse controls, and the submission UI remain later phases.
-
-See the `docs/` directory for the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and decisions.
+Large-scale crawling, social feeds, complicated gamification, and AI chat are not required for the core product to be useful.
 
 ## Contributing
 
-RepoScout is intended to be welcoming to first-time open-source contributors.
+RepoScout is intended to become welcoming to first-time open-source contributors.
 
-You will eventually be able to contribute by:
+Useful contributions can include:
 
-- submitting a useful repository;
-- improving repository metadata;
-- fixing categories or tags;
-- reporting stale or incorrect information;
+- suggesting a repository RepoScout is missing;
 - improving documentation;
-- working on frontend/backend features;
-- improving ranking and repository-analysis logic;
-- adding tests.
+- reporting incorrect repository information;
+- fixing categories or metadata;
+- improving frontend or backend features;
+- adding tests;
+- improving accessibility, performance, or security;
+- improving search, ranking, and repository-analysis logic.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a substantial pull request.
 
 ## Guiding principles
 
@@ -135,13 +263,19 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Measured over guessed** — distinguish factual repository metrics from inferred labels.
 - **Community-curated, not community-spammed** — submissions require validation and moderation.
 - **Beginner-friendly contribution** — useful contribution should not require expert coding.
-- **Small first, scalable later** — do not attempt to index all of GitHub in the MVP.
+- **Small first, scalable later** — prove the discovery model before attempting GitHub-scale indexing.
 - **No pay-to-rank** — repository visibility should not be secretly purchased.
+
+## Documentation
+
+The `docs/` directory contains the product specification, MVP boundaries, architecture, data model, brand guidance, persistence foundation, ranking principles, roadmap, and recorded decisions.
 
 ## License
 
-A license will be selected before the first public implementation release.
+RepoScout is being built publicly and is intended to become an open-source project.
+
+A formal open-source license has **not yet been selected**. Until a license is added, normal copyright rules apply to the source code.
 
 ---
 
-RepoScout is just getting started. If this idea interests you, star the repository and follow the project as the first version takes shape.
+If RepoScout solves a problem you care about, **star the repository**, follow its development, suggest a repository, or contribute to the project.
