@@ -204,7 +204,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 5A — community submission intake: complete.
 - Phase 5B.1 — deterministic submission validation: complete.
 - Phase 5B.2A — validation orchestration: complete.
-- Phase 5B.2B — evidence handoff: implemented and under verification.
+- Phase 5B.2B — evidence handoff: complete.
+- Phase 5B — deterministic submission validation + evidence preparation: complete.
 - Moderation, abuse controls, and the public submission UI remain future phases.
 
 </details>
