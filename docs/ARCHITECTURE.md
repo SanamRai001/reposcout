@@ -429,7 +429,47 @@ RepositorySubmissionValidationService
             +-- rate limit -> report, preserve retryAt, stop batch
 ~~~
 
-No retry queue or lease table is introduced yet. Existing first-writer-safe validation writes preserve correctness if two internal runners overlap. Evidence handoff remains Phase 5B.2B.
+No retry queue or lease table is introduced yet. Existing first-writer-safe validation writes preserve correctness if two internal runners overlap.
+
+### Submission evidence handoff
+
+Phase 5B.2B connects VALID submissions to existing repository/evidence pipelines:
+
+~~~text
+PENDING + VALID + handoff incomplete
+        |
+bounded oldest-first selection
+        |
+RepositorySubmissionEvidenceHandoffService
+        |
+        +-- RepositoryIngestionService
+        |      +-- expected validated GitHub repository ID guard
+        |      +-- canonical repository state
+        |      +-- measured metadata
+        |
+        +-- RepositoryReadmeService
+        |
+        +-- RepositoryContributionEvidenceService
+        |
+all required stages succeed
+        |
+handoff_repository_id
+evidence_handoff_completed_at
+        |
+submission stays PENDING
+        |
+Phase 5C human moderation
+~~~
+
+Handoff reuses existing ingestion/evidence implementations rather than creating submission-specific copies.
+
+The validated GitHub repository ID is checked again against the fresh ingestion response before persistence. A path/name that now resolves to a different GitHub repository therefore fails loudly instead of silently handing off the wrong project.
+
+External provider failures are isolated by stage. Non-rate-limit README failure does not prevent contribution evidence from being attempted. Existing successful writes are retained and safe to repeat because the underlying repository/evidence stores are idempotent or stale-safe.
+
+A GitHub rate limit stops later provider stages for the current handoff and stops the remaining selected batch.
+
+Handoff completion is durable but is not moderation: status remains PENDING until Phase 5C.
 
 ## Security baseline
 
