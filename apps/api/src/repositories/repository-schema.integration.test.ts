@@ -382,6 +382,16 @@ describe('repositories schema', () => {
         data_type: 'timestamp with time zone',
         is_nullable: 'YES',
       },
+      {
+        column_name: 'handoff_repository_id',
+        data_type: 'uuid',
+        is_nullable: 'YES',
+      },
+      {
+        column_name: 'evidence_handoff_completed_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'YES',
+      },
     ]);
   });
 
@@ -420,6 +430,109 @@ describe('repositories schema', () => {
           WHERE id = $1
         `,
         [submissionId],
+      ),
+    ).rejects.toMatchObject({
+      code: '23514',
+    });
+  });
+
+  it('rejects incomplete submission evidence handoff state', async () => {
+    const repository = createRepositoryFixture({
+      githubRepositoryId: '888888881',
+    });
+    await insertRepository(repository);
+
+    const submissionId = randomUUID();
+
+    await pool.query(
+      `
+        INSERT INTO repository_submissions (
+          id,
+          submitted_url,
+          normalized_owner,
+          normalized_name,
+          normalized_full_name,
+          status,
+          validation_outcome,
+          github_repository_id,
+          resolved_owner,
+          resolved_name,
+          resolved_full_name,
+          resolved_github_url,
+          validated_at
+        )
+        VALUES (
+          $1,
+          'https://github.com/example/handoff-project',
+          'example',
+          'handoff-project',
+          'example/handoff-project',
+          'PENDING',
+          'VALID',
+          888888881,
+          'example',
+          'handoff-project',
+          'example/handoff-project',
+          'https://github.com/example/handoff-project',
+          current_timestamp
+        )
+      `,
+      [submissionId],
+    );
+
+    await expect(
+      pool.query(
+        `
+          UPDATE repository_submissions
+          SET handoff_repository_id = $2
+          WHERE id = $1
+        `,
+        [submissionId, repository.id],
+      ),
+    ).rejects.toMatchObject({
+      code: '23514',
+    });
+  });
+
+  it('rejects handoff completion for a non-VALID submission', async () => {
+    const repository = createRepositoryFixture({
+      githubRepositoryId: '888888882',
+    });
+    await insertRepository(repository);
+    const submissionId = randomUUID();
+
+    await pool.query(
+      `
+        INSERT INTO repository_submissions (
+          id,
+          submitted_url,
+          normalized_owner,
+          normalized_name,
+          normalized_full_name,
+          status
+        )
+        VALUES (
+          $1,
+          'https://github.com/example/unvalidated-handoff',
+          'example',
+          'unvalidated-handoff',
+          'example/unvalidated-handoff',
+          'PENDING'
+        )
+      `,
+      [submissionId],
+    );
+
+    await expect(
+      pool.query(
+        `
+          UPDATE repository_submissions
+          SET
+            handoff_repository_id = $2,
+            evidence_handoff_completed_at = current_timestamp
+          WHERE id = $1
+        `,
+        [submissionId, repository.id],
       ),
     ).rejects.toMatchObject({
       code: '23514',
