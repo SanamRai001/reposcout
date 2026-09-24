@@ -180,6 +180,7 @@ export class RepositorySubmissionEvidenceHandoffService {
         {
           expectedGithubRepositoryId:
             submission.resolvedRepository.githubRepositoryId,
+          initialDiscoveryStatus: 'PENDING_MODERATION',
         },
       );
       stages.push({
