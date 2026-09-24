@@ -19,6 +19,8 @@ const submission: RepositorySubmissionRecord = {
   resolvedRepository: null,
   duplicateRepositoryId: null,
   validatedAt: null,
+  handoffRepositoryId: null,
+  evidenceHandoffCompletedAt: null,
   createdAt: new Date('2026-09-23T12:00:00Z'),
   updatedAt: new Date('2026-09-23T12:00:00Z'),
 };
