@@ -37,6 +37,7 @@ const snapshot: GithubRepositorySnapshot = {
   description: 'Resolved repository.',
   isArchived: false,
   isFork: false,
+  isPrivate: false,
   createdAtGithub: new Date('2025-01-01T00:00:00Z'),
   updatedAtGithub: new Date('2026-09-23T00:00:00Z'),
   pushedAtGithub: new Date('2026-09-23T01:00:00Z'),
