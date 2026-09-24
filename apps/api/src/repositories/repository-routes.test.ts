@@ -21,6 +21,7 @@ const repository: RepositoryCatalogRecord = {
   description: 'OpenAI Node SDK',
   isArchived: false,
   isFork: false,
+  discoveryStatus: 'DISCOVERABLE',
   createdAtGithub: new Date('2023-04-19T00:00:00Z'),
   updatedAtGithub: new Date('2026-09-20T00:00:00Z'),
   pushedAtGithub: new Date('2026-09-20T01:00:00Z'),
@@ -60,7 +61,7 @@ function createCatalog(
       items: [],
       hasMore: false,
     }),
-    findById: vi.fn().mockResolvedValue(null),
+    findDiscoverableById: vi.fn().mockResolvedValue(null),
     ...overrides,
   };
 }
@@ -458,8 +459,8 @@ describe('repository catalog routes', () => {
   });
 
   it('returns repository detail by stable internal id', async () => {
-    const findById = vi.fn().mockResolvedValue(repository);
-    const repositoryCatalog = createCatalog({ findById });
+    const findDiscoverableById = vi.fn().mockResolvedValue(repository);
+    const repositoryCatalog = createCatalog({ findDiscoverableById });
     const { baseUrl } = await startApp(repositoryCatalog);
 
     const response = await fetch(
@@ -472,12 +473,12 @@ describe('repository catalog routes', () => {
     expect(response.status).toBe(200);
     expect(body.data.id).toBe(repository.id);
     expect(body.data.githubRepositoryId).toBe('123456789');
-    expect(findById).toHaveBeenCalledWith(repository.id);
+    expect(findDiscoverableById).toHaveBeenCalledWith(repository.id);
   });
 
   it('returns 404 when repository detail is missing', async () => {
     const repositoryCatalog = createCatalog({
-      findById: vi.fn().mockResolvedValue(null),
+      findDiscoverableById: vi.fn().mockResolvedValue(null),
     });
     const { baseUrl } = await startApp(repositoryCatalog);
 
@@ -491,13 +492,13 @@ describe('repository catalog routes', () => {
   });
 
   it('rejects malformed repository ids before persistence lookup', async () => {
-    const findById = vi.fn();
-    const repositoryCatalog = createCatalog({ findById });
+    const findDiscoverableById = vi.fn();
+    const repositoryCatalog = createCatalog({ findDiscoverableById });
     const { baseUrl } = await startApp(repositoryCatalog);
 
     const response = await fetch(`${baseUrl}/api/repositories/not-a-uuid`);
 
     expect(response.status).toBe(400);
-    expect(findById).not.toHaveBeenCalled();
+    expect(findDiscoverableById).not.toHaveBeenCalled();
   });
 });
