@@ -16,6 +16,10 @@ const submission: RepositorySubmissionRecord = {
   normalizedName: 'project',
   normalizedFullName: 'example/project',
   status: 'PENDING',
+  validationOutcome: null,
+  resolvedRepository: null,
+  duplicateRepositoryId: null,
+  validatedAt: null,
   createdAt: new Date('2026-09-23T12:00:00Z'),
   updatedAt: new Date('2026-09-23T12:00:00Z'),
 };
