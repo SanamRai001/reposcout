@@ -63,7 +63,7 @@ export type RepositoryPage = Readonly<{
 export type RepositoryCatalogReader = Readonly<{
   listPage(input: RepositoryPageInput): Promise<RepositoryPage>;
   searchPage(input: RepositorySearchPageInput): Promise<RepositoryPage>;
-  findById(id: string): Promise<RepositoryCatalogRecord | null>;
+  findDiscoverableById(id: string): Promise<RepositoryCatalogRecord | null>;
 }>;
 
 export type RepositoryResponse = Readonly<{
