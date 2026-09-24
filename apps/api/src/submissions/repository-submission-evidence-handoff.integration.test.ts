@@ -208,7 +208,16 @@ describe('repository submission evidence handoff with PostgreSQL', () => {
       await repositoryStore.findByGithubRepositoryId('987654321');
 
     expect(repository).not.toBeNull();
-    expect(repository?.id).toBe(result.repositoryId);
+    expect(repository).toEqual(
+      expect.objectContaining({
+        id: result.repositoryId,
+        discoveryStatus: 'PENDING_MODERATION',
+      }),
+    );
+
+    await expect(
+      repositoryStore.findDiscoverableById(result.repositoryId),
+    ).resolves.toBeNull();
 
     const catalog = await repositoryStore.findById(result.repositoryId);
     expect(catalog?.metadata).toEqual(
@@ -288,7 +297,15 @@ describe('repository submission evidence handoff with PostgreSQL', () => {
 
     const repository =
       await repositoryStore.findByGithubRepositoryId('987654321');
-    expect(repository).not.toBeNull();
+    expect(repository).toEqual(
+      expect.objectContaining({
+        discoveryStatus: 'PENDING_MODERATION',
+      }),
+    );
+
+    await expect(
+      repositoryStore.findDiscoverableById(repository!.id),
+    ).resolves.toBeNull();
 
     await expect(
       readmeStore.findByRepositoryId(repository!.id),
