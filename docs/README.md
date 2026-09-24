@@ -35,6 +35,8 @@ Start here if you are contributing to the project.
 - [PHASE_4B3_FILTER_ONLY_DISCOVERY.md](PHASE_4B3_FILTER_ONLY_DISCOVERY.md) — optional lexical query, filter-only discovery, and nullable-query cursor scope.
 - [PHASE_4C_WEB_DISCOVERY_UI.md](PHASE_4C_WEB_DISCOVERY_UI.md) — URL-backed browser discovery, structured controls, and deterministic load-more behavior.
 - [PHASE_5A_SUBMISSION_INTAKE.md](PHASE_5A_SUBMISSION_INTAKE.md) — URL-only community submission intake, duplicate protection, persistence, and API boundaries.
+- [PHASE_5B1_SUBMISSION_VALIDATION.md](PHASE_5B1_SUBMISSION_VALIDATION.md) — deterministic GitHub validation, canonical-ID duplicate detection, and retryable provider failures.
+- [PHASE_5B2A_VALIDATION_ORCHESTRATION.md](PHASE_5B2A_VALIDATION_ORCHESTRATION.md) — bounded internal validation batches, retry observability, and rate-limit stop behavior.
 
 ## Community
 
