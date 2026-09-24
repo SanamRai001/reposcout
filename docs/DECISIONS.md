@@ -916,3 +916,42 @@ Human moderation/approval remains a separate later phase.
 The store only transitions a row while it is PENDING and has no validation outcome.
 
 Concurrent validators cannot overwrite a deterministic outcome. A losing validator reads and returns the already-recorded result.
+
+
+## D-096 — Submission validation batches are bounded and oldest-first
+
+**Status:** Accepted
+
+Phase 5B.2A selects only PENDING submissions with no validation outcome, ordered by creation time then UUID.
+
+The default batch size is 10 and the maximum is 50.
+
+This keeps manual/internal execution predictable and bounded.
+
+## D-097 — Rate limiting stops the current validation batch
+
+**Status:** Accepted
+
+Transient request/response failures may be reported and the batch may continue, but a GitHub rate-limit response stops the remaining selected work.
+
+RepoScout preserves the provider retry timestamp when available instead of continuing to consume unavailable quota.
+
+## D-098 — Do not add persistent retry or lease state before background workers exist
+
+**Status:** Accepted
+
+Phase 5B.2A reuses the existing submission state and idempotent validation writes.
+
+No job, lease, attempt-count, or retry table is added yet.
+
+Persistent coordination should be introduced only when background/concurrent workers create a concrete operational need.
+
+## D-099 — Validation orchestration never approves submissions
+
+**Status:** Accepted
+
+The orchestration layer may produce VALID, DUPLICATE, INVALID, or retryable operational results.
+
+VALID remains PENDING and only becomes eligible for Phase 5B.2B evidence handoff.
+
+Human moderation remains authoritative for approval in Phase 5C.

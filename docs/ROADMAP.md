@@ -413,10 +413,33 @@ Status: complete
 
 #### Phase 5B.2 — Validation orchestration and evidence handoff
 
+Status: in progress
+
+##### Phase 5B.2A — Validation orchestration
+
+Status: complete
+
+- bounded oldest-first selection of PENDING + unvalidated submissions;
+- default batch size 10, maximum 50;
+- reuse existing Phase 5B.1 validator;
+- structured deterministic outcome reporting;
+- transient request/response failures remain retryable;
+- rate limiting stops the remaining selected batch;
+- retryAt preserved when GitHub supplies it;
+- unexpected internal failures still fail hard;
+- internal CLI for manual batch execution;
+- no schema change;
+- no automatic approval.
+
+##### Phase 5B.2B — Evidence handoff
+
 Next:
-- add a safe internal execution path for pending validation;
-- hand VALID submissions toward metadata/content evidence collection;
-- add retry/observability behavior around transient failures;
+- hand already VALID submissions into canonical repository ingestion;
+- refresh measured metadata;
+- refresh bounded README evidence;
+- refresh contribution-document evidence;
+- isolate evidence failures;
+- keep submission status PENDING;
 - do not automatically approve repositories.
 
 ### Phase 5C — Moderation workflow

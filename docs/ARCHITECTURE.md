@@ -408,6 +408,29 @@ The original intake identity is preserved. GitHub-resolved current identity is s
 
 Validation is authoritative/deterministic only. It does not call Jev, approve repositories, or perform moderation.
 
+### Submission validation orchestration
+
+Phase 5B.2A adds a bounded internal execution layer:
+
+~~~text
+internal CLI
+   |
+select PENDING + unvalidated submissions
+   |
+RepositorySubmissionValidationOrchestrator
+   |
+RepositorySubmissionValidationService
+   |
+   +-- VALID / DUPLICATE / INVALID
+   |
+   +-- retryable provider failure
+            |
+            +-- request/response failure -> report and continue
+            +-- rate limit -> report, preserve retryAt, stop batch
+~~~
+
+No retry queue or lease table is introduced yet. Existing first-writer-safe validation writes preserve correctness if two internal runners overlap. Evidence handoff remains Phase 5B.2B.
+
 ## Security baseline
 
 MUST:
