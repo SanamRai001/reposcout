@@ -361,14 +361,35 @@ Do not add embeddings until there is enough repository content and a concrete qu
 
 ## Historical data
 
-Snapshots should be append-only measurements, for example:
+Phase 6A introduces daily append-only repository metric history:
+
+~~~text
+authoritative measured metadata
+        |
+RepositorySnapshotStore
+        |
+repository_snapshots
+        |
+one row / repository / UTC day
+~~~
+
+Current snapshot facts:
 - stars;
 - forks;
-- open issues;
-- contributor/activity summaries when available;
-- release/commit aggregates.
+- GitHub-style open issue count.
 
-Do not snapshot every field unnecessarily.
+Each row stores:
+- actual `captured_at`;
+- UTC `captured_on` bucket;
+- measured values.
+
+The database enforces one row per repository/day and validates that the bucket matches the UTC capture day.
+
+Retries are first-write-wins: a same-day retry returns the existing row instead of rewriting history. Different-day backfills remain independent rows.
+
+Future contributor/activity summaries or release/commit aggregates require explicit authoritative collection semantics before they enter snapshot storage.
+
+Phase 6A does not add automatic capture, scheduling, delta math, or ranking.
 
 ## Community submission intake
 
