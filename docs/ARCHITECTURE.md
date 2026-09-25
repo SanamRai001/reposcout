@@ -659,3 +659,34 @@ An empty discovery scope with neither query nor filters is rejected because `GET
 Filter-only cursors bind `query = null` together with the complete normalized filter set, so they cannot be reused across lexical/filter scope changes.
 
 No relevance ordering, model reranking, or client-side ranking is introduced.
+
+
+## Protected moderation boundary
+
+Phase 5C.2 exposes moderation through a dedicated protected API:
+
+~~~text
+Reviewer Bearer token
+        |
+ModerationReviewerAuthenticator
+        |
+/api/moderation
+        |
+        +-- GET /submissions
+        |
+        +-- POST /submissions/:id/decision
+                  |
+RepositorySubmissionModerationService
+                  |
+RepositorySubmissionStore.moderate()
+                  |
+Phase 5C.1 atomic publication + audit transaction
+~~~
+
+Reviewer credentials are server configuration, not PostgreSQL user records.
+
+The client cannot supply the audit `reviewerRef`; it is derived from the authenticated credential.
+
+The public submission API remains separate and unauthenticated.
+
+This is an initial maintainer/trusted-reviewer authorization boundary. General accounts, OAuth/session auth, reviewer-role management, and token-rotation workflows remain deferred.

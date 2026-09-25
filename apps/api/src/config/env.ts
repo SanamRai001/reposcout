@@ -15,11 +15,21 @@ export type GithubEnvironment = Readonly<{
   requestTimeoutMs: number;
 }>;
 
+export type ModerationReviewerEnvironment = Readonly<{
+  reviewerRef: string;
+  token: string;
+}>;
+
+export type ModerationEnvironment = Readonly<{
+  reviewers: readonly ModerationReviewerEnvironment[];
+}>;
+
 export type AppEnvironment = Readonly<{
   nodeEnv: NodeEnvironment;
   port: number;
   database: DatabaseEnvironment;
   github: GithubEnvironment;
+  moderation: ModerationEnvironment;
 }>;
 
 function parseInteger(
@@ -103,6 +113,68 @@ function optionalSecret(value: string | undefined): string | undefined {
   return candidate ? candidate : undefined;
 }
 
+function parseModerationReviewers(
+  value: string | undefined,
+): readonly ModerationReviewerEnvironment[] {
+  if (value === undefined || value.trim() === '') {
+    return [];
+  }
+
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error(
+      'MODERATION_REVIEWERS_JSON must be a JSON object mapping reviewer references to bearer tokens.',
+    );
+  }
+
+  if (
+    typeof parsed !== 'object' ||
+    parsed === null ||
+    Array.isArray(parsed)
+  ) {
+    throw new Error(
+      'MODERATION_REVIEWERS_JSON must be a JSON object mapping reviewer references to bearer tokens.',
+    );
+  }
+
+  const entries = Object.entries(parsed);
+
+  if (entries.length > 20) {
+    throw new Error(
+      'MODERATION_REVIEWERS_JSON may configure at most 20 reviewers.',
+    );
+  }
+
+  return entries.map(([rawReviewerRef, rawToken]) => {
+    const reviewerRef = rawReviewerRef.trim();
+
+    if (reviewerRef.length < 1 || reviewerRef.length > 200) {
+      throw new Error(
+        'Moderation reviewer references must be between 1 and 200 characters.',
+      );
+    }
+
+    if (
+      typeof rawToken !== 'string' ||
+      rawToken.length < 32 ||
+      rawToken.length > 512 ||
+      /\s/.test(rawToken)
+    ) {
+      throw new Error(
+        'Moderation reviewer tokens must be 32-512 non-whitespace characters.',
+      );
+    }
+
+    return Object.freeze({
+      reviewerRef,
+      token: rawToken,
+    });
+  });
+}
+
 export function loadEnvironment(
   source: NodeJS.ProcessEnv = process.env,
 ): AppEnvironment {
@@ -142,6 +214,11 @@ export function loadEnvironment(
         8_000,
         500,
         60_000,
+      ),
+    }),
+    moderation: Object.freeze({
+      reviewers: Object.freeze(
+        parseModerationReviewers(source.MODERATION_REVIEWERS_JSON),
       ),
     }),
   });

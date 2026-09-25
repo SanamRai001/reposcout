@@ -475,15 +475,19 @@ Status: complete
 
 #### Phase 5C.2 — Reviewer authorization + protected moderation API
 
-Next:
-- trusted reviewer identity;
-- moderation authorization;
-- protected pending queue API;
-- protected approve/reject API;
-- stable moderation HTTP errors;
-- preserve Phase 5C.1 transaction as the publication boundary.
+Status: complete
 
-Reviewer-facing UI remains deferred until the protected backend workflow exists.
+- server-side trusted reviewer configuration;
+- Bearer-token authorization;
+- hashed in-memory reviewer token matching;
+- protected pending moderation queue;
+- protected final decision API;
+- authenticated reviewer identity injected into audit events;
+- client reviewer spoofing rejected;
+- stable 401/400/404/409 moderation HTTP errors;
+- Phase 5C.1 atomic publication transaction preserved;
+- no moderation UI yet;
+- no schema migration.
 
 ### Phase 5D — Submission web UI
 

@@ -10,6 +10,8 @@ import { logger } from './logger.js';
 import { RepositoryStore } from './repositories/repository-store.js';
 import { RepositorySubmissionService } from './submissions/repository-submission-service.js';
 import { RepositorySubmissionStore } from './submissions/repository-submission-store.js';
+import { RepositorySubmissionModerationService } from './submissions/repository-submission-moderation-service.js';
+import { ModerationReviewerAuthenticator } from './submissions/moderation-reviewer-auth.js';
 
 async function bootstrap(): Promise<void> {
   const environment = loadEnvironment();
@@ -25,10 +27,23 @@ async function bootstrap(): Promise<void> {
     repositoryStore,
     repositorySubmissionStore,
   );
+  const repositorySubmissionModerationService =
+    new RepositorySubmissionModerationService(
+      repositorySubmissionStore,
+    );
+  const moderationReviewerAuthenticator =
+    new ModerationReviewerAuthenticator(
+      environment.moderation.reviewers,
+    );
   const app = createApp({
     checkReadiness: () => verifyDatabaseConnection(databasePool),
     repositoryCatalog: repositoryStore,
     repositorySubmissionService,
+    repositoryModeration: {
+      authenticator: moderationReviewerAuthenticator,
+      moderationService: repositorySubmissionModerationService,
+      candidateReader: repositorySubmissionStore,
+    },
   });
 
   const server = app.listen(environment.port, () => {
