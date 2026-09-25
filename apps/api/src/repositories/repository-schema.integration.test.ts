@@ -862,4 +862,104 @@ describe('repositories schema', () => {
     );
   });
 
+
+  it('creates daily repository snapshot history and lookup index', async () => {
+    const result = await pool.query<{
+      snapshots: string | null;
+      history_index: string | null;
+    }>(
+      `
+        SELECT
+          to_regclass('public.repository_snapshots')::text AS snapshots,
+          to_regclass(
+            'public.repository_snapshots_repository_captured_at_idx'
+          )::text AS history_index
+      `,
+    );
+
+    expect(result.rows[0]).toEqual({
+      snapshots: 'repository_snapshots',
+      history_index: 'repository_snapshots_repository_captured_at_idx',
+    });
+  });
+
+  it('enforces one repository snapshot per UTC day', async () => {
+    const repository = createRepositoryFixture({
+      githubRepositoryId: '676767676',
+    });
+    await insertRepository(repository);
+    const capturedAt = new Date('2026-09-25T12:00:00Z');
+
+    await pool.query(
+      `
+        INSERT INTO repository_snapshots (
+          id,
+          repository_id,
+          captured_on,
+          captured_at,
+          stars,
+          forks,
+          open_issues
+        )
+        VALUES ($1, $2, '2026-09-25', $3, 10, 2, 1)
+      `,
+      [randomUUID(), repository.id, capturedAt],
+    );
+
+    await expect(
+      pool.query(
+        `
+          INSERT INTO repository_snapshots (
+            id,
+            repository_id,
+            captured_on,
+            captured_at,
+            stars,
+            forks,
+            open_issues
+          )
+          VALUES ($1, $2, '2026-09-25', $3, 11, 2, 1)
+        `,
+        [randomUUID(), repository.id, capturedAt],
+      ),
+    ).rejects.toMatchObject({
+      code: '23505',
+    });
+  });
+
+  it('rejects snapshot buckets that do not match the UTC capture day', async () => {
+    const repository = createRepositoryFixture({
+      githubRepositoryId: '686868686',
+    });
+    await insertRepository(repository);
+
+    await expect(
+      pool.query(
+        `
+          INSERT INTO repository_snapshots (
+            id,
+            repository_id,
+            captured_on,
+            captured_at,
+            stars,
+            forks,
+            open_issues
+          )
+          VALUES (
+            $1,
+            $2,
+            '2026-09-24',
+            '2026-09-25T00:00:00Z',
+            10,
+            2,
+            1
+          )
+        `,
+        [randomUUID(), repository.id],
+      ),
+    ).rejects.toMatchObject({
+      code: '23514',
+    });
+  });
+
 });
