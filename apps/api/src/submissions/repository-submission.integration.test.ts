@@ -7,6 +7,7 @@ import type { UpsertRepositoryInput } from '../repositories/repository.js';
 import {
   RepositoryAlreadyIndexedError,
   RepositorySubmissionAlreadyPendingError,
+  RepositorySubmissionCooldownError,
   RepositorySubmissionService,
 } from './repository-submission-service.js';
 import { RepositorySubmissionStore } from './repository-submission-store.js';
@@ -110,6 +111,72 @@ describe('repository submission intake with PostgreSQL', () => {
       'SELECT count(*)::text AS count FROM repository_submissions',
     );
     expect(count.rows[0]?.count).toBe('1');
+  });
+
+  it('blocks immediate resubmission after a terminal validation result', async () => {
+    const first = await service.submit(
+      'https://github.com/example/cooldown-project',
+    );
+
+    await submissionStore.recordValidation({
+      kind: 'invalid',
+      submissionId: first.id,
+      validatedAt: new Date(),
+    });
+
+    await expect(
+      service.submit('https://github.com/example/cooldown-project.git'),
+    ).rejects.toBeInstanceOf(RepositorySubmissionCooldownError);
+
+    const count = await pool.query<{ count: string }>(
+      `
+        SELECT count(*)::text AS count
+        FROM repository_submissions
+        WHERE normalized_full_name = 'example/cooldown-project'
+      `,
+    );
+
+    expect(count.rows[0]?.count).toBe('1');
+  });
+
+  it('allows resubmission after the terminal cooldown has expired', async () => {
+    const first = await service.submit(
+      'https://github.com/example/cooldown-expired',
+    );
+
+    await submissionStore.recordValidation({
+      kind: 'invalid',
+      submissionId: first.id,
+      validatedAt: new Date(),
+    });
+
+    await pool.query(
+      `
+        UPDATE repository_submissions
+        SET updated_at = current_timestamp - interval '25 hours'
+        WHERE id = $1
+      `,
+      [first.id],
+    );
+
+    await expect(
+      service.submit('https://github.com/example/cooldown-expired'),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        normalizedFullName: 'example/cooldown-expired',
+        status: 'PENDING',
+      }),
+    );
+
+    const count = await pool.query<{ count: string }>(
+      `
+        SELECT count(*)::text AS count
+        FROM repository_submissions
+        WHERE normalized_full_name = 'example/cooldown-expired'
+      `,
+    );
+
+    expect(count.rows[0]?.count).toBe('2');
   });
 
   it('allows only one pending row under concurrent duplicate submissions', async () => {
