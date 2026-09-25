@@ -6,11 +6,11 @@ Harden the public community-submission boundary for launch while preserving the 
 
 ## Branch
 
-`feat/phase-5e2-submission-abuse-guard`
+`main`
 
-Base: `main@67ca82371447548eff04365256e5b7548573736b`
+Current verified merge: `30fadbcec5a62624c69a10a222ab23dfbd669c6d`
 
-PR: #33
+PR #33: merged
 
 ## Completed phase
 
@@ -31,10 +31,11 @@ Phase 5E.2 — Deterministic repository resubmission abuse guard.
 ## Verification
 
 - Phase 5E.1 source checkpoint verified on `main@67ca82371447548eff04365256e5b7548573736b`.
-- PR #33 code head `a5d5cd7d1e7b85f854baf43d58497b2f8f93b023`.
-- GitHub Actions CI run 142: success before documentation-only follow-up commits.
+- Phase 5E.2 code head `a5d5cd7d1e7b85f854baf43d58497b2f8f93b023`: CI run 142 success.
+- Documentation-complete PR head `1956c95360d5fabc7fc75f4c0378ea62dc71487f`: CI run 146 success.
+- PR #33 merged as `30fadbcec5a62624c69a10a222ab23dfbd669c6d`.
+- Post-merge `main` CI run 147: success.
 - CI verified lint, TypeScript, unit tests, production build, Jev harness, migration apply/rollback/reapply, persistence/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
 
 ## Risks / decisions
 
