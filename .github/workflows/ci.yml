@@ -71,6 +71,9 @@ jobs:
       - name: Verify repository persistence
         run: npm run test:persistence -w @reposcout/api
 
+      - name: Verify repository snapshot persistence
+        run: npm run test:snapshots -w @reposcout/api
+
       - name: Verify repository content evidence
         run: npm run test:content -w @reposcout/api
 
