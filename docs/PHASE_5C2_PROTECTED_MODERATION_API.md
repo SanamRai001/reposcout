@@ -251,6 +251,12 @@ Phase 5C.2 does not add:
 
 Those require separate product/security decisions.
 
+## Status
+
+Complete.
+
+The Phase 5C.2 branch passed application verification, reviewer-auth unit tests, protected moderation HTTP tests, PostgreSQL-backed publication/audit verification, migration rollback/reapply, repository/content/ingestion/catalog/search regressions, the full submission workflow suite, and PostgreSQL connectivity.
+
 ## Next checkpoint
 
 Phase 5D can now build the public submission web UI without exposing moderation capabilities.
