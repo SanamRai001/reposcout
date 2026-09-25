@@ -9,6 +9,7 @@ import type {
 } from './repository-submission-moderation.js';
 import type {
   CreateRepositorySubmissionInput,
+  CreateRepositorySubmissionPolicy,
   CreateRepositorySubmissionResult,
   RecordRepositorySubmissionEvidenceHandoffInput,
   RecordRepositorySubmissionValidationInput,
@@ -166,53 +167,174 @@ export class RepositorySubmissionStore {
 
   async createPending(
     input: CreateRepositorySubmissionInput,
+    policy: CreateRepositorySubmissionPolicy,
   ): Promise<CreateRepositorySubmissionResult> {
-    const result = await this.pool.query<RepositorySubmissionRow>(
-      `
-        INSERT INTO repository_submissions (
-          id,
-          submitted_url,
-          normalized_owner,
-          normalized_name,
-          normalized_full_name,
-          status
-        )
-        VALUES ($1, $2, $3, $4, $5, 'PENDING')
-        ON CONFLICT DO NOTHING
-        RETURNING ${SELECT_COLUMNS}
-      `,
-      [
-        randomUUID(),
-        input.submittedUrl,
-        input.normalizedOwner,
-        input.normalizedName,
-        input.normalizedFullName,
-      ],
-    );
-
-    const created = result.rows[0];
-
-    if (created) {
-      return {
-        kind: 'created',
-        submission: mapRow(created),
-      };
+    if (
+      !(policy.requestedAt instanceof Date) ||
+      Number.isNaN(policy.requestedAt.getTime())
+    ) {
+      throw new Error('Submission requestedAt must be a valid date.');
     }
 
-    const existing = await this.findPendingByNormalizedFullName(
-      input.normalizedFullName,
-    );
-
-    if (!existing) {
+    if (
+      !Number.isInteger(policy.resubmissionCooldownMs) ||
+      policy.resubmissionCooldownMs < 60_000 ||
+      policy.resubmissionCooldownMs > 2_592_000_000
+    ) {
       throw new Error(
-        'Submission insert conflicted without resolving an existing pending submission.',
+        'Submission resubmissionCooldownMs must be an integer between 60000 and 2592000000.',
       );
     }
 
-    return {
-      kind: 'pending_duplicate',
-      submission: existing,
-    };
+    const cooldownCutoff = new Date(
+      policy.requestedAt.getTime() - policy.resubmissionCooldownMs,
+    );
+    const client = await this.pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      const pendingResult = await client.query<RepositorySubmissionRow>(
+        `
+          SELECT ${SELECT_COLUMNS}
+          FROM repository_submissions
+          WHERE normalized_full_name = $1
+            AND status = 'PENDING'
+          ORDER BY created_at ASC, id ASC
+          LIMIT 1
+          FOR UPDATE
+        `,
+        [input.normalizedFullName],
+      );
+      const pending = pendingResult.rows[0];
+
+      if (pending) {
+        await client.query('COMMIT');
+        return {
+          kind: 'pending_duplicate',
+          submission: mapRow(pending),
+        };
+      }
+
+      const terminalResult = await client.query<RepositorySubmissionRow>(
+        `
+          SELECT ${SELECT_COLUMNS}
+          FROM repository_submissions
+          WHERE normalized_full_name = $1
+            AND status <> 'PENDING'
+            AND updated_at > $2
+          ORDER BY updated_at DESC, id ASC
+          LIMIT 1
+          FOR UPDATE
+        `,
+        [input.normalizedFullName, cooldownCutoff],
+      );
+      const recentTerminal = terminalResult.rows[0];
+
+      if (recentTerminal) {
+        await client.query('COMMIT');
+        return {
+          kind: 'recent_terminal',
+          submission: mapRow(recentTerminal),
+          retryAt: new Date(
+            recentTerminal.updated_at.getTime() +
+              policy.resubmissionCooldownMs,
+          ),
+        };
+      }
+
+      const insertResult = await client.query<RepositorySubmissionRow>(
+        `
+          INSERT INTO repository_submissions (
+            id,
+            submitted_url,
+            normalized_owner,
+            normalized_name,
+            normalized_full_name,
+            status
+          )
+          VALUES ($1, $2, $3, $4, $5, 'PENDING')
+          ON CONFLICT DO NOTHING
+          RETURNING ${SELECT_COLUMNS}
+        `,
+        [
+          randomUUID(),
+          input.submittedUrl,
+          input.normalizedOwner,
+          input.normalizedName,
+          input.normalizedFullName,
+        ],
+      );
+      const created = insertResult.rows[0];
+
+      if (created) {
+        await client.query('COMMIT');
+        return {
+          kind: 'created',
+          submission: mapRow(created),
+        };
+      }
+
+      const concurrentPendingResult =
+        await client.query<RepositorySubmissionRow>(
+          `
+            SELECT ${SELECT_COLUMNS}
+            FROM repository_submissions
+            WHERE normalized_full_name = $1
+              AND status = 'PENDING'
+            ORDER BY created_at ASC, id ASC
+            LIMIT 1
+            FOR UPDATE
+          `,
+          [input.normalizedFullName],
+        );
+      const concurrentPending = concurrentPendingResult.rows[0];
+
+      if (concurrentPending) {
+        await client.query('COMMIT');
+        return {
+          kind: 'pending_duplicate',
+          submission: mapRow(concurrentPending),
+        };
+      }
+
+      const concurrentTerminalResult =
+        await client.query<RepositorySubmissionRow>(
+          `
+            SELECT ${SELECT_COLUMNS}
+            FROM repository_submissions
+            WHERE normalized_full_name = $1
+              AND status <> 'PENDING'
+              AND updated_at > $2
+            ORDER BY updated_at DESC, id ASC
+            LIMIT 1
+            FOR UPDATE
+          `,
+          [input.normalizedFullName, cooldownCutoff],
+        );
+      const concurrentTerminal = concurrentTerminalResult.rows[0];
+
+      if (concurrentTerminal) {
+        await client.query('COMMIT');
+        return {
+          kind: 'recent_terminal',
+          submission: mapRow(concurrentTerminal),
+          retryAt: new Date(
+            concurrentTerminal.updated_at.getTime() +
+              policy.resubmissionCooldownMs,
+          ),
+        };
+      }
+
+      throw new Error(
+        'Submission insert conflicted without resolving a pending or recent terminal submission.',
+      );
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   async findById(id: string): Promise<RepositorySubmissionRecord | null> {
