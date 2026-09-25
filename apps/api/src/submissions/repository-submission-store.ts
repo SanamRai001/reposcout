@@ -8,6 +8,9 @@ import type {
   RepositorySubmissionModerationResult,
 } from './repository-submission-moderation.js';
 import type {
+  RepositorySubmissionCleanupCandidate,
+} from './repository-submission-cleanup-service.js';
+import type {
   CreateRepositorySubmissionInput,
   CreateRepositorySubmissionPolicy,
   CreateRepositorySubmissionResult,
@@ -337,6 +340,100 @@ export class RepositorySubmissionStore {
       throw error;
     } finally {
       client.release();
+    }
+  }
+
+  async listCleanupCandidates(
+    cutoff: Date,
+    limit: number,
+  ): Promise<RepositorySubmissionCleanupCandidate[]> {
+    this.assertCleanupQuery(cutoff, limit);
+
+    const result = await this.pool.query<{
+      id: string;
+      status: 'INVALID' | 'DUPLICATE';
+      updated_at: Date;
+    }>(
+      `
+        SELECT
+          rs.id,
+          rs.status,
+          rs.updated_at
+        FROM repository_submissions AS rs
+        WHERE rs.status IN ('INVALID', 'DUPLICATE')
+          AND rs.updated_at < $1
+          AND rs.handoff_repository_id IS NULL
+          AND rs.evidence_handoff_completed_at IS NULL
+          AND NOT EXISTS (
+            SELECT 1
+            FROM repository_submission_moderation_events AS event
+            WHERE event.submission_id = rs.id
+          )
+        ORDER BY rs.updated_at ASC, rs.id ASC
+        LIMIT $2
+      `,
+      [cutoff, limit],
+    );
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      status: row.status,
+      updatedAt: row.updated_at,
+    }));
+  }
+
+  async deleteCleanupCandidates(
+    cutoff: Date,
+    limit: number,
+  ): Promise<RepositorySubmissionCleanupCandidate[]> {
+    this.assertCleanupQuery(cutoff, limit);
+
+    const result = await this.pool.query<{
+      id: string;
+      status: 'INVALID' | 'DUPLICATE';
+      updated_at: Date;
+    }>(
+      `
+        WITH candidates AS (
+          SELECT rs.id
+          FROM repository_submissions AS rs
+          WHERE rs.status IN ('INVALID', 'DUPLICATE')
+            AND rs.updated_at < $1
+            AND rs.handoff_repository_id IS NULL
+            AND rs.evidence_handoff_completed_at IS NULL
+            AND NOT EXISTS (
+              SELECT 1
+              FROM repository_submission_moderation_events AS event
+              WHERE event.submission_id = rs.id
+            )
+          ORDER BY rs.updated_at ASC, rs.id ASC
+          LIMIT $2
+          FOR UPDATE SKIP LOCKED
+        )
+        DELETE FROM repository_submissions AS rs
+        USING candidates
+        WHERE rs.id = candidates.id
+        RETURNING rs.id, rs.status, rs.updated_at
+      `,
+      [cutoff, limit],
+    );
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      status: row.status,
+      updatedAt: row.updated_at,
+    }));
+  }
+
+  private assertCleanupQuery(cutoff: Date, limit: number): void {
+    if (!(cutoff instanceof Date) || Number.isNaN(cutoff.getTime())) {
+      throw new Error('Cleanup cutoff must be a valid date.');
+    }
+
+    if (!Number.isInteger(limit) || limit < 1 || limit > 1_000) {
+      throw new Error(
+        'Cleanup candidate limit must be an integer between 1 and 1000.',
+      );
     }
   }
 

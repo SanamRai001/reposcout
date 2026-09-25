@@ -847,4 +847,19 @@ describe('repositories schema', () => {
     );
   });
 
+
+  it('creates the bounded cleanup lookup index for old deterministic terminal submissions', async () => {
+    const result = await pool.query<{ index_name: string | null }>(
+      `
+        SELECT to_regclass(
+          'public.repository_submissions_cleanup_candidates_idx'
+        )::text AS index_name
+      `,
+    );
+
+    expect(result.rows[0]?.index_name).toBe(
+      'repository_submissions_cleanup_candidates_idx',
+    );
+  });
+
 });

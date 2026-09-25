@@ -35,6 +35,7 @@ export type SubmissionEnvironment = Readonly<{
     maxTrackedClients: number;
   }>;
   resubmissionCooldownMs: number;
+  terminalRetentionDays: number;
 }>;
 
 export type AppEnvironment = Readonly<{
@@ -275,6 +276,13 @@ export function loadEnvironment(
         86_400_000,
         60_000,
         2_592_000_000,
+      ),
+      terminalRetentionDays: parseInteger(
+        'SUBMISSION_TERMINAL_RETENTION_DAYS',
+        source.SUBMISSION_TERMINAL_RETENTION_DAYS,
+        90,
+        31,
+        3_650,
       ),
     }),
   });
