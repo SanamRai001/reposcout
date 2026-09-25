@@ -82,7 +82,9 @@ Phase 5C.1 establishes these rules:
 
 As the community grows, trusted reviewers may receive limited moderation roles.
 
-Reviewer-facing moderation APIs remain protected/deferred until explicit authentication and authorization exist.
+Phase 5C.2 now protects reviewer-facing moderation APIs with server-configured Bearer credentials mapped to stable reviewer references. Public users cannot read the moderation queue or submit final decisions, and request bodies cannot override the authenticated reviewer identity.
+
+A broader account/role system remains deferred.
 
 ### Model-assisted submission analysis
 
