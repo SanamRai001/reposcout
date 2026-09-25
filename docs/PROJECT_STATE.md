@@ -6,11 +6,11 @@ Close the community-submission launch-hardening phase with safe observability, d
 
 ## Branch
 
-`feat/phase-5e4-launch-security-observability`
+`main`
 
-Base: `main@e943805b9fc60ba820916770c9a23801fb09b430`
+Current verified merge: `701c45fe0ae08cc1182af372d8ae1082e478eebe`
 
-PR: #35
+PR #35: merged
 
 ## Completed phase
 
@@ -40,9 +40,11 @@ Phase 5E is now implementation-complete on this branch, pending final PR/main ve
 - Phase 5E.3 verified on `main@e943805b9fc60ba820916770c9a23801fb09b430`.
 - Initial Phase 5E.4 code head `3509374bcd801afd44fd8141edccf27596a05d77`: CI run 155 success.
 - Security regression head `bfc8f6e45b7047a4d93969293a742d0a6717c2a1`: CI run 156 success.
-- Both runs passed the new production dependency audit gate.
+- Documentation-complete PR head `94e665ccb031b188198c29558be3e94875aacde3`: CI run 165 success.
+- PR #35 merged as `701c45fe0ae08cc1182af372d8ae1082e478eebe`.
+- Post-merge `main` CI run 166: success.
+- All Phase 5E.4 verification runs passed the production dependency audit gate.
 - CI also passed lint, TypeScript, unit tests, production build, Jev harness, migration apply/rollback/reapply, persistence/content/ingestion/catalog/search/submission/moderation regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
 
 ## Security / privacy decisions
 
