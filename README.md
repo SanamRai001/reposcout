@@ -76,9 +76,12 @@ The backend currently supports:
 - approval-controlled publication into discovery;
 - trusted reviewer Bearer authorization;
 - protected moderation queue and decision endpoints;
-- authenticated reviewer attribution in moderation audit events.
+- authenticated reviewer attribution in moderation audit events;
+- a public Add a Repository web form;
+- explicit invalid, duplicate, pending, success, and retryable-error submission states;
+- clear validation and moderation expectations before a repository becomes discoverable.
 
-Abuse controls and the final submission UI remain later work.
+Launch abuse controls remain later work.
 
 ## Why RepoScout?
 
@@ -171,8 +174,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 | Submission validation foundation | Complete |
 | Moderation persistence/publication boundary | Complete |
 | Reviewer authorization / protected moderation API | Complete |
-| Abuse controls | Planned |
-| Submission UI | Planned |
+| Submission UI | Complete |
+| Abuse controls / launch hardening | Planned |
 | Advanced ranking / hidden-gem scoring | Planned |
 
 <details>
@@ -218,7 +221,9 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 5B — deterministic submission validation + evidence preparation: complete.
 - Phase 5C.1 — moderation persistence + publication boundary: complete.
 - Phase 5C.2 — reviewer authorization + protected moderation API: complete.
-- Abuse controls and the public submission UI remain later phases.
+- Phase 5C — moderation workflow: complete.
+- Phase 5D — public repository submission UI: complete.
+- Phase 5E — abuse / launch hardening: next.
 
 </details>
 
