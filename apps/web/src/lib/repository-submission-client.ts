@@ -151,11 +151,12 @@ export async function submitRepository(
           ? 'RepoScout could not accept the submission right now.'
           : 'RepoScout could not accept this repository submission.';
 
+    const rawRetryAfterSeconds = bodyRecord?.retryAfterSeconds;
     const retryAfterSeconds =
-      typeof bodyRecord?.retryAfterSeconds === 'number' &&
-      Number.isInteger(bodyRecord.retryAfterSeconds) &&
-      bodyRecord.retryAfterSeconds > 0
-        ? bodyRecord.retryAfterSeconds
+      typeof rawRetryAfterSeconds === 'number' &&
+      Number.isInteger(rawRetryAfterSeconds) &&
+      rawRetryAfterSeconds > 0
+        ? rawRetryAfterSeconds
         : null;
 
     throw new RepositorySubmissionError(
