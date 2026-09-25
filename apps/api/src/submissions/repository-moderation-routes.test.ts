@@ -10,6 +10,10 @@ import {
   RepositorySubmissionModerationService,
   RepositorySubmissionNotEligibleForModerationError,
 } from './repository-submission-moderation-service.js';
+import type {
+  ModerateRepositorySubmissionInput,
+  RepositorySubmissionModerationResult,
+} from './repository-submission-moderation.js';
 import type { RepositorySubmissionRecord } from './repository-submission.js';
 
 const servers: ReturnType<ReturnType<typeof createApp>['listen']>[] = [];
@@ -56,9 +60,25 @@ afterEach(async () => {
   );
 });
 
+type ModerationStoreResult =
+  | Readonly<{
+      kind: 'moderated';
+      result: RepositorySubmissionModerationResult;
+    }>
+  | Readonly<{ kind: 'not_found' }>
+  | Readonly<{ kind: 'not_eligible' }>
+  | Readonly<{
+      kind: 'already_moderated';
+      decision: 'APPROVED' | 'REJECTED';
+    }>;
+
 async function startApp(options: {
-  listPendingModerationCandidates?: ReturnType<typeof vi.fn>;
-  moderate?: ReturnType<typeof vi.fn>;
+  listPendingModerationCandidates?: (
+    limit: number,
+  ) => Promise<RepositorySubmissionRecord[]>;
+  moderate?: (
+    input: ModerateRepositorySubmissionInput,
+  ) => Promise<ModerationStoreResult>;
 } = {}) {
   const listPendingModerationCandidates =
     options.listPendingModerationCandidates ??
