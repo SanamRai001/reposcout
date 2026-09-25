@@ -2,56 +2,54 @@
 
 ## Objective
 
-Deliver the first complete community repository loop from public submission through the existing validation, evidence, and protected moderation pipeline.
+Harden the public community-submission boundary for launch while preserving the existing validation, evidence, and protected moderation flow.
 
 ## Branch
 
-`feat/phase-5d-submission-web-ui`
+`feat/phase-5e1-submission-rate-limit`
 
-Base: `main@ff3cac7bf9ab46e3876715b994ff52c66c961e98`
+Base: `main@b2cecbf7ae03a5ab1ca208125ffa69239bbe7843`
 
-PR: #31
+PR: #32
 
 ## Completed phase
 
-Phase 5D — Public Add a Repository web UI.
+Phase 5E.1 — Public submission rate limiting.
 
 ## Changes
 
-- Added a strict same-origin web client for `POST /api/submissions`.
-- Added focused submission-client tests.
-- Added the public repository URL form to the existing RepoScout discovery surface.
-- Added success, already-indexed, already-pending, invalid, retryable, and fallback error states.
-- Added explicit validation/evidence/moderation expectations.
-- Kept reviewer credentials, moderation queue access, reviewer identity, and approve/reject actions out of the public web bundle.
-- Preserved existing discovery/catalog behavior and brand system.
-- Added Phase 5D documentation and roadmap/status updates.
+- Added a bounded in-memory fixed-window limiter for public repository submissions.
+- Applied the limiter to `POST /api/submissions` before JSON body parsing.
+- Added stable `429 submission_rate_limited` responses with `Retry-After` and rate-limit headers.
+- Added environment-controlled window, attempt, and tracked-client limits.
+- Added explicit `TRUST_PROXY_HOPS`; forwarded IP headers are ignored by default.
+- Added tests for fixed-window behavior, bounded memory, HTTP 429 behavior, and proxy/IP handling.
+- Updated the web submission client to preserve rate-limit errors as retryable.
+- No moderation, publication, or persistence transaction was changed.
 
 ## Verification
 
-- Phase 5C.2 source checkpoint verified on `main@ff3cac7bf9ab46e3876715b994ff52c66c961e98`.
-- PR #30 verified merged.
-- Phase 5D implementation head `9784734dd78a97ff45b60d8682c59b7875214b54`.
-- GitHub Actions CI run 129: success.
-- CI includes lint, TypeScript, Vitest, production build, Jev harness, migrations/rollback/reapply, persistence/content/ingestion/catalog/search/submission workflow regressions, and PostgreSQL connectivity.
-- Documentation-only commits after the implementation gate must remain green before PR #31 is merged.
+- Phase 5D source checkpoint verified on `main@b2cecbf7ae03a5ab1ca208125ffa69239bbe7843`.
+- Phase 5E.1 code head `a78a135a57c2737f590481f8b5d96c12ae2174dd`.
+- GitHub Actions CI run 135: success before documentation-only follow-up commits.
+- The gate includes lint, TypeScript, unit tests, production build, Jev harness, migration apply/rollback/reapply, persistence/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Documentation-complete PR head must remain green before merge.
 
 ## Risks / decisions
 
-- Public submission remains intentionally unauthenticated; Phase 5E must add launch-appropriate abuse controls before broad exposure.
-- Submission success means accepted for processing, not approved or published.
-- The public UI has no submission-status lookup or notification mechanism yet.
-- No moderation capability is exposed to public clients.
-- Permanent moderation remains a trusted reviewer decision through the existing Phase 5C transaction.
-- No Jev/model output is used to make the final moderation decision.
+- The limiter is process-local and intentionally not a distributed rate limiter.
+- Current defaults are 10 submission attempts per 10 minutes per resolved client IP.
+- The tracked-client map is bounded at 10,000 entries by default.
+- Multi-instance deployment requires an edge/shared-store limiter so limits cannot be bypassed across processes.
+- `TRUST_PROXY_HOPS` must stay 0 unless the API is reachable only through the configured number of trusted reverse-proxy hops.
+- IP rate limiting can affect users behind shared NAT; limits remain configurable.
+- Rate limiting reduces request abuse but does not replace spam detection or moderation.
+- Permanent listing decisions remain protected trusted-reviewer actions.
 
 ## Next phase
 
-Phase 5E — Abuse / launch hardening:
-- rate limiting;
-- spam/abuse controls;
-- operational cleanup/retention;
-- observability;
-- security review.
+Phase 5E.2 — Submission spam / abuse controls.
+
+Focus next on low-complexity deterministic defenses that complement rate limiting without introducing automated final moderation.
 
 Do not start Phase 6 until Phase 5E is explicitly completed or deferred by decision.
