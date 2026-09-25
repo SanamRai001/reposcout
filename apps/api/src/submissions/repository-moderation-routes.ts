@@ -175,6 +175,11 @@ export function createRepositoryModerationRouter(
       });
     } catch (error) {
       if (error instanceof InvalidRepositorySubmissionModerationError) {
+        logger.info('moderation.request_rejected', {
+          requestId: responseRequestId(response),
+          reviewerRef,
+          outcome: 'invalid_moderation_request',
+        });
         response.status(400).json({
           error: 'invalid_moderation_request',
           message: error.message,
