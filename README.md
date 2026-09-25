@@ -68,9 +68,14 @@ The backend currently supports:
 - retryable-failure reporting;
 - rate-limit-aware early stopping;
 - VALID-submission evidence handoff into canonical repository ingestion;
-- measured metadata, README, and contribution-evidence refresh for moderation preparation.
+- measured metadata, README, and contribution-evidence refresh for moderation preparation;
+- unlisted pre-approval repository preparation;
+- moderation-candidate selection;
+- atomic approve/reject persistence;
+- append-only moderation audit events;
+- approval-controlled publication into discovery.
 
-Public moderation workflows, abuse controls, and the final submission UI remain later work.
+Reviewer authentication/protected moderation APIs, abuse controls, and the final submission UI remain later work.
 
 ## Why RepoScout?
 
@@ -161,7 +166,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 | Discovery web UI | Complete |
 | Community submission intake | Complete |
 | Submission validation foundation | Complete |
-| Moderation and abuse controls | Planned |
+| Moderation persistence/publication boundary | Complete |
+| Reviewer authorization and abuse controls | Planned |
 | Submission UI | Planned |
 | Advanced ranking / hidden-gem scoring | Planned |
 
@@ -206,7 +212,9 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 5B.2A — validation orchestration: complete.
 - Phase 5B.2B — evidence handoff: complete.
 - Phase 5B — deterministic submission validation + evidence preparation: complete.
-- Moderation, abuse controls, and the public submission UI remain future phases.
+- Phase 5C.1 — moderation persistence + publication boundary: complete.
+- Phase 5C.2 — reviewer authorization + protected moderation API: next.
+- Abuse controls and the public submission UI remain later phases.
 
 </details>
 
