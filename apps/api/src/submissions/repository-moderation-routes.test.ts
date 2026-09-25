@@ -43,6 +43,7 @@ const candidate: RepositorySubmissionRecord = {
 };
 
 afterEach(async () => {
+  vi.restoreAllMocks();
   await Promise.all(
     servers.splice(0).map(
       (server) =>
@@ -153,6 +154,33 @@ describe('protected repository moderation routes', () => {
     expect(response.headers.get('www-authenticate')).toBe('Bearer');
     expect(body.error).toBe('moderation_unauthorized');
     expect(listPendingModerationCandidates).not.toHaveBeenCalled();
+  });
+
+  it('does not log a presented bearer credential when authentication fails', async () => {
+    const info = vi
+      .spyOn(console, 'info')
+      .mockImplementation(() => undefined);
+    const { baseUrl } = await startApp();
+    const invalidToken = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+
+    const response = await fetch(
+      `${baseUrl}/api/moderation/submissions`,
+      {
+        headers: {
+          authorization: `Bearer ${invalidToken}`,
+        },
+      },
+    );
+
+    expect(response.status).toBe(401);
+
+    const output = info.mock.calls
+      .flat()
+      .map((value) => String(value))
+      .join('\n');
+
+    expect(output).toContain('moderation.authentication_failed');
+    expect(output).not.toContain(invalidToken);
   });
 
   it('returns the protected pending moderation queue', async () => {
