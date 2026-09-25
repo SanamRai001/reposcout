@@ -27,6 +27,7 @@ describe('loadEnvironment', () => {
       maxTrackedClients: 10_000,
     });
     expect(environment.submission.resubmissionCooldownMs).toBe(86_400_000);
+    expect(environment.submission.terminalRetentionDays).toBe(90);
   });
 
   it('loads an optional GitHub token without requiring one for public data', () => {
@@ -48,6 +49,7 @@ describe('loadEnvironment', () => {
       SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: '4',
       SUBMISSION_RATE_LIMIT_MAX_CLIENTS: '5000',
       SUBMISSION_RESUBMISSION_COOLDOWN_MS: '7200000',
+      SUBMISSION_TERMINAL_RETENTION_DAYS: '180',
     });
 
     expect(environment.http.trustProxyHops).toBe(1);
@@ -57,6 +59,7 @@ describe('loadEnvironment', () => {
       maxTrackedClients: 5_000,
     });
     expect(environment.submission.resubmissionCooldownMs).toBe(7_200_000);
+    expect(environment.submission.terminalRetentionDays).toBe(180);
   });
 
   it('rejects invalid submission rate-limit and proxy settings', () => {
@@ -101,6 +104,15 @@ describe('loadEnvironment', () => {
       }),
     ).toThrow(
       'SUBMISSION_RESUBMISSION_COOLDOWN_MS must be an integer between 60000 and 2592000000.',
+    );
+
+    expect(() =>
+      loadEnvironment({
+        ...BASE_ENV,
+        SUBMISSION_TERMINAL_RETENTION_DAYS: '30',
+      }),
+    ).toThrow(
+      'SUBMISSION_TERMINAL_RETENTION_DAYS must be an integer between 31 and 3650.',
     );
   });
 
