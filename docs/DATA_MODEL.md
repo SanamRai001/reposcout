@@ -141,22 +141,33 @@ Rules:
 
 ### RepositorySnapshot
 
-Historical measurements.
+Implemented in Phase 6A as daily append-only measured history.
 
 ```text
 id
 repository_id
+captured_on
 captured_at
 stars
 forks
 open_issues
-release_count
-optional activity aggregates
+created_at
 ```
 
+Rules:
+- `captured_at` is the actual observation timestamp;
+- `captured_on` is the UTC calendar date derived from `captured_at`;
+- exactly one snapshot may exist per repository per UTC day;
+- same-day retries are first-write-wins and do not rewrite historical values;
+- distinct-day backfills may be inserted later and remain separate history;
+- measured counts are nonnegative;
+- repository deletion cascades to its snapshot history.
+
 Indexes:
-- unique(repository_id, captured_at bucket) where applicable;
-- repository_id + captured_at descending.
+- unique(`repository_id`, `captured_on`);
+- `repository_id` + `captured_at` descending.
+
+Phase 6A intentionally does not store release counts or optional activity aggregates because RepoScout does not yet have a defined authoritative source/semantic contract for those fields.
 
 ### RepositoryLanguage
 

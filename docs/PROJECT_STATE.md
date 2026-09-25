@@ -2,76 +2,67 @@
 
 ## Objective
 
-Close the community-submission launch-hardening phase with safe observability, dependency security checks, privacy documentation, and an end-to-end review of the public submission / protected moderation boundary.
+Build historical measured repository intelligence in small phases without mixing storage, capture operations, trend math, and ranking logic.
 
 ## Branch
 
-`main`
+`feat/phase-6a-snapshot-persistence`
 
-Current verified merge: `701c45fe0ae08cc1182af372d8ae1082e478eebe`
+Base: `main@6952d6323a5db0b51d8e293fe5bbee89306fe75b`
 
-PR #35: merged
+PR: #40
 
 ## Completed phase
 
-Phase 5E.4 — Launch observability + security review.
+Phase 6A — Repository snapshot persistence foundation.
 
-Phase 5E is now implementation-complete on this branch, pending final PR/main verification.
+Phase 6 remains in progress.
 
 ## Changes
 
-- Added request correlation IDs and baseline API security headers.
-- Marked submission/moderation responses `Cache-Control: no-store`.
-- Added stable 400 malformed-JSON and 413 oversized-body responses.
-- Added safe structured submission, rate-limit, and moderation operational events.
-- Added central recursive log redaction for credential-like metadata.
-- Prevented caller metadata from overriding reserved log fields.
-- Replaced raw in-memory submission rate-limit IP keys with per-process HMAC digests.
-- Added an explicit regression proving presented moderation bearer credentials are not logged.
-- Added a production dependency security gate: `npm audit --omit=dev --audit-level=high`.
-- Enabled weekly Dependabot monitoring for npm and GitHub Actions.
-- Added `SECURITY.md`.
-- Added `docs/PRIVACY.md`.
-- Completed and documented the end-to-end public submission / moderation security review.
-- No new monitoring vendor, metrics database, account system, or model-driven moderation authority was introduced.
+- Added `repository_snapshots` as the first historical metrics table.
+- Snapshot facts are limited to currently authoritative measured metadata:
+  - stars;
+  - forks;
+  - GitHub-style open issue count.
+- Added explicit `captured_at` provenance and a UTC `captured_on` daily bucket.
+- Enforced one snapshot per repository per UTC day.
+- Snapshot capture is append-only / first-write-wins within a day.
+- Same-day retries return the existing snapshot rather than rewriting historical values.
+- Backfills for distinct UTC days remain independent historical rows.
+- Added a repository + descending capture-time history index.
+- Snapshot rows cascade only when their canonical repository is deleted.
+- Added a bounded recent-history read method for later delta/trend phases.
+- Added a dedicated snapshot PostgreSQL CI gate.
 
 ## Verification
 
-- Phase 5E.3 verified on `main@e943805b9fc60ba820916770c9a23801fb09b430`.
-- Initial Phase 5E.4 code head `3509374bcd801afd44fd8141edccf27596a05d77`: CI run 155 success.
-- Security regression head `bfc8f6e45b7047a4d93969293a742d0a6717c2a1`: CI run 156 success.
-- Documentation-complete PR head `94e665ccb031b188198c29558be3e94875aacde3`: CI run 165 success.
-- PR #35 merged as `701c45fe0ae08cc1182af372d8ae1082e478eebe`.
-- Post-merge `main` CI run 166: success.
-- All Phase 5E.4 verification runs passed the production dependency audit gate.
-- CI also passed lint, TypeScript, unit tests, production build, Jev harness, migration apply/rollback/reapply, persistence/content/ingestion/catalog/search/submission/moderation regressions, and PostgreSQL connectivity.
+- Phase 5E.4 verified on `main@6952d6323a5db0b51d8e293fe5bbee89306fe75b`.
+- Phase 6A code head `bc21bcd8248a79564c4dd3b8f9094a3547db4d11`.
+- GitHub Actions CI run 173: success before documentation-only follow-up commits.
+- CI verified application lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, snapshot schema, snapshot persistence, existing persistence/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Documentation-complete PR head must remain green before merge.
 
-## Security / privacy decisions
+## Decisions / risks
 
-- Application logs intentionally exclude raw IPs, request bodies, authorization headers, bearer credentials, user-agent values, and moderation reason text.
-- The limiter uses an HMAC digest of the resolved client address with a random per-process key.
-- Reviewer references and final moderation reasons remain durable audit data.
-- Log retention remains deployment-controlled; RepoScout does not persist operational logs in PostgreSQL.
-- HSTS, frontend CSP, infrastructure access-log retention, and horizontal-scale rate limiting remain deployment/edge responsibilities.
-- A passing dependency audit is a gate, not a proof that the system is vulnerability-free.
+- Historical snapshots store measured GitHub facts, not model inference or ranking scores.
+- The MVP snapshot cadence unit is one UTC day per repository.
+- Same-day capture is first-write-wins to keep history append-only and retries idempotent.
+- No release/activity aggregate is stored until RepoScout has a defined authoritative collection source and semantics.
+- No automatic capture or scheduler exists in 6A.
+- Snapshot retention/coarsening remains deferred until real storage pressure exists.
 
-## Residual production gates
+## Phase 6 breakdown
 
-Completing Phase 5E does **not** mean broad public production launch is fully complete.
+- 6A — snapshot persistence foundation: complete.
+- 6B — snapshot capture + bounded backfill: next.
+- 6C — deterministic deltas/trend reads.
+- 6D — scheduled operations + retry/backfill orchestration.
 
-Still outstanding outside Phase 5E:
+## Next phase
 
-- database backup + tested restore procedure;
-- deployment/recovery runbook;
-- infrastructure/edge rate limiting for horizontal scale;
-- production TLS/HSTS and final frontend CSP;
-- accessibility pass;
-- Code of Conduct;
-- contribution/issue templates;
-- final hosting/log-retention configuration.
+Phase 6B — Snapshot capture + bounded backfill.
 
-## Next product phase
+Connect authoritative repository metadata observations to snapshot persistence, add an internal bounded capture/backfill operation, and preserve provider/rate-limit safety.
 
-Phase 6 — Historical snapshots.
-
-Do not treat the residual production gates above as completed merely because product development advances to Phase 6.
+Do not start Phase 7 ranking work before Phase 6 is complete.

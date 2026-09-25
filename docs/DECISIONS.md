@@ -1275,3 +1275,42 @@ RepoScout does not hardcode HSTS because TLS termination/topology is deployment-
 The final frontend CSP also depends on the actual static-host asset/origin configuration.
 
 Production HTTPS/TLS, HSTS, CSP, infrastructure access logging, and horizontally scalable rate limiting must be configured and verified at deployment time.
+
+
+## D-129 — Historical snapshots contain measured facts, not ranking output
+
+**Status:** Accepted
+
+Phase 6A stores only authoritative repository measurements that RepoScout already collects from GitHub: stars, forks, and GitHub-style open issue count.
+
+Release counts, contributor/activity aggregates, model assessments, and ranking scores are not added until their collection source and semantics are explicitly defined.
+
+Snapshot history is input to later deterministic trend/ranking work, not the ranking result itself.
+
+## D-130 — Use one immutable snapshot per repository per UTC day
+
+**Status:** Accepted
+
+The first snapshot cadence bucket is a UTC calendar day.
+
+The database stores both the actual `captured_at` timestamp and its derived `captured_on` UTC date, and enforces that the two agree.
+
+A unique `(repository_id, captured_on)` constraint prevents duplicate daily history.
+
+## D-131 — Same-day snapshot capture is first-write-wins
+
+**Status:** Accepted
+
+If a capture is retried for a repository/day that already has a snapshot, the existing snapshot is returned and historical values are not rewritten.
+
+This keeps daily history append-only and makes retries safe.
+
+Different-day backfills remain independent rows and may be inserted out of chronological order.
+
+## D-132 — Do not introduce snapshot retention/coarsening before storage evidence requires it
+
+**Status:** Accepted
+
+Phase 6A keeps daily snapshots without automatic aggregation/deletion.
+
+Weekly/monthly coarsening may be introduced later if measured storage growth justifies the added complexity.
