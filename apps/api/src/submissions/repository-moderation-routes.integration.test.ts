@@ -2,6 +2,7 @@ import type { AddressInfo } from 'node:net';
 
 import {
   afterAll,
+  afterEach,
   beforeEach,
   describe,
   expect,
@@ -40,11 +41,14 @@ const submissionStore = new RepositorySubmissionStore(pool);
 const servers: ReturnType<ReturnType<typeof createApp>['listen']>[] = [];
 const reviewerToken = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 
-beforeEach(async () => {
+async function clearFixtures(): Promise<void> {
   await pool.query('DELETE FROM repository_submission_moderation_events');
   await pool.query('DELETE FROM repository_submissions');
   await pool.query('DELETE FROM repositories');
-});
+}
+
+beforeEach(clearFixtures);
+afterEach(clearFixtures);
 
 afterAll(async () => {
   await Promise.all(
