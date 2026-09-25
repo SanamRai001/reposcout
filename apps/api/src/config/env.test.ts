@@ -19,6 +19,7 @@ describe('loadEnvironment', () => {
     expect(environment.database.idleTimeoutMs).toBe(10_000);
     expect(environment.github.token).toBeUndefined();
     expect(environment.github.requestTimeoutMs).toBe(8_000);
+    expect(environment.moderation.reviewers).toEqual([]);
   });
 
   it('loads an optional GitHub token without requiring one for public data', () => {
@@ -30,6 +31,51 @@ describe('loadEnvironment', () => {
 
     expect(environment.github.token).toBe('example-token');
     expect(environment.github.requestTimeoutMs).toBe(12_000);
+  });
+
+  it('loads trusted moderation reviewer credentials', () => {
+    const environment = loadEnvironment({
+      ...BASE_ENV,
+      MODERATION_REVIEWERS_JSON: JSON.stringify({
+        'maintainer:SanamRai001':
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        'reviewer:second':
+          'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      }),
+    });
+
+    expect(environment.moderation.reviewers).toEqual([
+      {
+        reviewerRef: 'maintainer:SanamRai001',
+        token: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      },
+      {
+        reviewerRef: 'reviewer:second',
+        token: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      },
+    ]);
+  });
+
+  it('rejects malformed moderation reviewer configuration', () => {
+    expect(() =>
+      loadEnvironment({
+        ...BASE_ENV,
+        MODERATION_REVIEWERS_JSON: '[]',
+      }),
+    ).toThrow(
+      'MODERATION_REVIEWERS_JSON must be a JSON object mapping reviewer references to bearer tokens.',
+    );
+
+    expect(() =>
+      loadEnvironment({
+        ...BASE_ENV,
+        MODERATION_REVIEWERS_JSON: JSON.stringify({
+          reviewer: 'too-short',
+        }),
+      }),
+    ).toThrow(
+      'Moderation reviewer tokens must be 32-512 non-whitespace characters.',
+    );
   });
 
   it('rejects a missing database URL', () => {
