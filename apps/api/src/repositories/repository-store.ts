@@ -17,7 +17,11 @@ import type {
   RepositoryMetadataRecord,
   UpsertRepositoryMetadataInput,
 } from './repository-metadata.js';
-import type { RepositoryRecord, UpsertRepositoryInput } from './repository.js';
+import type {
+  RepositoryPersistenceOptions,
+  RepositoryRecord,
+  UpsertRepositoryInput,
+} from './repository.js';
 
 type RepositoryRow = {
   id: string;
@@ -98,7 +102,8 @@ const UPSERT_REPOSITORY_SQL = `
     created_at_github,
     updated_at_github,
     pushed_at_github,
-    last_synced_at
+    last_synced_at,
+    is_listed
   )
   VALUES (
     $1,
@@ -114,7 +119,8 @@ const UPSERT_REPOSITORY_SQL = `
     $11,
     $12,
     $13,
-    $14
+    $14,
+    $15
   )
   ON CONFLICT (github_repository_id)
   DO UPDATE SET
@@ -209,7 +215,10 @@ const CATALOG_SELECT_COLUMNS = `
   m.updated_at AS metadata_updated_at
 `;
 
-function repositoryParams(input: UpsertRepositoryInput): unknown[] {
+function repositoryParams(
+  input: UpsertRepositoryInput,
+  options: RepositoryPersistenceOptions = {},
+): unknown[] {
   return [
     randomUUID(),
     input.githubRepositoryId,
@@ -225,6 +234,7 @@ function repositoryParams(input: UpsertRepositoryInput): unknown[] {
     input.updatedAtGithub,
     input.pushedAtGithub,
     input.lastSyncedAt,
+    options.initialListing !== 'unlisted',
   ];
 }
 
@@ -367,12 +377,15 @@ function sqlParameter(position: number): string {
 export class RepositoryStore {
   public constructor(private readonly pool: DatabasePool) {}
 
-  async upsert(input: UpsertRepositoryInput): Promise<RepositoryRecord> {
+  async upsert(
+    input: UpsertRepositoryInput,
+    options: RepositoryPersistenceOptions = {},
+  ): Promise<RepositoryRecord> {
     assertGithubRepositoryId(input.githubRepositoryId);
 
     const result = await this.pool.query<RepositoryRow>(
       UPSERT_REPOSITORY_SQL,
-      repositoryParams(input),
+      repositoryParams(input, options),
     );
 
     const row = result.rows[0];
@@ -397,6 +410,7 @@ export class RepositoryStore {
   async upsertWithMetadata(
     input: UpsertRepositoryInput,
     metadataInput: UpsertRepositoryMetadataInput,
+    options: RepositoryPersistenceOptions = {},
   ): Promise<RepositoryRecord> {
     assertGithubRepositoryId(input.githubRepositoryId);
     assertMetadata(metadataInput);
@@ -406,7 +420,11 @@ export class RepositoryStore {
     try {
       await client.query('BEGIN');
 
-      const repository = await this.upsertRepositoryWithClient(client, input);
+      const repository = await this.upsertRepositoryWithClient(
+        client,
+        input,
+        options,
+      );
 
       if (input.lastSyncedAt.getTime() >= repository.lastSyncedAt.getTime()) {
         await client.query<RepositoryMetadataRow>(
@@ -428,10 +446,11 @@ export class RepositoryStore {
   private async upsertRepositoryWithClient(
     client: PoolClient,
     input: UpsertRepositoryInput,
+    options: RepositoryPersistenceOptions,
   ): Promise<RepositoryRecord> {
     const result = await client.query<RepositoryRow>(
       UPSERT_REPOSITORY_SQL,
-      repositoryParams(input),
+      repositoryParams(input, options),
     );
 
     const row = result.rows[0];
@@ -501,12 +520,32 @@ export class RepositoryStore {
           SELECT 1
           FROM repositories
           WHERE lower(full_name) = $1
+            AND is_listed = true
         ) AS exists
       `,
       [normalizedFullName],
     );
 
     return result.rows[0]?.exists ?? false;
+  }
+
+  async findListedByGithubRepositoryId(
+    githubRepositoryId: string,
+  ): Promise<RepositoryRecord | null> {
+    assertGithubRepositoryId(githubRepositoryId);
+
+    const result = await this.pool.query<RepositoryRow>(
+      `
+        SELECT ${SELECT_COLUMNS}
+        FROM repositories
+        WHERE github_repository_id = $1
+          AND is_listed = true
+      `,
+      [githubRepositoryId],
+    );
+
+    const row = result.rows[0];
+    return row ? mapRepositoryRow(row) : null;
   }
 
   async findById(id: string): Promise<RepositoryCatalogRecord | null> {
@@ -520,6 +559,7 @@ export class RepositoryStore {
         FROM repositories r
         LEFT JOIN repository_metadata m ON m.repository_id = r.id
         WHERE r.id = $1
+          AND r.is_listed = true
       `,
       [id],
     );
@@ -596,7 +636,7 @@ export class RepositoryStore {
     `;
 
     const values: unknown[] = [];
-    const conditions: string[] = [];
+    const conditions: string[] = ['r.is_listed = true'];
 
     if (query !== null) {
       values.push(query);
@@ -691,7 +731,8 @@ export class RepositoryStore {
             SELECT ${CATALOG_SELECT_COLUMNS}
             FROM repositories r
             LEFT JOIN repository_metadata m ON m.repository_id = r.id
-            WHERE r.id > $1
+            WHERE r.is_listed = true
+              AND r.id > $1
             ORDER BY r.id ASC
             LIMIT $2
           `,
@@ -702,6 +743,7 @@ export class RepositoryStore {
             SELECT ${CATALOG_SELECT_COLUMNS}
             FROM repositories r
             LEFT JOIN repository_metadata m ON m.repository_id = r.id
+            WHERE r.is_listed = true
             ORDER BY r.id ASC
             LIMIT $1
           `,
