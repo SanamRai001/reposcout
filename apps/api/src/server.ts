@@ -27,6 +27,10 @@ async function bootstrap(): Promise<void> {
   const repositorySubmissionService = new RepositorySubmissionService(
     repositoryStore,
     repositorySubmissionStore,
+    {
+      resubmissionCooldownMs:
+        environment.submission.resubmissionCooldownMs,
+    },
   );
   const repositorySubmissionModerationService =
     new RepositorySubmissionModerationService(
