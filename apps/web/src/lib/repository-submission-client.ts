@@ -14,6 +14,7 @@ export type RepositorySubmissionErrorCode =
   | 'invalid_submission'
   | 'repository_already_indexed'
   | 'submission_already_pending'
+  | 'submission_rate_limited'
   | 'network_error'
   | 'invalid_response'
   | 'unknown_error';
@@ -87,6 +88,7 @@ function errorCode(value: unknown): RepositorySubmissionErrorCode {
     case 'invalid_submission':
     case 'repository_already_indexed':
     case 'submission_already_pending':
+    case 'submission_rate_limited':
       return value;
     default:
       return 'unknown_error';
