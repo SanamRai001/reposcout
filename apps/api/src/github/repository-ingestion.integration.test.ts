@@ -106,6 +106,36 @@ describe('repository ingestion', () => {
         observedAt: syncedAt,
       }),
     );
+
+    const snapshots = await pool.query<{
+      captured_on: string;
+      captured_at: Date;
+      stars: string;
+      forks: string;
+      open_issues: string;
+    }>(
+      `
+        SELECT
+          captured_on::text,
+          captured_at,
+          stars,
+          forks,
+          open_issues
+        FROM repository_snapshots
+        WHERE repository_id = $1
+      `,
+      [repository.id],
+    );
+
+    expect(snapshots.rows).toEqual([
+      {
+        captured_on: '2026-09-21',
+        captured_at: syncedAt,
+        stars: '321',
+        forks: '27',
+        open_issues: '8',
+      },
+    ]);
   });
 
   it('refreshes the same canonical repository after a GitHub rename', async () => {
@@ -169,5 +199,28 @@ describe('repository ingestion', () => {
         observedAt: new Date('2026-09-21T11:00:00Z'),
       }),
     );
+
+    const snapshots = await pool.query<{
+      captured_at: Date;
+      stars: string;
+      forks: string;
+      open_issues: string;
+    }>(
+      `
+        SELECT captured_at, stars, forks, open_issues
+        FROM repository_snapshots
+        WHERE repository_id = $1
+      `,
+      [renamed.id],
+    );
+
+    expect(snapshots.rows).toEqual([
+      {
+        captured_at: new Date('2026-09-21T10:00:00Z'),
+        stars: '321',
+        forks: '27',
+        open_issues: '8',
+      },
+    ]);
   });
 });
