@@ -22,6 +22,7 @@ const environment: DatabaseEnvironment = {
 const pool = createDatabasePool(environment);
 
 beforeEach(async () => {
+  await pool.query('DELETE FROM repository_submission_moderation_events');
   await pool.query('DELETE FROM repository_submissions');
   await pool.query('DELETE FROM repositories');
 });
@@ -164,6 +165,7 @@ describe('repositories schema', () => {
         data_type: 'timestamp with time zone',
         is_nullable: 'NO',
       },
+      { column_name: 'is_listed', data_type: 'boolean', is_nullable: 'NO' },
     ]);
   });
 
@@ -391,6 +393,35 @@ describe('repositories schema', () => {
         column_name: 'evidence_handoff_completed_at',
         data_type: 'timestamp with time zone',
         is_nullable: 'YES',
+      },
+    ]);
+  });
+
+  it('creates append-only repository submission moderation events', async () => {
+    const result = await pool.query<{
+      column_name: string;
+      data_type: string;
+      is_nullable: 'YES' | 'NO';
+    }>(
+      `
+        SELECT column_name, data_type, is_nullable
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'repository_submission_moderation_events'
+        ORDER BY ordinal_position
+      `,
+    );
+
+    expect(result.rows).toEqual([
+      { column_name: 'id', data_type: 'uuid', is_nullable: 'NO' },
+      { column_name: 'submission_id', data_type: 'uuid', is_nullable: 'NO' },
+      { column_name: 'decision', data_type: 'text', is_nullable: 'NO' },
+      { column_name: 'reviewer_ref', data_type: 'text', is_nullable: 'NO' },
+      { column_name: 'reason', data_type: 'text', is_nullable: 'NO' },
+      {
+        column_name: 'created_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
       },
     ]);
   });

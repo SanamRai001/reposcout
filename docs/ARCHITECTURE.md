@@ -151,6 +151,8 @@ Avoid introducing Redis until job volume or coordination actually requires it. A
 ### repositories
 Canonical repository identity/current GitHub state.
 
+Canonical storage and public publication are separate concerns. `repositories.is_listed` is RepoScout-owned state: evidence-preparation rows may exist unlisted, while public catalog/detail/search read only listed rows. Normal GitHub refresh does not change an existing listing decision.
+
 ### repository metadata
 Measured current GitHub facts collected with a repository observation, including stars, forks, open issue/PR count, primary language, SPDX license, and topics. Stored separately from canonical identity and future derived/model signals.
 
@@ -212,7 +214,29 @@ Historical metric snapshots used for momentum/trend calculations.
 Community-submitted repository candidates.
 
 ### moderation
-Approval/rejection workflow and audit trail.
+Approval/rejection workflow, publication boundary, and audit trail.
+
+Phase 5C.1 flow:
+
+~~~text
+VALID submission
+      |
+evidence handoff
+      |
+canonical repository (unlisted)
+      |
+human moderation
+      +-- REJECTED -> remains unlisted + audit event
+      |
+      +-- APPROVED -> listed + audit event
+                         |
+                         v
+                 public discovery
+~~~
+
+Approval locks the submission and atomically updates submission status, repository listing state, and the append-only moderation event.
+
+No moderation HTTP route is exposed until reviewer authentication/authorization is added.
 
 ### taxonomy
 Categories, tags, use cases, and controlled classification.

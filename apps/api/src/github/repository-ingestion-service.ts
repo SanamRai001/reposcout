@@ -10,6 +10,8 @@ import type {
   UpsertRepositoryMetadataInput,
 } from '../repositories/repository-metadata.js';
 import type {
+  RepositoryInitialListing,
+  RepositoryPersistenceOptions,
   RepositoryRecord,
   UpsertRepositoryInput,
 } from '../repositories/repository.js';
@@ -18,6 +20,7 @@ type RepositoryWriter = Readonly<{
   upsertWithMetadata(
     input: UpsertRepositoryInput,
     metadata: UpsertRepositoryMetadataInput,
+    options?: RepositoryPersistenceOptions,
   ): Promise<RepositoryRecord>;
 }>;
 
@@ -25,6 +28,7 @@ type GithubRepositoryReader = Pick<GithubClient, 'fetchRepository'>;
 
 export type RepositoryIngestionOptions = Readonly<{
   expectedGithubRepositoryId?: string;
+  initialListing?: RepositoryInitialListing;
 }>;
 
 export class RepositoryIngestionIdentityMismatchError extends Error {
@@ -86,17 +90,27 @@ export class RepositoryIngestionService {
       );
     }
 
-    return this.repositoryStore.upsertWithMetadata(
-      toUpsertInput(repository, fetchedAt),
-      {
-        stars: repository.metadata.stars,
-        forks: repository.metadata.forks,
-        openIssues: repository.metadata.openIssues,
-        primaryLanguage: repository.metadata.primaryLanguage,
-        licenseSpdx: repository.metadata.licenseSpdx,
-        topics: repository.metadata.topics,
-        observedAt: fetchedAt,
-      },
-    );
+    const input = toUpsertInput(repository, fetchedAt);
+    const metadata = {
+      stars: repository.metadata.stars,
+      forks: repository.metadata.forks,
+      openIssues: repository.metadata.openIssues,
+      primaryLanguage: repository.metadata.primaryLanguage,
+      licenseSpdx: repository.metadata.licenseSpdx,
+      topics: repository.metadata.topics,
+      observedAt: fetchedAt,
+    };
+
+    if (options.initialListing) {
+      return this.repositoryStore.upsertWithMetadata(
+        input,
+        metadata,
+        {
+          initialListing: options.initialListing,
+        },
+      );
+    }
+
+    return this.repositoryStore.upsertWithMetadata(input, metadata);
   }
 }

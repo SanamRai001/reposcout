@@ -452,12 +452,38 @@ Status: complete
 
 ### Phase 5C — Moderation workflow
 
-Later:
-- pending moderation queue;
-- approve/reject;
-- reviewer reason;
-- authorization;
-- append-only moderation events.
+Status: in progress
+
+#### Phase 5C.1 — Moderation persistence + publication boundary
+
+Status: complete
+
+- canonical repository storage separated from public listing;
+- submission evidence handoff creates unlisted repository candidates;
+- existing PENDING + VALID handed-off candidates backfilled to unlisted;
+- catalog/detail/search expose listed repositories only;
+- ordinary refresh preserves listing state;
+- already-indexed/duplicate checks use listed repositories only;
+- bounded oldest-first moderation-candidate selection;
+- atomic APPROVED/REJECTED transition;
+- approval publishes the handoff repository;
+- rejection keeps prepared evidence hidden;
+- required reviewer reference and reason;
+- append-only moderation event;
+- repeated/conflicting final decisions rejected;
+- no unauthenticated moderation route.
+
+#### Phase 5C.2 — Reviewer authorization + protected moderation API
+
+Next:
+- trusted reviewer identity;
+- moderation authorization;
+- protected pending queue API;
+- protected approve/reject API;
+- stable moderation HTTP errors;
+- preserve Phase 5C.1 transaction as the publication boundary.
+
+Reviewer-facing UI remains deferred until the protected backend workflow exists.
 
 ### Phase 5D — Submission web UI
 

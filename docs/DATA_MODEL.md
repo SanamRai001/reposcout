@@ -29,6 +29,7 @@ github_url
 default_branch
 is_fork
 is_archived
+is_listed
 created_at_github
 updated_at_github
 pushed_at_github
@@ -38,6 +39,8 @@ updated_at
 ```
 
 Do not use `full_name` as the unique identity because repositories can be renamed or transferred. The database enforces uniqueness on `github_repository_id`; `full_name` is a mutable, indexed lookup attribute.
+
+`is_listed` is RepoScout-owned publication state. Canonical rows may exist internally with `is_listed = false` while submission evidence is prepared or retained after rejection. Public catalog/detail/search return only listed repositories.
 
 ### RepositoryMetadata
 
@@ -317,14 +320,12 @@ Rules:
 - evidence handoff does not change status from PENDING and is not approval;
 - partial ingestion/evidence writes may exist while handoff completion remains null, allowing safe retry.
 
-Future moderation fields may include:
+Phase 5C.1 adds final moderation through a separate append-only event rather than duplicating reviewer/reason fields onto the submission row.
+
+Potential later identity fields may include:
 
 ~~~text
 submitter_user_id nullable
-reason nullable
-reviewed_at nullable
-reviewed_by nullable
-rejection_reason nullable
 ~~~
 
 ### User
@@ -345,16 +346,26 @@ Do not copy unnecessary GitHub profile information.
 
 ### ModerationEvent
 
-Append-only audit record.
+Implemented in Phase 5C.1 as `repository_submission_moderation_events`.
+
+Append-only final-decision audit record:
 
 ```text
 id
 submission_id
-actor_user_id
-action
+decision        APPROVED | REJECTED
+reviewer_ref
 reason
 created_at
 ```
+
+Rules:
+- exactly one final moderation event per submission;
+- reviewer reference is explicit even before full user identity exists;
+- approval/rejection state and event persistence occur in one transaction;
+- approval also flips the handoff repository to `is_listed = true` in that same transaction;
+- rejection preserves the handoff repository/evidence internally but leaves it unlisted;
+- events are not updated/deleted by Phase 5C.1.
 
 ## Future entities, not MVP requirements
 

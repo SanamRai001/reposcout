@@ -61,17 +61,28 @@ It does not yet:
 - run model analysis;
 - expose a public moderation queue.
 
-A pending submission means only **received for later validation**, not endorsed or approved.
+A pending submission means only **received for later validation/review**, not endorsed or approved.
 
-Phase 5B.1 deterministic validation may later mark an intake as INVALID or DUPLICATE, or record it as VALID while keeping it PENDING. VALID means the repository resolved as public and was not already indexed by canonical GitHub ID; it still does not mean approved.
+Phase 5B deterministic validation may mark an intake as INVALID or DUPLICATE, or record it as VALID while keeping it PENDING. VALID means the repository resolved as public and was not already publicly listed by canonical GitHub ID; it still does not mean approved.
+
+After evidence handoff, RepoScout may keep a canonical repository/evidence row internally while the submission is still PENDING. That prepared repository remains **unlisted** until human approval.
 
 ## Moderation
 
 Initial moderation is maintainer-led.
 
+Phase 5C.1 establishes these rules:
+- only PENDING + VALID submissions with completed evidence handoff are eligible for a final decision;
+- APPROVED publishes the prepared repository into public discovery;
+- REJECTED keeps prepared repository/evidence internally but unlisted;
+- every final decision requires a reviewer reference and reason;
+- the final decision is append-only/auditable;
+- a second conflicting final decision does not rewrite history;
+- ordinary repository refresh cannot bypass moderation by publishing an unlisted candidate.
+
 As the community grows, trusted reviewers may receive limited moderation roles.
 
-All moderation actions should be auditable.
+Reviewer-facing moderation APIs remain protected/deferred until explicit authentication and authorization exist.
 
 ### Model-assisted submission analysis
 
