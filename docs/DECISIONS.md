@@ -1082,3 +1082,42 @@ Phase 5C.1 intentionally stops at persistence/domain behavior.
 An unauthenticated approve/reject endpoint would create a publication vulnerability.
 
 Reviewer identity, authorization, and protected moderation routes belong to Phase 5C.2.
+
+
+## D-112 — Moderation reviewer identity comes from server-side credentials
+
+**Status:** Accepted
+
+Phase 5C.2 configures trusted reviewer references and bearer secrets through server environment.
+
+Moderation requests cannot provide their own reviewer reference.
+
+The authenticated reviewer reference is the value written into the append-only moderation event.
+
+## D-113 — Keep the initial moderation auth boundary independent from general user accounts
+
+**Status:** Accepted
+
+RepoScout does not introduce a user/account/OAuth system solely to unlock maintainer-led moderation.
+
+The first protected moderation API uses dedicated trusted reviewer credentials.
+
+A broader account/role model may replace this boundary later if product requirements justify it.
+
+## D-114 — Protected HTTP moderation must reuse the Phase 5C.1 transaction
+
+**Status:** Accepted
+
+The moderation route does not update repository listing state or submission status directly.
+
+It delegates to the existing moderation service/store transaction so approval publication, terminal submission state, and audit-event persistence remain atomic.
+
+## D-115 — Bearer secrets are not moderation audit identities
+
+**Status:** Accepted
+
+Configured bearer secrets are authentication material only.
+
+Secrets are hashed in memory by the authenticator and are never returned by moderation APIs or stored in moderation events.
+
+Audit records store only stable reviewer references.
