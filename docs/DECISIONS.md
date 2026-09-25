@@ -1019,3 +1019,66 @@ Other isolated provider request/response failures remain observable and may allo
 Phase 5B.2B must call the existing RepositoryIngestionService, RepositoryReadmeService, and RepositoryContributionEvidenceService.
 
 Submission workflow code must not create parallel repository normalization, metadata, README, or contribution-evidence logic.
+
+
+## D-106 — Canonical repository storage is separate from public listing
+
+**Status:** Accepted
+
+Phase 5B evidence preparation needs a canonical repository row before moderation.
+
+RepoScout therefore adds explicit `repositories.is_listed` publication state.
+
+Public catalog, detail, and discovery only expose listed repositories. Internal ingestion/evidence workflows may use unlisted canonical rows.
+
+## D-107 — Submission evidence handoff creates unlisted candidates
+
+**Status:** Accepted
+
+A newly created repository reached through Phase 5B.2B submission handoff starts unlisted.
+
+Evidence-handoff completion means “prepared for moderation,” not “published.”
+
+Existing prepared PENDING + VALID handoffs are backfilled to unlisted by the Phase 5C.1 migration.
+
+## D-108 — Repository refresh never silently changes an existing listing decision
+
+**Status:** Accepted
+
+The initial insertion path may choose listed/unlisted state.
+
+On canonical GitHub-ID conflict, later ingestion refreshes update GitHub-originated fields but preserve `is_listed`.
+
+Human moderation remains the authority for publishing submission-prepared repositories.
+
+## D-109 — Approval status, publication, and audit event are atomic
+
+**Status:** Accepted
+
+APPROVED moderation locks the submission and, in one PostgreSQL transaction:
+- verifies PENDING + VALID + completed evidence handoff;
+- sets the handoff repository listed;
+- sets submission status APPROVED;
+- inserts the moderation event.
+
+Publication must not commit without its audit record.
+
+## D-110 — Rejection preserves evidence but keeps the repository unlisted
+
+**Status:** Accepted
+
+REJECTED changes the submission terminal state and writes the audit event.
+
+RepoScout does not delete the canonical/evidence rows created for review, but those rows remain excluded from public discovery.
+
+Unlisted retained evidence does not count as an already-indexed repository for later intake/validation.
+
+## D-111 — Do not expose moderation HTTP actions before reviewer authorization exists
+
+**Status:** Accepted
+
+Phase 5C.1 intentionally stops at persistence/domain behavior.
+
+An unauthenticated approve/reject endpoint would create a publication vulnerability.
+
+Reviewer identity, authorization, and protected moderation routes belong to Phase 5C.2.
