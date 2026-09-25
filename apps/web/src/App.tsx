@@ -39,6 +39,11 @@ type SubmissionUiState =
   | Readonly<{ kind: 'invalid'; message: string }>
   | Readonly<{ kind: 'already_indexed'; message: string }>
   | Readonly<{ kind: 'already_pending'; message: string }>
+  | Readonly<{
+      kind: 'cooldown';
+      message: string;
+      retryAfterSeconds: number | null;
+    }>
   | Readonly<{ kind: 'retryable_error'; message: string }>
   | Readonly<{ kind: 'error'; message: string }>;
 
@@ -49,6 +54,24 @@ const compactNumber = new Intl.NumberFormat(undefined, {
 
 function formatCount(value: number): string {
   return compactNumber.format(value);
+}
+
+function formatRetryDelay(seconds: number | null): string | null {
+  if (seconds === null) {
+    return null;
+  }
+
+  if (seconds >= 3_600) {
+    const hours = Math.ceil(seconds / 3_600);
+    return hours === 1 ? 'about 1 hour' : `about ${hours} hours`;
+  }
+
+  if (seconds >= 60) {
+    const minutes = Math.ceil(seconds / 60);
+    return minutes === 1 ? 'about 1 minute' : `about ${minutes} minutes`;
+  }
+
+  return seconds === 1 ? '1 second' : `${seconds} seconds`;
 }
 
 function formatSyncDate(value: string): string {
@@ -490,6 +513,15 @@ export function App() {
           return;
         }
 
+        if (error.code === 'submission_resubmission_cooldown') {
+          setSubmissionState({
+            kind: 'cooldown',
+            message: error.message,
+            retryAfterSeconds: error.retryAfterSeconds,
+          });
+          return;
+        }
+
         if (error.retryable) {
           setSubmissionState({
             kind: 'retryable_error',
@@ -874,6 +906,26 @@ export function App() {
                     <p>
                       {submissionState.message} The existing submission remains in
                       the validation and review workflow.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
+              {submissionState.kind === 'cooldown' ? (
+                <div className="submission-feedback submission-feedback-info">
+                  <span
+                    className="state-signal state-signal-info"
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <strong>Recently processed</strong>
+                    <p>
+                      {submissionState.message}
+                      {formatRetryDelay(submissionState.retryAfterSeconds)
+                        ? ` Try again in ${formatRetryDelay(
+                            submissionState.retryAfterSeconds,
+                          )}.`
+                        : ''}
                     </p>
                   </div>
                 </div>
