@@ -4,6 +4,8 @@ import {
 } from '../github/github-repository-reference.js';
 import type {
   CreateRepositorySubmissionInput,
+  CreateRepositorySubmissionPolicy,
+  CreateRepositorySubmissionResult,
   RepositorySubmissionRecord,
 } from './repository-submission.js';
 
@@ -28,6 +30,15 @@ export class RepositorySubmissionAlreadyPendingError extends Error {
   }
 }
 
+export class RepositorySubmissionCooldownError extends Error {
+  public constructor(public readonly retryAfterSeconds: number) {
+    super(
+      'This repository was recently processed. Please wait before submitting it again.',
+    );
+    this.name = 'RepositorySubmissionCooldownError';
+  }
+}
+
 type RepositoryLookup = Readonly<{
   existsByNormalizedFullName(
     normalizedFullName: string,
@@ -37,17 +48,16 @@ type RepositoryLookup = Readonly<{
 type SubmissionWriter = Readonly<{
   createPending(
     input: CreateRepositorySubmissionInput,
-  ): Promise<
-    | Readonly<{
-        kind: 'created';
-        submission: RepositorySubmissionRecord;
-      }>
-    | Readonly<{
-        kind: 'pending_duplicate';
-        submission: RepositorySubmissionRecord;
-      }>
-  >;
+    policy: CreateRepositorySubmissionPolicy,
+  ): Promise<CreateRepositorySubmissionResult>;
 }>;
+
+type RepositorySubmissionServiceOptions = Readonly<{
+  resubmissionCooldownMs?: number;
+  now?: () => Date;
+}>;
+
+const DEFAULT_RESUBMISSION_COOLDOWN_MS = 86_400_000;
 
 export type NormalizedRepositorySubmission = Readonly<{
   submittedUrl: string;
@@ -98,10 +108,28 @@ export function normalizeRepositorySubmissionUrl(
 }
 
 export class RepositorySubmissionService {
+  private readonly resubmissionCooldownMs: number;
+  private readonly now: () => Date;
+
   public constructor(
     private readonly repositoryLookup: RepositoryLookup,
     private readonly submissionWriter: SubmissionWriter,
-  ) {}
+    options: RepositorySubmissionServiceOptions = {},
+  ) {
+    this.resubmissionCooldownMs =
+      options.resubmissionCooldownMs ?? DEFAULT_RESUBMISSION_COOLDOWN_MS;
+    this.now = options.now ?? (() => new Date());
+
+    if (
+      !Number.isInteger(this.resubmissionCooldownMs) ||
+      this.resubmissionCooldownMs < 60_000 ||
+      this.resubmissionCooldownMs > 2_592_000_000
+    ) {
+      throw new Error(
+        'resubmissionCooldownMs must be an integer between 60000 and 2592000000.',
+      );
+    }
+  }
 
   async submit(repositoryUrl: unknown): Promise<RepositorySubmissionRecord> {
     const normalized = normalizeRepositorySubmissionUrl(repositoryUrl);
@@ -114,10 +142,25 @@ export class RepositorySubmissionService {
       throw new RepositoryAlreadyIndexedError();
     }
 
-    const result = await this.submissionWriter.createPending(normalized);
+    const requestedAt = this.now();
+    const result = await this.submissionWriter.createPending(normalized, {
+      requestedAt,
+      resubmissionCooldownMs: this.resubmissionCooldownMs,
+    });
 
     if (result.kind === 'pending_duplicate') {
       throw new RepositorySubmissionAlreadyPendingError();
+    }
+
+    if (result.kind === 'recent_terminal') {
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil(
+          (result.retryAt.getTime() - requestedAt.getTime()) / 1_000,
+        ),
+      );
+
+      throw new RepositorySubmissionCooldownError(retryAfterSeconds);
     }
 
     return result.submission;
