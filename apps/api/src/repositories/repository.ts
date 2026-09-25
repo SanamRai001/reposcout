@@ -32,3 +32,12 @@ export type UpsertRepositoryInput = Readonly<{
   pushedAtGithub: Date | null;
   lastSyncedAt: Date;
 }>;
+
+
+export type RepositoryInitialListing =
+  | 'listed'
+  | 'unlisted';
+
+export type RepositoryPersistenceOptions = Readonly<{
+  initialListing?: RepositoryInitialListing;
+}>;
