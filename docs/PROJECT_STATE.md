@@ -6,11 +6,11 @@ Build historical measured repository intelligence in small phases without mixing
 
 ## Branch
 
-`feat/phase-6b-snapshot-capture`
+`main`
 
-Base: `main@61be280be77dd14de456b3ff25040b3e8defde5e`
+Current verified merge: `c7aeadebe6457a1923111c632e6c6052089ac270`
 
-PR: #41
+PR #41: merged
 
 ## Completed phase
 
@@ -36,10 +36,11 @@ Phase 6 remains in progress.
 ## Verification
 
 - Phase 6A verified on `main@61be280be77dd14de456b3ff25040b3e8defde5e`.
-- Phase 6B code head `b53f311257056ddbd3efa15a2b5bd8de057e5438`.
-- GitHub Actions CI run 181: success before documentation-only follow-up commits.
+- Phase 6B code head `b53f311257056ddbd3efa15a2b5bd8de057e5438`: CI run 181 success.
+- Documentation-complete PR head `5092ef64e1e085120f74f37a71609554d3f2f208`: CI run 188 success.
+- PR #41 merged as `c7aeadebe6457a1923111c632e6c6052089ac270`.
+- Post-merge `main` CI run 189: success.
 - CI verified lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, repository persistence, automatic ingestion snapshot capture, snapshot persistence/backfill integration, content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
 
 ## Decisions / risks
 
