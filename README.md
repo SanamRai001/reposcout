@@ -217,7 +217,7 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 5B.2B — evidence handoff: complete.
 - Phase 5B — deterministic submission validation + evidence preparation: complete.
 - Phase 5C.1 — moderation persistence + publication boundary: complete.
-- Phase 5C.2 — reviewer authorization + protected moderation API: implemented; verification pending.
+- Phase 5C.2 — reviewer authorization + protected moderation API: complete.
 - Abuse controls and the public submission UI remain later phases.
 
 </details>
