@@ -5,11 +5,16 @@ import type { RepositoryCatalogReader } from './repositories/repository-catalog.
 import { createRepositoryRouter } from './repositories/repository-routes.js';
 import type { RepositorySubmissionService } from './submissions/repository-submission-service.js';
 import { createRepositorySubmissionRouter } from './submissions/repository-submission-routes.js';
+import {
+  createRepositoryModerationRouter,
+  type RepositoryModerationRouterDependencies,
+} from './submissions/repository-moderation-routes.js';
 
 export type AppDependencies = Readonly<{
   checkReadiness?: () => Promise<void>;
   repositoryCatalog?: RepositoryCatalogReader;
   repositorySubmissionService?: RepositorySubmissionService;
+  repositoryModeration?: RepositoryModerationRouterDependencies;
 }>;
 
 export function createApp(dependencies: AppDependencies = {}) {
@@ -60,6 +65,15 @@ export function createApp(dependencies: AppDependencies = {}) {
       '/api/submissions',
       createRepositorySubmissionRouter(
         dependencies.repositorySubmissionService,
+      ),
+    );
+  }
+
+  if (dependencies.repositoryModeration) {
+    app.use(
+      '/api/moderation',
+      createRepositoryModerationRouter(
+        dependencies.repositoryModeration,
       ),
     );
   }
