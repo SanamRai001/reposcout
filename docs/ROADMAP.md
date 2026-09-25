@@ -542,14 +542,25 @@ Status: complete
 
 #### Phase 5E.3 — Operational cleanup / retention
 
-Next:
-- define submission/audit retention boundaries;
-- cleanup policy for stale terminal workflow data where safe;
-- operational recovery considerations.
+Status: complete
+
+- PENDING submissions retained;
+- APPROVED/REJECTED submissions retained;
+- moderation events retained;
+- prepared repository/evidence data retained;
+- only old INVALID/DUPLICATE submissions eligible for cleanup;
+- candidates require no evidence handoff and no moderation event;
+- default 90-day terminal retention;
+- minimum 31 days, longer than the maximum 30-day resubmission cooldown;
+- dry-run-first CLI with explicit `--apply`;
+- bounded cleanup batches, default 100 / maximum 1000;
+- transaction-safe deletion with `FOR UPDATE SKIP LOCKED`;
+- partial cleanup-candidate index;
+- no automatic scheduler and no canonical repository deletion.
 
 #### Phase 5E.4 — Observability + security review
 
-Later:
+Next:
 - launch-focused submission/moderation metrics;
 - abuse and limiter observability without secret leakage;
 - dependency/security checks;
