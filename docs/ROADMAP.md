@@ -528,15 +528,21 @@ The current limiter is process-local. Horizontal/multi-instance deployment requi
 
 #### Phase 5E.2 — Submission spam / abuse controls
 
-Next:
-- deterministic low-cost spam/abuse checks;
-- preserve self-submission and beginner-friendly contribution;
-- avoid model-driven final moderation;
-- avoid storing unnecessary personal/network data.
+Status: complete
+
+- repository-level terminal resubmission cooldown;
+- default 24-hour cooldown, configurable from 1 minute to 30 days;
+- normalized repository identity used instead of submitter identity;
+- stable generic `409 submission_resubmission_cooldown` response;
+- retry timing exposed without exposing the previous terminal result;
+- no immediate retry action in the public UI;
+- transaction-safe pending/recent-terminal intake checks;
+- partial PostgreSQL lookup index with verified rollback/reapply;
+- no accounts, CAPTCHA, behavioral fingerprinting, or model-driven final decisions.
 
 #### Phase 5E.3 — Operational cleanup / retention
 
-Later:
+Next:
 - define submission/audit retention boundaries;
 - cleanup policy for stale terminal workflow data where safe;
 - operational recovery considerations.
