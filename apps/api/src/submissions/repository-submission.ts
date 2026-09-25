@@ -42,6 +42,11 @@ export type CreateRepositorySubmissionInput = Readonly<{
   normalizedFullName: string;
 }>;
 
+export type CreateRepositorySubmissionPolicy = Readonly<{
+  requestedAt: Date;
+  resubmissionCooldownMs: number;
+}>;
+
 export type CreateRepositorySubmissionResult =
   | Readonly<{
       kind: 'created';
@@ -50,6 +55,11 @@ export type CreateRepositorySubmissionResult =
   | Readonly<{
       kind: 'pending_duplicate';
       submission: RepositorySubmissionRecord;
+    }>
+  | Readonly<{
+      kind: 'recent_terminal';
+      submission: RepositorySubmissionRecord;
+      retryAt: Date;
     }>;
 
 export type RecordRepositorySubmissionValidationInput =

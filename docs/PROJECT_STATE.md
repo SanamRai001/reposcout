@@ -6,51 +6,49 @@ Harden the public community-submission boundary for launch while preserving the 
 
 ## Branch
 
-`main`
+`feat/phase-5e2-submission-abuse-guard`
 
-Current verified merge: `7867b26765940d2510e29ee6fb06f0d2cf8ab38b`
+Base: `main@67ca82371447548eff04365256e5b7548573736b`
 
-PR #32: merged
+PR: #33
 
 ## Completed phase
 
-Phase 5E.1 — Public submission rate limiting.
+Phase 5E.2 — Deterministic repository resubmission abuse guard.
 
 ## Changes
 
-- Added a bounded in-memory fixed-window limiter for public repository submissions.
-- Applied the limiter to `POST /api/submissions` before JSON body parsing.
-- Added stable `429 submission_rate_limited` responses with `Retry-After` and rate-limit headers.
-- Added environment-controlled window, attempt, and tracked-client limits.
-- Added explicit `TRUST_PROXY_HOPS`; forwarded IP headers are ignored by default.
-- Added tests for fixed-window behavior, bounded memory, HTTP 429 behavior, and proxy/IP handling.
-- Updated the web submission client to preserve rate-limit errors as retryable.
-- No moderation, publication, or persistence transaction was changed.
+- Added a repository-level cooldown after terminal submission outcomes.
+- Default cooldown is 24 hours and is configurable from 1 minute to 30 days.
+- Immediate resubmission of the same normalized repository no longer creates repeated validation/moderation work.
+- Kept the public cooldown response generic so prior INVALID, DUPLICATE, REJECTED, or other terminal state is not disclosed.
+- Added stable `409 submission_resubmission_cooldown`, `Retry-After`, and `retryAfterSeconds`.
+- Added a dedicated public UI state without an immediate retry action.
+- Added a partial PostgreSQL lookup index and verified migration apply/rollback/reapply.
+- Preserved self-submission, unauthenticated intake, trusted final moderation, and the existing pending-submission uniqueness boundary.
+- Added no submitter identity, account, fingerprint, CAPTCHA, or model-driven moderation decision.
 
 ## Verification
 
-- Phase 5D source checkpoint verified on `main@b2cecbf7ae03a5ab1ca208125ffa69239bbe7843`.
-- Phase 5E.1 implementation head `a78a135a57c2737f590481f8b5d96c12ae2174dd`: CI run 135 success.
-- Documentation-complete PR head `f49ff439152e5fc25d9e130367b68c370e66d7b3`: CI run 137 success.
-- PR #32 merged as `7867b26765940d2510e29ee6fb06f0d2cf8ab38b`.
-- Post-merge `main` CI run 138: success.
-- The gate includes lint, TypeScript, unit tests, production build, Jev harness, migration apply/rollback/reapply, persistence/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Phase 5E.1 source checkpoint verified on `main@67ca82371447548eff04365256e5b7548573736b`.
+- PR #33 code head `a5d5cd7d1e7b85f854baf43d58497b2f8f93b023`.
+- GitHub Actions CI run 142: success before documentation-only follow-up commits.
+- CI verified lint, TypeScript, unit tests, production build, Jev harness, migration apply/rollback/reapply, persistence/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Documentation-complete PR head must remain green before merge.
 
 ## Risks / decisions
 
-- The limiter is process-local and intentionally not a distributed rate limiter.
-- Current defaults are 10 submission attempts per 10 minutes per resolved client IP.
-- The tracked-client map is bounded at 10,000 entries by default.
-- Multi-instance deployment requires an edge/shared-store limiter so limits cannot be bypassed across processes.
-- `TRUST_PROXY_HOPS` must stay 0 unless the API is reachable only through the configured number of trusted reverse-proxy hops.
-- IP rate limiting can affect users behind shared NAT; limits remain configurable.
-- Rate limiting reduces request abuse but does not replace spam detection or moderation.
+- The cooldown is keyed to normalized repository identity, not submitter identity.
+- RepoScout intentionally does not permanently blacklist a repository after a terminal result; a later resubmission is allowed after the configured cooldown.
+- The generic public response does not reveal whether a prior terminal submission was rejected, invalid, duplicate, or otherwise finalized.
+- A 24-hour default reduces queue churn while leaving room for maintainers to correct a repository and try again later.
+- IP rate limiting from Phase 5E.1 and repository cooldown serve different abuse boundaries and remain complementary.
 - Permanent listing decisions remain protected trusted-reviewer actions.
 
 ## Next phase
 
-Phase 5E.2 — Submission spam / abuse controls.
+Phase 5E.3 — Operational cleanup / retention.
 
-Focus next on low-complexity deterministic defenses that complement rate limiting without introducing automated final moderation.
+Define what terminal submission, evidence, and moderation records must be retained, what may be cleaned up safely, and how cleanup interacts with audit/recovery requirements.
 
 Do not start Phase 6 until Phase 5E is explicitly completed or deferred by decision.

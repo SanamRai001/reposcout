@@ -176,6 +176,7 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 | Reviewer authorization / protected moderation API | Complete |
 | Submission UI | Complete |
 | Public submission rate limiting | Complete |
+| Repository resubmission abuse guard | Complete |
 | Abuse controls / launch hardening | In progress |
 | Advanced ranking / hidden-gem scoring | Planned |
 
@@ -225,7 +226,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 5C — moderation workflow: complete.
 - Phase 5D — public repository submission UI: complete.
 - Phase 5E.1 — public submission rate limiting: complete.
-- Phase 5E.2 — deterministic spam / abuse controls: next.
+- Phase 5E.2 — deterministic repository resubmission abuse guard: complete.
+- Phase 5E.3 — operational cleanup / retention: next.
 - Phase 5E — broader launch hardening: in progress.
 
 </details>

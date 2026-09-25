@@ -4,6 +4,7 @@ import {
   InvalidRepositorySubmissionError,
   RepositoryAlreadyIndexedError,
   RepositorySubmissionAlreadyPendingError,
+  RepositorySubmissionCooldownError,
   type RepositorySubmissionService,
 } from './repository-submission-service.js';
 import type { RepositorySubmissionRecord } from './repository-submission.js';
@@ -79,6 +80,16 @@ export function createRepositorySubmissionRouter(
         response.status(409).json({
           error: 'submission_already_pending',
           message: error.message,
+        });
+        return;
+      }
+
+      if (error instanceof RepositorySubmissionCooldownError) {
+        response.setHeader('Retry-After', String(error.retryAfterSeconds));
+        response.status(409).json({
+          error: 'submission_resubmission_cooldown',
+          message: error.message,
+          retryAfterSeconds: error.retryAfterSeconds,
         });
         return;
       }

@@ -63,6 +63,12 @@ It does not yet:
 
 A pending submission means only **received for later validation/review**, not endorsed or approved.
 
+Launch hardening now also applies two deterministic abuse controls:
+- per-client public submission rate limiting;
+- a repository-level cooldown after a recent terminal submission result.
+
+The cooldown does not permanently blacklist a repository. A corrected or changed repository may be submitted again after the configured cooldown. Public callers are not told whether the previous terminal result was invalid, duplicate, rejected, approved, or another finalized state.
+
 Phase 5B deterministic validation may mark an intake as INVALID or DUPLICATE, or record it as VALID while keeping it PENDING. VALID means the repository resolved as public and was not already publicly listed by canonical GitHub ID; it still does not mean approved.
 
 After evidence handoff, RepoScout may keep a canonical repository/evidence row internally while the submission is still PENDING. That prepared repository remains **unlisted** until human approval.

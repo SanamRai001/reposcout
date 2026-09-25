@@ -34,6 +34,7 @@ export type SubmissionEnvironment = Readonly<{
     maxAttempts: number;
     maxTrackedClients: number;
   }>;
+  resubmissionCooldownMs: number;
 }>;
 
 export type AppEnvironment = Readonly<{
@@ -268,6 +269,13 @@ export function loadEnvironment(
           100_000,
         ),
       }),
+      resubmissionCooldownMs: parseInteger(
+        'SUBMISSION_RESUBMISSION_COOLDOWN_MS',
+        source.SUBMISSION_RESUBMISSION_COOLDOWN_MS,
+        86_400_000,
+        60_000,
+        2_592_000_000,
+      ),
     }),
   });
 }

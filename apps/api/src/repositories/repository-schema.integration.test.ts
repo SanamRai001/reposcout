@@ -832,4 +832,19 @@ describe('repositories schema', () => {
       code: '23514',
     });
   });
+
+  it('creates the terminal submission lookup index used by the resubmission cooldown', async () => {
+    const result = await pool.query<{ index_name: string | null }>(
+      `
+        SELECT to_regclass(
+          'public.repository_submissions_terminal_full_name_updated_idx'
+        )::text AS index_name
+      `,
+    );
+
+    expect(result.rows[0]?.index_name).toBe(
+      'repository_submissions_terminal_full_name_updated_idx',
+    );
+  });
+
 });

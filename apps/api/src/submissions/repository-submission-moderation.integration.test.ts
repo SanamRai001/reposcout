@@ -239,7 +239,7 @@ describe('repository submission moderation with PostgreSQL', () => {
     ).toHaveLength(1);
   });
 
-  it('keeps rejected repositories hidden and allows a later resubmission', async () => {
+  it('keeps rejected repositories hidden and enforces the resubmission cooldown', async () => {
     const { repository, submission } = await prepareModerationCandidate(
       '900000002',
       'reject-project',
@@ -263,6 +263,23 @@ describe('repository submission moderation with PostgreSQL', () => {
     expect(
       await repositoryStore.findByGithubRepositoryId('900000002'),
     ).not.toBeNull();
+
+    await expect(
+      intakeService.submit(
+        'https://github.com/community-org/reject-project',
+      ),
+    ).rejects.toMatchObject({
+      name: 'RepositorySubmissionCooldownError',
+    });
+
+    await pool.query(
+      `
+        UPDATE repository_submissions
+        SET updated_at = current_timestamp - interval '25 hours'
+        WHERE id = $1
+      `,
+      [submission.id],
+    );
 
     const newSubmission = await intakeService.submit(
       'https://github.com/community-org/reject-project',

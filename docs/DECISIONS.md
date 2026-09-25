@@ -1154,3 +1154,36 @@ The default tracked-client map is bounded to prevent unbounded memory growth.
 This limiter is not sufficient for horizontal/multi-instance deployment because each process has independent counters. Before scaling the API across multiple processes/instances, RepoScout must move this control to a shared store or trusted edge/reverse-proxy limiter.
 
 Rate limiting is an abuse-reduction control, not a replacement for deterministic spam checks or trusted moderation.
+
+
+## D-119 — Cool down the repository identity after a terminal submission result
+
+**Status:** Accepted
+
+Phase 5E.2 prevents the same normalized repository from immediately creating a new PENDING submission after a recent terminal result.
+
+The default cooldown is 24 hours and is configurable between 1 minute and 30 days.
+
+This control limits repeated validation/evidence/moderation work for the same repository while still allowing a maintainer or community member to try again after time has passed.
+
+## D-120 — Repository cooldown is not submitter tracking or a permanent blacklist
+
+**Status:** Accepted
+
+The cooldown key is the normalized GitHub repository identity.
+
+RepoScout does not add a user account, submitter ID, organization-wide penalty, behavioral fingerprint, or extra network identity for this control.
+
+A terminal result does not permanently ban a repository. Once the cooldown expires, intake may create another submission and the normal deterministic validation and trusted moderation workflow runs again.
+
+## D-121 — Public cooldown responses do not disclose the previous terminal outcome
+
+**Status:** Accepted
+
+The public intake response uses one generic `submission_resubmission_cooldown` state.
+
+It does not reveal whether the preceding submission was INVALID, DUPLICATE, REJECTED, APPROVED, or otherwise terminal.
+
+The response may expose only the remaining retry delay needed to make the public UI actionable.
+
+This abuse control does not change final moderation authority.

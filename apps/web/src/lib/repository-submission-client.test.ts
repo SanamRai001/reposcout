@@ -108,6 +108,39 @@ describe('submitRepository', () => {
     );
   });
 
+  it('preserves repository resubmission cooldown as a non-immediate retry state', async () => {
+    const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: 'submission_resubmission_cooldown',
+          message:
+            'This repository was recently processed. Please wait before submitting it again.',
+          retryAfterSeconds: 86_400,
+        }),
+        {
+          status: 409,
+          headers: {
+            'retry-after': '86400',
+          },
+        },
+      ),
+    );
+
+    await expect(
+      submitRepository({
+        repositoryUrl: 'https://github.com/example/project',
+        fetchImplementation,
+      }),
+    ).rejects.toEqual(
+      expect.objectContaining({
+        code: 'submission_resubmission_cooldown',
+        status: 409,
+        retryable: false,
+        retryAfterSeconds: 86_400,
+      }),
+    );
+  });
+
   it('preserves the stable public submission rate-limit error as retryable', async () => {
     const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(

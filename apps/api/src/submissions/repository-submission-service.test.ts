@@ -62,9 +62,11 @@ describe('RepositorySubmissionService', () => {
       kind: 'created',
       submission,
     });
+    const now = new Date('2026-09-25T12:00:00Z');
     const service = new RepositorySubmissionService(
       { existsByNormalizedFullName },
       { createPending },
+      { now: () => now },
     );
 
     await expect(
@@ -74,12 +76,18 @@ describe('RepositorySubmissionService', () => {
     expect(existsByNormalizedFullName).toHaveBeenCalledWith(
       'example/project',
     );
-    expect(createPending).toHaveBeenCalledWith({
-      submittedUrl: 'https://github.com/example/project',
-      normalizedOwner: 'example',
-      normalizedName: 'project',
-      normalizedFullName: 'example/project',
-    });
+    expect(createPending).toHaveBeenCalledWith(
+      {
+        submittedUrl: 'https://github.com/example/project',
+        normalizedOwner: 'example',
+        normalizedName: 'project',
+        normalizedFullName: 'example/project',
+      },
+      {
+        requestedAt: now,
+        resubmissionCooldownMs: 86_400_000,
+      },
+    );
   });
 
   it('rejects repositories already in the canonical index', async () => {
@@ -95,6 +103,38 @@ describe('RepositorySubmissionService', () => {
       service.submit('https://github.com/example/project'),
     ).rejects.toBeInstanceOf(RepositoryAlreadyIndexedError);
     expect(createPending).not.toHaveBeenCalled();
+  });
+
+  it('rejects a recently finalized repository without exposing the terminal status', async () => {
+    const now = new Date('2026-09-25T12:00:00Z');
+    const service = new RepositorySubmissionService(
+      {
+        existsByNormalizedFullName: vi.fn().mockResolvedValue(false),
+      },
+      {
+        createPending: vi.fn().mockResolvedValue({
+          kind: 'recent_terminal',
+          submission: {
+            ...submission,
+            status: 'REJECTED',
+            updatedAt: now,
+          },
+          retryAt: new Date('2026-09-26T12:00:00Z'),
+        }),
+      },
+      { now: () => now },
+    );
+
+    await expect(
+      service.submit('https://github.com/example/project'),
+    ).rejects.toEqual(
+      expect.objectContaining({
+        name: 'RepositorySubmissionCooldownError',
+        retryAfterSeconds: 86_400,
+        message:
+          'This repository was recently processed. Please wait before submitting it again.',
+      }),
+    );
   });
 
   it('rejects an already-pending normalized repository', async () => {

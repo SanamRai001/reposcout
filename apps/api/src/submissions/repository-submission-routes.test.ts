@@ -72,7 +72,10 @@ async function startApp(
 function serviceWith(options: {
   indexed?: boolean;
   pendingDuplicate?: boolean;
+  recentTerminal?: boolean;
 } = {}) {
+  const now = new Date('2026-09-25T12:00:00Z');
+
   return new RepositorySubmissionService(
     {
       existsByNormalizedFullName: vi
@@ -86,12 +89,23 @@ function serviceWith(options: {
               kind: 'pending_duplicate',
               submission,
             }
-          : {
-              kind: 'created',
-              submission,
-            },
+          : options.recentTerminal
+            ? {
+                kind: 'recent_terminal',
+                submission: {
+                  ...submission,
+                  status: 'REJECTED',
+                  updatedAt: now,
+                },
+                retryAt: new Date('2026-09-26T12:00:00Z'),
+              }
+            : {
+                kind: 'created',
+                submission,
+              },
       ),
     },
+    { now: () => now },
   );
 }
 
@@ -191,6 +205,36 @@ describe('repository submission routes', () => {
 
     expect(response.status).toBe(409);
     expect(body.error).toBe('submission_already_pending');
+  });
+
+  it('returns a stable repository cooldown response without exposing terminal status', async () => {
+    const baseUrl = await startApp(
+      serviceWith({ recentTerminal: true }),
+    );
+
+    const response = await fetch(`${baseUrl}/api/submissions`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        repositoryUrl: 'https://github.com/example/project',
+      }),
+    });
+    const body = (await response.json()) as {
+      error: string;
+      message: string;
+      retryAfterSeconds: number;
+    };
+
+    expect(response.status).toBe(409);
+    expect(response.headers.get('retry-after')).toBe('86400');
+    expect(body).toEqual({
+      error: 'submission_resubmission_cooldown',
+      message:
+        'This repository was recently processed. Please wait before submitting it again.',
+      retryAfterSeconds: 86_400,
+    });
   });
 
   it('returns a stable 429 contract after the client exhausts its submission window', async () => {

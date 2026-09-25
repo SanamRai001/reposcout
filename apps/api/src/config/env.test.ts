@@ -26,6 +26,7 @@ describe('loadEnvironment', () => {
       maxAttempts: 10,
       maxTrackedClients: 10_000,
     });
+    expect(environment.submission.resubmissionCooldownMs).toBe(86_400_000);
   });
 
   it('loads an optional GitHub token without requiring one for public data', () => {
@@ -46,6 +47,7 @@ describe('loadEnvironment', () => {
       SUBMISSION_RATE_LIMIT_WINDOW_MS: '120000',
       SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: '4',
       SUBMISSION_RATE_LIMIT_MAX_CLIENTS: '5000',
+      SUBMISSION_RESUBMISSION_COOLDOWN_MS: '7200000',
     });
 
     expect(environment.http.trustProxyHops).toBe(1);
@@ -54,6 +56,7 @@ describe('loadEnvironment', () => {
       maxAttempts: 4,
       maxTrackedClients: 5_000,
     });
+    expect(environment.submission.resubmissionCooldownMs).toBe(7_200_000);
   });
 
   it('rejects invalid submission rate-limit and proxy settings', () => {
@@ -89,6 +92,15 @@ describe('loadEnvironment', () => {
       }),
     ).toThrow(
       'SUBMISSION_RATE_LIMIT_MAX_CLIENTS must be an integer between 100 and 100000.',
+    );
+
+    expect(() =>
+      loadEnvironment({
+        ...BASE_ENV,
+        SUBMISSION_RESUBMISSION_COOLDOWN_MS: '59999',
+      }),
+    ).toThrow(
+      'SUBMISSION_RESUBMISSION_COOLDOWN_MS must be an integer between 60000 and 2592000000.',
     );
   });
 
