@@ -30,12 +30,12 @@ Migration rules:
 
 ## Current migrations
 
-RepoScout migrations now cover canonical repositories, measured metadata, README/contribution evidence, community submissions, validation, evidence handoff, protected moderation/publication, and the Phase 5E.2 terminal-resubmission lookup index.
+RepoScout migrations now cover canonical repositories, measured metadata, README/contribution evidence, community submissions, validation, evidence handoff, protected moderation/publication, launch-hardening indexes, and repository snapshot history.
 
 The newest migration is:
 
-- `1790644800000_add_submission_cleanup_lookup.ts` — partial lookup index for bounded cleanup of old INVALID/DUPLICATE submission rows.
+- `1790731200000_create_repository_snapshots.ts` — daily append-only measured snapshot history for stars, forks, and open issues.
 
-The preceding `1790558400000_add_submission_resubmission_lookup.ts` migration retains the repository resubmission-cooldown lookup index.
+The preceding `1790644800000_add_submission_cleanup_lookup.ts` migration retains the bounded cleanup lookup index.
 
 CI verifies the current schema, rolls back the newest migration, verifies the rollback state, and reapplies migrations.
