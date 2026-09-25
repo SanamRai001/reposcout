@@ -39,6 +39,7 @@ Start here if you are contributing to the project.
 - [PHASE_5B2A_VALIDATION_ORCHESTRATION.md](PHASE_5B2A_VALIDATION_ORCHESTRATION.md) — bounded internal validation batches, retry observability, and rate-limit stop behavior.
 - [PHASE_5B2B_EVIDENCE_HANDOFF.md](PHASE_5B2B_EVIDENCE_HANDOFF.md) — VALID-submission handoff into canonical ingestion, README/contribution evidence, durable completion, and retry boundaries.
 - [PHASE_5C1_MODERATION_FOUNDATION.md](PHASE_5C1_MODERATION_FOUNDATION.md) — unlisted pre-approval repositories, atomic moderation/publication, and append-only decision audit.
+- [PHASE_5C2_PROTECTED_MODERATION_API.md](PHASE_5C2_PROTECTED_MODERATION_API.md) — trusted reviewer Bearer auth, protected queue/decision routes, and authenticated audit identity.
 
 ## Community
 
