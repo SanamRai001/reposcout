@@ -475,7 +475,7 @@ Status: complete
 
 #### Phase 5C.2 — Reviewer authorization + protected moderation API
 
-Status: implemented; verification pending
+Status: complete
 
 - server-side trusted reviewer configuration;
 - Bearer-token authorization;
