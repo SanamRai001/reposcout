@@ -211,16 +211,38 @@ describe('repository submission evidence handoff with PostgreSQL', () => {
     expect(repository?.id).toBe(result.repositoryId);
 
     const catalog = await repositoryStore.findById(result.repositoryId);
-    expect(catalog?.metadata).toEqual(
-      expect.objectContaining({
-        stars: 42,
-        forks: 5,
-        openIssues: 3,
-        primaryLanguage: 'TypeScript',
-        licenseSpdx: 'MIT',
-        topics: ['backend', 'typescript'],
-      }),
+    expect(catalog).toBeNull();
+
+    const metadata = await pool.query<{
+      stars: string;
+      forks: string;
+      open_issues: string;
+      primary_language: string | null;
+      license_spdx: string | null;
+      topics: string[];
+    }>(
+      `
+        SELECT
+          stars,
+          forks,
+          open_issues,
+          primary_language,
+          license_spdx,
+          topics
+        FROM repository_metadata
+        WHERE repository_id = $1
+      `,
+      [result.repositoryId],
     );
+
+    expect(metadata.rows[0]).toEqual({
+      stars: '42',
+      forks: '5',
+      open_issues: '3',
+      primary_language: 'TypeScript',
+      license_spdx: 'MIT',
+      topics: ['backend', 'typescript'],
+    });
 
     const readme = await readmeStore.findByRepositoryId(result.repositoryId);
     expect(readme).toEqual(
