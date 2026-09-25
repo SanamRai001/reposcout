@@ -30,6 +30,10 @@ Migration rules:
 
 ## Current migrations
 
-- `1790008200000_create_repositories.ts` — canonical repository identity and basic GitHub state.
+RepoScout migrations now cover canonical repositories, measured metadata, README/contribution evidence, community submissions, validation, evidence handoff, protected moderation/publication, and the Phase 5E.2 terminal-resubmission lookup index.
 
-Phase 1B.2A verifies both the up and down paths in CI.
+The newest migration is:
+
+- `1790558400000_add_submission_resubmission_lookup.ts` — partial terminal-submission lookup index used by the repository resubmission cooldown.
+
+CI verifies the current schema, rolls back the newest migration, verifies the rollback state, and reapplies migrations.
