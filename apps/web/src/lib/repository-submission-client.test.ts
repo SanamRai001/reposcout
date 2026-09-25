@@ -108,6 +108,38 @@ describe('submitRepository', () => {
     );
   });
 
+  it('preserves the stable public submission rate-limit error as retryable', async () => {
+    const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: 'submission_rate_limited',
+          message:
+            'Too many repository submission attempts. Try again after the retry window.',
+          retryAfterSeconds: 60,
+        }),
+        {
+          status: 429,
+          headers: {
+            'retry-after': '60',
+          },
+        },
+      ),
+    );
+
+    await expect(
+      submitRepository({
+        repositoryUrl: 'https://github.com/example/project',
+        fetchImplementation,
+      }),
+    ).rejects.toEqual(
+      expect.objectContaining({
+        code: 'submission_rate_limited',
+        status: 429,
+        retryable: true,
+      }),
+    );
+  });
+
   it('marks server failures as retryable', async () => {
     const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(
