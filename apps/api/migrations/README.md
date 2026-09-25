@@ -34,6 +34,8 @@ RepoScout migrations now cover canonical repositories, measured metadata, README
 
 The newest migration is:
 
-- `1790558400000_add_submission_resubmission_lookup.ts` — partial terminal-submission lookup index used by the repository resubmission cooldown.
+- `1790644800000_add_submission_cleanup_lookup.ts` — partial lookup index for bounded cleanup of old INVALID/DUPLICATE submission rows.
+
+The preceding `1790558400000_add_submission_resubmission_lookup.ts` migration retains the repository resubmission-cooldown lookup index.
 
 CI verifies the current schema, rolls back the newest migration, verifies the rollback state, and reapplies migrations.
