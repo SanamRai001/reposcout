@@ -2,56 +2,74 @@
 
 ## Objective
 
-Harden the public community-submission boundary for launch while preserving validation, evidence, auditability, and trusted moderation.
+Close the community-submission launch-hardening phase with safe observability, dependency security checks, privacy documentation, and an end-to-end review of the public submission / protected moderation boundary.
 
 ## Branch
 
-`main`
+`feat/phase-5e4-launch-security-observability`
 
-Current verified merge: `0966550f2bfc5507f7010041c9776b3c0bcd4671`
+Base: `main@e943805b9fc60ba820916770c9a23801fb09b430`
 
-PR #34: merged
+PR: #35
 
 ## Completed phase
 
-Phase 5E.3 — Operational cleanup / retention.
+Phase 5E.4 — Launch observability + security review.
+
+Phase 5E is now implementation-complete on this branch, pending final PR/main verification.
 
 ## Changes
 
-- Defined a conservative retention boundary for community-submission workflow data.
-- PENDING, APPROVED, REJECTED, moderation events, and prepared repository/evidence data are retained.
-- Only old INVALID/DUPLICATE submission rows are cleanup candidates.
-- Candidates must have no evidence handoff and no moderation event.
-- Default terminal retention is 90 days.
-- Minimum retention is 31 days, intentionally longer than the maximum 30-day resubmission cooldown.
-- Added a dry-run-first cleanup CLI; deletion requires explicit `--apply`.
-- Cleanup runs in bounded batches: default 100, maximum 1000.
-- Deletion rechecks eligibility with `FOR UPDATE SKIP LOCKED`.
-- Added a partial PostgreSQL cleanup-candidate index with rollback/reapply verification.
-- Cleanup never deletes canonical repositories referenced by duplicate submissions.
+- Added request correlation IDs and baseline API security headers.
+- Marked submission/moderation responses `Cache-Control: no-store`.
+- Added stable 400 malformed-JSON and 413 oversized-body responses.
+- Added safe structured submission, rate-limit, and moderation operational events.
+- Added central recursive log redaction for credential-like metadata.
+- Prevented caller metadata from overriding reserved log fields.
+- Replaced raw in-memory submission rate-limit IP keys with per-process HMAC digests.
+- Added an explicit regression proving presented moderation bearer credentials are not logged.
+- Added a production dependency security gate: `npm audit --omit=dev --audit-level=high`.
+- Enabled weekly Dependabot monitoring for npm and GitHub Actions.
+- Added `SECURITY.md`.
+- Added `docs/PRIVACY.md`.
+- Completed and documented the end-to-end public submission / moderation security review.
+- No new monitoring vendor, metrics database, account system, or model-driven moderation authority was introduced.
 
 ## Verification
 
-- Phase 5E.2 verified on `main@c4603ccfbf36821a7e52430cc8666580e0fa809b`.
-- Phase 5E.3 code head `888e54177e105ef0afdb044eb70b073a7ab4a9f9`: CI run 149 success.
-- Documentation-complete PR head `4455be23306c0f0511578daeff96bede9b22638e`: CI run 152 success.
-- PR #34 merged as `0966550f2bfc5507f7010041c9776b3c0bcd4671`.
-- Post-merge `main` CI run 153: success.
-- CI verified lint, TypeScript, unit tests, production build, Jev harness, migration apply/rollback/reapply, cleanup integration, existing submission/moderation regressions, and PostgreSQL connectivity.
+- Phase 5E.3 verified on `main@e943805b9fc60ba820916770c9a23801fb09b430`.
+- Initial Phase 5E.4 code head `3509374bcd801afd44fd8141edccf27596a05d77`: CI run 155 success.
+- Security regression head `bfc8f6e45b7047a4d93969293a742d0a6717c2a1`: CI run 156 success.
+- Both runs passed the new production dependency audit gate.
+- CI also passed lint, TypeScript, unit tests, production build, Jev harness, migration apply/rollback/reapply, persistence/content/ingestion/catalog/search/submission/moderation regressions, and PostgreSQL connectivity.
+- Documentation-complete PR head must remain green before merge.
 
-## Risks / decisions
+## Security / privacy decisions
 
-- Cleanup is intentionally manual, not scheduled.
-- INVALID/DUPLICATE records are retained long enough to outlive the resubmission cooldown.
-- Moderation audit history is not eligible for cleanup in this phase.
-- REJECTED evidence remains retained and unlisted, preserving the Phase 5C audit/review contract.
-- Cleanup is irreversible at application level; recovery of deleted terminal rows requires a database backup/restore path.
-- Broad backup/deployment-runbook work remains a production gate, not silently implemented here.
+- Application logs intentionally exclude raw IPs, request bodies, authorization headers, bearer credentials, user-agent values, and moderation reason text.
+- The limiter uses an HMAC digest of the resolved client address with a random per-process key.
+- Reviewer references and final moderation reasons remain durable audit data.
+- Log retention remains deployment-controlled; RepoScout does not persist operational logs in PostgreSQL.
+- HSTS, frontend CSP, infrastructure access-log retention, and horizontal-scale rate limiting remain deployment/edge responsibilities.
+- A passing dependency audit is a gate, not a proof that the system is vulnerability-free.
 
-## Next phase
+## Residual production gates
 
-Phase 5E.4 — Observability + security review.
+Completing Phase 5E does **not** mean broad public production launch is fully complete.
 
-Focus on launch-facing metrics/logging, abuse/limiter observability without secret leakage, dependency/security checks, privacy documentation, and an end-to-end public-boundary review.
+Still outstanding outside Phase 5E:
 
-Do not start Phase 6 until Phase 5E is explicitly completed or deferred by decision.
+- database backup + tested restore procedure;
+- deployment/recovery runbook;
+- infrastructure/edge rate limiting for horizontal scale;
+- production TLS/HSTS and final frontend CSP;
+- accessibility pass;
+- Code of Conduct;
+- contribution/issue templates;
+- final hosting/log-retention configuration.
+
+## Next product phase
+
+Phase 6 — Historical snapshots.
+
+Do not treat the residual production gates above as completed merely because product development advances to Phase 6.
