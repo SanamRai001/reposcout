@@ -6,11 +6,11 @@ Harden the public community-submission boundary for launch while preserving vali
 
 ## Branch
 
-`feat/phase-5e3-submission-retention`
+`main`
 
-Base: `main@c4603ccfbf36821a7e52430cc8666580e0fa809b`
+Current verified merge: `0966550f2bfc5507f7010041c9776b3c0bcd4671`
 
-PR: #34
+PR #34: merged
 
 ## Completed phase
 
@@ -33,10 +33,11 @@ Phase 5E.3 — Operational cleanup / retention.
 ## Verification
 
 - Phase 5E.2 verified on `main@c4603ccfbf36821a7e52430cc8666580e0fa809b`.
-- PR #34 code head `888e54177e105ef0afdb044eb70b073a7ab4a9f9`.
-- GitHub Actions CI run 149: success before documentation-only follow-up commits.
+- Phase 5E.3 code head `888e54177e105ef0afdb044eb70b073a7ab4a9f9`: CI run 149 success.
+- Documentation-complete PR head `4455be23306c0f0511578daeff96bede9b22638e`: CI run 152 success.
+- PR #34 merged as `0966550f2bfc5507f7010041c9776b3c0bcd4671`.
+- Post-merge `main` CI run 153: success.
 - CI verified lint, TypeScript, unit tests, production build, Jev harness, migration apply/rollback/reapply, cleanup integration, existing submission/moderation regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
 
 ## Risks / decisions
 
