@@ -3,10 +3,12 @@ import type { MigrationBuilder } from 'node-pg-migrate';
 export const shorthands = undefined;
 
 export function up(pgm: MigrationBuilder): void {
-  pgm.addColumn('repositories', 'is_listed', {
-    type: 'boolean',
-    notNull: true,
-    default: true,
+  pgm.addColumns('repositories', {
+    is_listed: {
+      type: 'boolean',
+      notNull: true,
+      default: true,
+    },
   });
 
   pgm.sql(`
@@ -241,5 +243,5 @@ export function down(pgm: MigrationBuilder): void {
     },
   );
 
-  pgm.dropColumn('repositories', 'is_listed');
+  pgm.dropColumns('repositories', ['is_listed']);
 }
