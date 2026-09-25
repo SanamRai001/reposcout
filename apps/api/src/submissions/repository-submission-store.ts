@@ -3,6 +3,11 @@ import { randomUUID } from 'node:crypto';
 import type { DatabasePool } from '../database/database.js';
 import { isRepositoryId } from '../repositories/repository-catalog.js';
 import type {
+  ModerateRepositorySubmissionInput,
+  RepositorySubmissionModerationEvent,
+  RepositorySubmissionModerationResult,
+} from './repository-submission-moderation.js';
+import type {
   CreateRepositorySubmissionInput,
   CreateRepositorySubmissionResult,
   RecordRepositorySubmissionEvidenceHandoffInput,
@@ -12,6 +17,15 @@ import type {
   RepositorySubmissionValidationOutcome,
   ResolvedRepositoryIdentity,
 } from './repository-submission.js';
+
+type RepositorySubmissionModerationEventRow = {
+  id: string;
+  submission_id: string;
+  decision: 'APPROVED' | 'REJECTED';
+  reviewer_ref: string;
+  reason: string;
+  created_at: Date;
+};
 
 type RepositorySubmissionRow = {
   id: string;
@@ -34,6 +48,15 @@ type RepositorySubmissionRow = {
   updated_at: Date;
 };
 
+const MODERATION_EVENT_SELECT_COLUMNS = `
+  id,
+  submission_id,
+  decision,
+  reviewer_ref,
+  reason,
+  created_at
+`;
+
 const SELECT_COLUMNS = `
   id,
   submitted_url,
@@ -54,6 +77,19 @@ const SELECT_COLUMNS = `
   created_at,
   updated_at
 `;
+
+function mapModerationEvent(
+  row: RepositorySubmissionModerationEventRow,
+): RepositorySubmissionModerationEvent {
+  return {
+    id: row.id,
+    submissionId: row.submission_id,
+    decision: row.decision,
+    reviewerRef: row.reviewer_ref,
+    reason: row.reason,
+    createdAt: row.created_at,
+  };
+}
 
 function mapResolvedRepository(
   row: RepositorySubmissionRow,
@@ -299,6 +335,196 @@ export class RepositorySubmissionStore {
     throw new Error(
       'Submission is no longer eligible for evidence handoff.',
     );
+  }
+
+  async listPendingModerationCandidates(
+    limit: number,
+  ): Promise<RepositorySubmissionRecord[]> {
+    if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
+      throw new Error(
+        'Moderation candidate limit must be an integer between 1 and 50.',
+      );
+    }
+
+    const result = await this.pool.query<RepositorySubmissionRow>(
+      `
+        SELECT ${SELECT_COLUMNS}
+        FROM repository_submissions
+        WHERE status = 'PENDING'
+          AND validation_outcome = 'VALID'
+          AND handoff_repository_id IS NOT NULL
+          AND evidence_handoff_completed_at IS NOT NULL
+        ORDER BY evidence_handoff_completed_at ASC, id ASC
+        LIMIT $1
+      `,
+      [limit],
+    );
+
+    return result.rows.map(mapRow);
+  }
+
+  async moderate(
+    input: ModerateRepositorySubmissionInput,
+  ): Promise<
+    | Readonly<{
+        kind: 'moderated';
+        result: RepositorySubmissionModerationResult;
+      }>
+    | Readonly<{
+        kind: 'not_found';
+      }>
+    | Readonly<{
+        kind: 'not_eligible';
+      }>
+    | Readonly<{
+        kind: 'already_moderated';
+        decision: 'APPROVED' | 'REJECTED';
+      }>
+  > {
+    if (!isRepositoryId(input.submissionId)) {
+      throw new Error('Submission id must be a valid UUID.');
+    }
+
+    const client = await this.pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      const locked = await client.query<RepositorySubmissionRow>(
+        `
+          SELECT ${SELECT_COLUMNS}
+          FROM repository_submissions
+          WHERE id = $1
+          FOR UPDATE
+        `,
+        [input.submissionId],
+      );
+
+      const row = locked.rows[0];
+
+      if (!row) {
+        await client.query('ROLLBACK');
+        return { kind: 'not_found' };
+      }
+
+      if (row.status === 'APPROVED' || row.status === 'REJECTED') {
+        await client.query('ROLLBACK');
+        return {
+          kind: 'already_moderated',
+          decision: row.status,
+        };
+      }
+
+      if (
+        row.status !== 'PENDING' ||
+        row.validation_outcome !== 'VALID' ||
+        row.handoff_repository_id === null ||
+        row.evidence_handoff_completed_at === null
+      ) {
+        await client.query('ROLLBACK');
+        return { kind: 'not_eligible' };
+      }
+
+      if (input.decision === 'APPROVED') {
+        const listed = await client.query(
+          `
+            UPDATE repositories
+            SET is_listed = true
+            WHERE id = $1
+          `,
+          [row.handoff_repository_id],
+        );
+
+        if (listed.rowCount !== 1) {
+          throw new Error(
+            'Moderation approval could not publish the handoff repository.',
+          );
+        }
+      }
+
+      const updated = await client.query<RepositorySubmissionRow>(
+        `
+          UPDATE repository_submissions
+          SET
+            status = $2,
+            updated_at = current_timestamp
+          WHERE id = $1
+          RETURNING ${SELECT_COLUMNS}
+        `,
+        [input.submissionId, input.decision],
+      );
+
+      if (!updated.rows[0]) {
+        throw new Error('Moderation transition did not update the submission.');
+      }
+
+      const event = await client.query<RepositorySubmissionModerationEventRow>(
+        `
+          INSERT INTO repository_submission_moderation_events (
+            id,
+            submission_id,
+            decision,
+            reviewer_ref,
+            reason,
+            created_at
+          )
+          VALUES ($1, $2, $3, $4, $5, $6)
+          RETURNING ${MODERATION_EVENT_SELECT_COLUMNS}
+        `,
+        [
+          randomUUID(),
+          input.submissionId,
+          input.decision,
+          input.reviewerRef,
+          input.reason,
+          input.decidedAt,
+        ],
+      );
+
+      const eventRow = event.rows[0];
+
+      if (!eventRow) {
+        throw new Error('Moderation event was not persisted.');
+      }
+
+      await client.query('COMMIT');
+
+      return {
+        kind: 'moderated',
+        result: {
+          submissionId: input.submissionId,
+          repositoryId: row.handoff_repository_id,
+          status: input.decision,
+          event: mapModerationEvent(eventRow),
+        },
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async listModerationEvents(
+    submissionId: string,
+  ): Promise<RepositorySubmissionModerationEvent[]> {
+    if (!isRepositoryId(submissionId)) {
+      throw new Error('Submission id must be a valid UUID.');
+    }
+
+    const result =
+      await this.pool.query<RepositorySubmissionModerationEventRow>(
+        `
+          SELECT ${MODERATION_EVENT_SELECT_COLUMNS}
+          FROM repository_submission_moderation_events
+          WHERE submission_id = $1
+          ORDER BY created_at ASC, id ASC
+        `,
+        [submissionId],
+      );
+
+    return result.rows.map(mapModerationEvent);
   }
 
   async findPendingByNormalizedFullName(
