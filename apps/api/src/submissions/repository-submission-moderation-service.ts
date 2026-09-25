@@ -85,7 +85,7 @@ function normalizeReason(value: unknown): string {
     );
   }
 
-  const normalized = value.trim().replace(/s+/g, ' ');
+  const normalized = value.trim().replace(/\s+/g, ' ');
 
   if (normalized.length < 1 || normalized.length > 2000) {
     throw new InvalidRepositorySubmissionModerationError(
