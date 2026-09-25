@@ -45,6 +45,7 @@ Start here if you are contributing to the project.
 - [PHASE_5E2_SUBMISSION_ABUSE_CONTROLS.md](PHASE_5E2_SUBMISSION_ABUSE_CONTROLS.md) — repository-level terminal resubmission cooldown, generic public state, and database lookup boundary.
 - [PHASE_5E3_SUBMISSION_RETENTION.md](PHASE_5E3_SUBMISSION_RETENTION.md) — conservative workflow retention, dry-run cleanup operations, and audit-preservation boundaries.
 - [PHASE_5E4_LAUNCH_SECURITY_OBSERVABILITY.md](PHASE_5E4_LAUNCH_SECURITY_OBSERVABILITY.md) — correlation, safe operational events, dependency security, privacy review, and residual launch risks.
+- [PHASE_6A_SNAPSHOT_PERSISTENCE.md](PHASE_6A_SNAPSHOT_PERSISTENCE.md) — daily append-only repository metric history, UTC idempotency buckets, and persistence verification.
 - [PRIVACY.md](PRIVACY.md) — application privacy and data-handling behavior.
 - [PROJECT_STATE.md](PROJECT_STATE.md) — concise current branch, completed phase, verification, risks/decisions, and next checkpoint.
 
