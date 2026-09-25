@@ -581,10 +581,52 @@ Model output remains advisory for permanent moderation decisions.
 
 ## Phase 6 — Historical snapshots
 
-- scheduled metric snapshots;
-- star/activity deltas;
-- trend storage;
-- safe retry/backfill behavior.
+Status: in progress
+
+#### Phase 6A — Snapshot persistence foundation
+
+Status: complete
+
+- `repository_snapshots` historical metrics table;
+- measured stars/forks/open-issues only;
+- actual capture timestamp + UTC daily bucket;
+- one snapshot per repository per UTC day;
+- append-only first-write-wins retry behavior;
+- separate historical rows for distinct-day backfills;
+- nonnegative metric constraints;
+- repository/capture-time history index;
+- bounded recent-history persistence API;
+- migration rollback/reapply coverage;
+- dedicated PostgreSQL snapshot CI gate.
+
+#### Phase 6B — Snapshot capture + bounded backfill
+
+Next:
+- connect authoritative metadata observations to snapshot persistence;
+- avoid duplicate provider fetches when existing observations can be captured safely;
+- internal bounded capture/backfill operation;
+- preserve GitHub rate-limit/retry behavior;
+- observable capture outcomes.
+
+#### Phase 6C — Deterministic deltas + trend reads
+
+Later:
+- star/fork/open-issue deltas across explicit windows;
+- missing-history semantics;
+- deterministic trend reads;
+- no universal quality score.
+
+#### Phase 6D — Scheduled snapshot operations
+
+Later:
+- scheduled snapshot execution;
+- bounded batches;
+- safe retries;
+- backfill orchestration;
+- operational logging;
+- no ranking implementation.
+
+Phase 7 consumes Phase 6 history but remains a separate ranking phase.
 
 ## Phase 7 — Hidden Gems and Rising
 
