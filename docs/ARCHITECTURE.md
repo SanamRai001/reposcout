@@ -389,7 +389,44 @@ Retries are first-write-wins: a same-day retry returns the existing row instead 
 
 Future contributor/activity summaries or release/commit aggregates require explicit authoritative collection semantics before they enter snapshot storage.
 
-Phase 6A does not add automatic capture, scheduling, delta math, or ranking.
+Phase 6B connects history capture to authoritative metadata persistence:
+
+~~~text
+GitHub repository observation
+        |
+RepositoryIngestionService
+        |
+RepositoryStore.upsertWithMetadata
+        |
+single PostgreSQL transaction
+        +-- canonical repository
+        +-- current repository_metadata
+        +-- daily repository_snapshots row
+~~~
+
+No second GitHub request is made for snapshot capture.
+
+If multiple observations are accepted on the same UTC day, current metadata may advance while the first daily snapshot remains immutable.
+
+Pre-6A current metadata can be backfilled without provider access:
+
+~~~text
+repository_metadata
+        |
+missing snapshot for metadata.observed_at UTC day
+        |
+bounded oldest-first selection
+        |
+RepositorySnapshotBackfillService
+        |
+repository_snapshots
+~~~
+
+Backfill reads only facts already persisted by RepoScout, defaults to 50 rows, and is capped at 500 rows per run.
+
+Unlisted canonical repositories are included because snapshot persistence is internal measured history, not publication state.
+
+Phase 6B still does not add scheduled provider refreshes, delta math, or ranking.
 
 ## Community submission intake
 
