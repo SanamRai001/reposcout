@@ -9,6 +9,7 @@ import {
 import { logger } from './logger.js';
 import { RepositoryStore } from './repositories/repository-store.js';
 import { RepositorySubmissionService } from './submissions/repository-submission-service.js';
+import { RepositorySubmissionRateLimiter } from './submissions/repository-submission-rate-limiter.js';
 import { RepositorySubmissionStore } from './submissions/repository-submission-store.js';
 import { RepositorySubmissionModerationService } from './submissions/repository-submission-moderation-service.js';
 import { ModerationReviewerAuthenticator } from './submissions/moderation-reviewer-auth.js';
@@ -31,6 +32,10 @@ async function bootstrap(): Promise<void> {
     new RepositorySubmissionModerationService(
       repositorySubmissionStore,
     );
+  const repositorySubmissionRateLimiter =
+    new RepositorySubmissionRateLimiter(
+      environment.submission.rateLimit,
+    );
   const moderationReviewerAuthenticator =
     new ModerationReviewerAuthenticator(
       environment.moderation.reviewers,
@@ -39,6 +44,8 @@ async function bootstrap(): Promise<void> {
     checkReadiness: () => verifyDatabaseConnection(databasePool),
     repositoryCatalog: repositoryStore,
     repositorySubmissionService,
+    repositorySubmissionRateLimiter,
+    trustProxyHops: environment.http.trustProxyHops,
     repositoryModeration: {
       authenticator: moderationReviewerAuthenticator,
       moderationService: repositorySubmissionModerationService,
