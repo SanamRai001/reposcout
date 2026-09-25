@@ -20,6 +20,12 @@ describe('loadEnvironment', () => {
     expect(environment.github.token).toBeUndefined();
     expect(environment.github.requestTimeoutMs).toBe(8_000);
     expect(environment.moderation.reviewers).toEqual([]);
+    expect(environment.http.trustProxyHops).toBe(0);
+    expect(environment.submission.rateLimit).toEqual({
+      windowMs: 600_000,
+      maxAttempts: 10,
+      maxTrackedClients: 10_000,
+    });
   });
 
   it('loads an optional GitHub token without requiring one for public data', () => {
@@ -31,6 +37,59 @@ describe('loadEnvironment', () => {
 
     expect(environment.github.token).toBe('example-token');
     expect(environment.github.requestTimeoutMs).toBe(12_000);
+  });
+
+  it('loads explicit submission rate-limit and proxy settings', () => {
+    const environment = loadEnvironment({
+      ...BASE_ENV,
+      TRUST_PROXY_HOPS: '1',
+      SUBMISSION_RATE_LIMIT_WINDOW_MS: '120000',
+      SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: '4',
+      SUBMISSION_RATE_LIMIT_MAX_CLIENTS: '5000',
+    });
+
+    expect(environment.http.trustProxyHops).toBe(1);
+    expect(environment.submission.rateLimit).toEqual({
+      windowMs: 120_000,
+      maxAttempts: 4,
+      maxTrackedClients: 5_000,
+    });
+  });
+
+  it('rejects invalid submission rate-limit and proxy settings', () => {
+    expect(() =>
+      loadEnvironment({
+        ...BASE_ENV,
+        TRUST_PROXY_HOPS: '6',
+      }),
+    ).toThrow('TRUST_PROXY_HOPS must be an integer between 0 and 5.');
+
+    expect(() =>
+      loadEnvironment({
+        ...BASE_ENV,
+        SUBMISSION_RATE_LIMIT_WINDOW_MS: '500',
+      }),
+    ).toThrow(
+      'SUBMISSION_RATE_LIMIT_WINDOW_MS must be an integer between 1000 and 3600000.',
+    );
+
+    expect(() =>
+      loadEnvironment({
+        ...BASE_ENV,
+        SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: '0',
+      }),
+    ).toThrow(
+      'SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS must be an integer between 1 and 1000.',
+    );
+
+    expect(() =>
+      loadEnvironment({
+        ...BASE_ENV,
+        SUBMISSION_RATE_LIMIT_MAX_CLIENTS: '99',
+      }),
+    ).toThrow(
+      'SUBMISSION_RATE_LIMIT_MAX_CLIENTS must be an integer between 100 and 100000.',
+    );
   });
 
   it('loads trusted moderation reviewer credentials', () => {
