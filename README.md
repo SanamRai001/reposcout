@@ -227,7 +227,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 5D — public repository submission UI: complete.
 - Phase 5E.1 — public submission rate limiting: complete.
 - Phase 5E.2 — deterministic repository resubmission abuse guard: complete.
-- Phase 5E.3 — operational cleanup / retention: next.
+- Phase 5E.3 — operational cleanup / retention: complete.
+- Phase 5E.4 — observability + security review: next.
 - Phase 5E — broader launch hardening: in progress.
 
 </details>
