@@ -288,6 +288,7 @@ describe('repository submission routes', () => {
       maxTrackedClients: 100,
       now: () => 20_000,
     });
+    const directConsume = vi.spyOn(directLimiter, 'consume');
     const directBaseUrl = await startApp(serviceWith(), {
       rateLimiter: directLimiter,
     });
@@ -309,6 +310,8 @@ describe('repository submission routes', () => {
     expect(
       (await submit(directBaseUrl, '203.0.113.11')).status,
     ).toBe(429);
+    expect(directConsume.mock.calls[0]?.[0]).toMatch(/^[0-9a-f]{64}$/);
+    expect(directConsume.mock.calls[0]?.[0]).not.toContain('127.0.0.1');
 
     const proxyLimiter = new RepositorySubmissionRateLimiter({
       windowMs: 60_000,
