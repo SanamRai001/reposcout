@@ -24,7 +24,7 @@ afterAll(async () => {
 });
 
 describe('latest migration rollback', () => {
-  it('removes moderation/listing state while preserving evidence handoff', async () => {
+  it('removes only the terminal cooldown lookup index', async () => {
     const result = await pool.query<{
       repository_submissions: string | null;
       validation_column_exists: boolean;
@@ -36,6 +36,7 @@ describe('latest migration rollback', () => {
       repository_metadata: string | null;
       repository_readme_content: string | null;
       repository_contribution_evidence: string | null;
+      terminal_cooldown_index: string | null;
     }>(
       `
         SELECT
@@ -77,7 +78,10 @@ describe('latest migration rollback', () => {
           to_regclass('public.repository_readme_content')::text
             AS repository_readme_content,
           to_regclass('public.repository_contribution_evidence')::text
-            AS repository_contribution_evidence
+            AS repository_contribution_evidence,
+          to_regclass(
+            'public.repository_submissions_terminal_full_name_updated_idx'
+          )::text AS terminal_cooldown_index
       `,
     );
 
@@ -86,12 +90,13 @@ describe('latest migration rollback', () => {
       validation_column_exists: true,
       handoff_repository_column_exists: true,
       handoff_completed_column_exists: true,
-      listing_column_exists: false,
-      moderation_events: null,
+      listing_column_exists: true,
+      moderation_events: 'repository_submission_moderation_events',
       repositories: 'repositories',
       repository_metadata: 'repository_metadata',
       repository_readme_content: 'repository_readme_content',
       repository_contribution_evidence: 'repository_contribution_evidence',
+      terminal_cooldown_index: null,
     });
   });
 });
