@@ -232,7 +232,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 5E.4 — observability + security review: complete.
 - Phase 5E — application launch hardening: complete.
 - Phase 6A — repository snapshot persistence: complete.
-- Phase 6B — snapshot capture + bounded backfill: next.
+- Phase 6B — snapshot capture + bounded backfill: complete.
+- Phase 6C — deterministic deltas + trend reads: next.
 - Phase 6 — historical snapshots: in progress.
 
 </details>
