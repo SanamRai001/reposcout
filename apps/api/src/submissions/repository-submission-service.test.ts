@@ -4,7 +4,6 @@ import {
   InvalidRepositorySubmissionError,
   RepositoryAlreadyIndexedError,
   RepositorySubmissionAlreadyPendingError,
-  RepositorySubmissionCooldownError,
   RepositorySubmissionService,
   normalizeRepositorySubmissionUrl,
 } from './repository-submission-service.js';
