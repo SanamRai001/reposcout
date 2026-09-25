@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { RepositorySubmissionRateLimiter } from './repository-submission-rate-limiter.js';
+import {
+  hashRepositorySubmissionClientKey,
+  RepositorySubmissionRateLimiter,
+} from './repository-submission-rate-limiter.js';
 
 describe('RepositorySubmissionRateLimiter', () => {
   it('allows requests until the fixed-window limit is exhausted', () => {
@@ -93,5 +96,25 @@ describe('RepositorySubmissionRateLimiter', () => {
     now += 30_000;
 
     expect(limiter.consume('client-c').allowed).toBe(true);
+  });
+});
+
+
+describe('hashRepositorySubmissionClientKey', () => {
+  it('stores only a keyed digest instead of the raw client address', () => {
+    const secret = Buffer.alloc(32, 7);
+    const address = '203.0.113.10';
+
+    const first = hashRepositorySubmissionClientKey(address, secret);
+    const second = hashRepositorySubmissionClientKey(address, secret);
+    const differentSecret = hashRepositorySubmissionClientKey(
+      address,
+      Buffer.alloc(32, 9),
+    );
+
+    expect(first).toMatch(/^[0-9a-f]{64}$/);
+    expect(first).not.toContain(address);
+    expect(first).toBe(second);
+    expect(first).not.toBe(differentSecret);
   });
 });
