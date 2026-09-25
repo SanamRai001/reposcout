@@ -88,6 +88,7 @@ describe('RepositorySubmissionEvidenceHandoffService', () => {
       'https://github.com/CanonicalOrg/Project',
       {
         expectedGithubRepositoryId: '987654321',
+        initialListing: 'unlisted',
       },
     );
     expect(refreshReadme).toHaveBeenCalledWith(repository);
