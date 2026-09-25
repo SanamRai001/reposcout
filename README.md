@@ -73,9 +73,12 @@ The backend currently supports:
 - moderation-candidate selection;
 - atomic approve/reject persistence;
 - append-only moderation audit events;
-- approval-controlled publication into discovery.
+- approval-controlled publication into discovery;
+- trusted reviewer Bearer authorization;
+- protected moderation queue and decision endpoints;
+- authenticated reviewer attribution in moderation audit events.
 
-Reviewer authentication/protected moderation APIs, abuse controls, and the final submission UI remain later work.
+Abuse controls and the final submission UI remain later work.
 
 ## Why RepoScout?
 
@@ -167,7 +170,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 | Community submission intake | Complete |
 | Submission validation foundation | Complete |
 | Moderation persistence/publication boundary | Complete |
-| Reviewer authorization and abuse controls | Planned |
+| Reviewer authorization / protected moderation API | Complete |
+| Abuse controls | Planned |
 | Submission UI | Planned |
 | Advanced ranking / hidden-gem scoring | Planned |
 
@@ -213,7 +217,7 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 5B.2B — evidence handoff: complete.
 - Phase 5B — deterministic submission validation + evidence preparation: complete.
 - Phase 5C.1 — moderation persistence + publication boundary: complete.
-- Phase 5C.2 — reviewer authorization + protected moderation API: next.
+- Phase 5C.2 — reviewer authorization + protected moderation API: implemented; verification pending.
 - Abuse controls and the public submission UI remain later phases.
 
 </details>
