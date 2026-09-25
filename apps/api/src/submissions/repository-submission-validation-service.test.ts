@@ -75,7 +75,7 @@ const indexedRepository: RepositoryRecord = {
 describe('RepositorySubmissionValidationService', () => {
   it('records a valid canonical GitHub identity and keeps the submission pending', async () => {
     const fetchRepository = vi.fn().mockResolvedValue(snapshot);
-    const findByGithubRepositoryId = vi.fn().mockResolvedValue(null);
+    const findListedByGithubRepositoryId = vi.fn().mockResolvedValue(null);
     const validatedAt = new Date('2026-09-24T01:00:00Z');
     const resolved: RepositorySubmissionRecord = {
       ...pendingSubmission,
@@ -93,7 +93,7 @@ describe('RepositorySubmissionValidationService', () => {
 
     const service = new RepositorySubmissionValidationService(
       { fetchRepository },
-      { findByGithubRepositoryId },
+      { findListedByGithubRepositoryId },
       {
         findById: vi.fn().mockResolvedValue(pendingSubmission),
         recordValidation,
@@ -109,7 +109,7 @@ describe('RepositorySubmissionValidationService', () => {
       owner: 'example',
       name: 'project',
     });
-    expect(findByGithubRepositoryId).toHaveBeenCalledWith('987654321');
+    expect(findListedByGithubRepositoryId).toHaveBeenCalledWith('987654321');
     expect(recordValidation).toHaveBeenCalledWith({
       kind: 'valid',
       submissionId: pendingSubmission.id,
@@ -145,7 +145,7 @@ describe('RepositorySubmissionValidationService', () => {
         ),
       },
       {
-        findByGithubRepositoryId: vi.fn(),
+        findListedByGithubRepositoryId: vi.fn(),
       },
       {
         findById: vi.fn().mockResolvedValue(pendingSubmission),
@@ -172,7 +172,7 @@ describe('RepositorySubmissionValidationService', () => {
       validationOutcome: 'INVALID',
       validatedAt,
     });
-    const findByGithubRepositoryId = vi.fn();
+    const findListedByGithubRepositoryId = vi.fn();
     const service = new RepositorySubmissionValidationService(
       {
         fetchRepository: vi.fn().mockResolvedValue({
@@ -180,7 +180,7 @@ describe('RepositorySubmissionValidationService', () => {
           isPrivate: true,
         }),
       },
-      { findByGithubRepositoryId },
+      { findListedByGithubRepositoryId },
       {
         findById: vi.fn().mockResolvedValue(pendingSubmission),
         recordValidation,
@@ -190,7 +190,7 @@ describe('RepositorySubmissionValidationService', () => {
 
     await service.validate(pendingSubmission.id);
 
-    expect(findByGithubRepositoryId).not.toHaveBeenCalled();
+    expect(findListedByGithubRepositoryId).not.toHaveBeenCalled();
     expect(recordValidation).toHaveBeenCalledWith({
       kind: 'invalid',
       submissionId: pendingSubmission.id,
@@ -221,7 +221,7 @@ describe('RepositorySubmissionValidationService', () => {
         fetchRepository: vi.fn().mockResolvedValue(snapshot),
       },
       {
-        findByGithubRepositoryId: vi.fn().mockResolvedValue(indexedRepository),
+        findListedByGithubRepositoryId: vi.fn().mockResolvedValue(indexedRepository),
       },
       {
         findById: vi.fn().mockResolvedValue(pendingSubmission),
@@ -261,7 +261,7 @@ describe('RepositorySubmissionValidationService', () => {
         fetchRepository: vi.fn().mockRejectedValue(rateLimit),
       },
       {
-        findByGithubRepositoryId: vi.fn(),
+        findListedByGithubRepositoryId: vi.fn(),
       },
       {
         findById: vi.fn().mockResolvedValue(pendingSubmission),
@@ -291,7 +291,7 @@ describe('RepositorySubmissionValidationService', () => {
     };
     const service = new RepositorySubmissionValidationService(
       { fetchRepository },
-      { findByGithubRepositoryId: vi.fn() },
+      { findListedByGithubRepositoryId: vi.fn() },
       {
         findById: vi.fn().mockResolvedValue(validated),
         recordValidation: vi.fn(),
@@ -305,7 +305,7 @@ describe('RepositorySubmissionValidationService', () => {
   it('rejects missing and non-pending unvalidated submissions', async () => {
     const missing = new RepositorySubmissionValidationService(
       { fetchRepository: vi.fn() },
-      { findByGithubRepositoryId: vi.fn() },
+      { findListedByGithubRepositoryId: vi.fn() },
       {
         findById: vi.fn().mockResolvedValue(null),
         recordValidation: vi.fn(),
@@ -322,7 +322,7 @@ describe('RepositorySubmissionValidationService', () => {
     };
     const ineligible = new RepositorySubmissionValidationService(
       { fetchRepository: vi.fn() },
-      { findByGithubRepositoryId: vi.fn() },
+      { findListedByGithubRepositoryId: vi.fn() },
       {
         findById: vi.fn().mockResolvedValue(rejectedSubmission),
         recordValidation: vi.fn(),
