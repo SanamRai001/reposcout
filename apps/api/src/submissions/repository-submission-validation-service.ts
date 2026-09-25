@@ -13,7 +13,7 @@ import type {
 type RepositoryResolver = Pick<GithubClient, 'fetchRepository'>;
 
 type RepositoryIdentityLookup = Readonly<{
-  findByGithubRepositoryId(
+  findListedByGithubRepositoryId(
     githubRepositoryId: string,
   ): Promise<RepositoryRecord | null>;
 }>;
@@ -105,7 +105,7 @@ export class RepositorySubmissionValidationService {
 
     const repository = resolvedIdentity(snapshot);
     const indexed =
-      await this.repositoryLookup.findByGithubRepositoryId(
+      await this.repositoryLookup.findListedByGithubRepositoryId(
         snapshot.githubRepositoryId,
       );
 
