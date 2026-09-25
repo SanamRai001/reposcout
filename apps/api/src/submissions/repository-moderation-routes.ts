@@ -1,5 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 
+import { responseRequestId } from '../http-security.js';
+import { logger } from '../logger.js';
 import { isRepositoryId } from '../repositories/repository-catalog.js';
 import type { ModerationReviewerAuthenticator } from './moderation-reviewer-auth.js';
 import {
@@ -37,6 +39,11 @@ function authenticate(
     return reviewerRef;
   }
 
+  logger.info('moderation.authentication_failed', {
+    requestId: responseRequestId(response),
+    method: request.method,
+    path: request.path,
+  });
   response.setHeader('WWW-Authenticate', 'Bearer');
   response.status(401).json({
     error: 'moderation_unauthorized',
@@ -153,6 +160,12 @@ export function createRepositoryModerationRouter(
           limit,
         );
 
+      logger.info('moderation.queue_read', {
+        requestId: responseRequestId(response),
+        reviewerRef,
+        limit,
+        count: submissions.length,
+      });
       response.status(200).json({
         data: submissions.map(toCandidateResponse),
         moderation: {
@@ -162,6 +175,11 @@ export function createRepositoryModerationRouter(
       });
     } catch (error) {
       if (error instanceof InvalidRepositorySubmissionModerationError) {
+        logger.info('moderation.request_rejected', {
+          requestId: responseRequestId(response),
+          reviewerRef,
+          outcome: 'invalid_moderation_request',
+        });
         response.status(400).json({
           error: 'invalid_moderation_request',
           message: error.message,
@@ -189,6 +207,11 @@ export function createRepositoryModerationRouter(
       const submissionId = request.params.id;
 
       if (!submissionId || !isRepositoryId(submissionId)) {
+        logger.info('moderation.request_rejected', {
+          requestId: responseRequestId(response),
+          reviewerRef,
+          outcome: 'invalid_submission_id',
+        });
         response.status(400).json({
           error: 'invalid_submission_id',
           message: 'Submission id must be a valid UUID.',
@@ -205,11 +228,23 @@ export function createRepositoryModerationRouter(
           reason: body.reason,
         });
 
+        logger.info('moderation.decision_applied', {
+          requestId: responseRequestId(response),
+          reviewerRef,
+          submissionId,
+          decision: result.status,
+        });
         response.status(200).json({
           data: toModerationResponse(result),
         });
       } catch (error) {
         if (error instanceof InvalidRepositorySubmissionModerationError) {
+          logger.info('moderation.request_rejected', {
+            requestId: responseRequestId(response),
+            reviewerRef,
+            submissionId,
+            outcome: 'invalid_moderation_request',
+          });
           response.status(400).json({
             error: 'invalid_moderation_request',
             message: error.message,
@@ -218,6 +253,12 @@ export function createRepositoryModerationRouter(
         }
 
         if (error instanceof RepositorySubmissionModerationNotFoundError) {
+          logger.info('moderation.request_rejected', {
+            requestId: responseRequestId(response),
+            reviewerRef,
+            submissionId,
+            outcome: 'moderation_submission_not_found',
+          });
           response.status(404).json({
             error: 'moderation_submission_not_found',
             message: error.message,
@@ -228,6 +269,12 @@ export function createRepositoryModerationRouter(
         if (
           error instanceof RepositorySubmissionNotEligibleForModerationError
         ) {
+          logger.info('moderation.request_rejected', {
+            requestId: responseRequestId(response),
+            reviewerRef,
+            submissionId,
+            outcome: 'moderation_submission_not_eligible',
+          });
           response.status(409).json({
             error: 'moderation_submission_not_eligible',
             message: error.message,
@@ -236,6 +283,13 @@ export function createRepositoryModerationRouter(
         }
 
         if (error instanceof RepositorySubmissionAlreadyModeratedError) {
+          logger.info('moderation.request_rejected', {
+            requestId: responseRequestId(response),
+            reviewerRef,
+            submissionId,
+            outcome: 'moderation_submission_already_decided',
+            decision: error.decision,
+          });
           response.status(409).json({
             error: 'moderation_submission_already_decided',
             message: error.message,

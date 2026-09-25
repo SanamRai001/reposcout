@@ -85,4 +85,64 @@ describe('RepoScout API', () => {
     expect(response.status).toBe(503);
     expect(body.status).toBe('unavailable');
   });
+
+  it('adds correlation and baseline security headers', async () => {
+    const { baseUrl } = await startApp();
+    const response = await fetch(`${baseUrl}/health`);
+
+    expect(response.headers.get('x-request-id')).toMatch(
+      /^[0-9a-f-]{36}$/i,
+    );
+    expect(response.headers.get('x-content-type-options')).toBe(
+      'nosniff',
+    );
+    expect(response.headers.get('x-frame-options')).toBe('DENY');
+    expect(response.headers.get('referrer-policy')).toBe('no-referrer');
+    expect(response.headers.get('permissions-policy')).toBe(
+      'camera=(), microphone=(), geolocation=()',
+    );
+  });
+
+  it('marks submission and moderation responses as non-cacheable', async () => {
+    const { baseUrl } = await startApp();
+
+    const submission = await fetch(`${baseUrl}/api/submissions`);
+    const moderation = await fetch(`${baseUrl}/api/moderation/submissions`);
+
+    expect(submission.headers.get('cache-control')).toBe('no-store');
+    expect(moderation.headers.get('cache-control')).toBe('no-store');
+  });
+
+  it('maps malformed JSON to a stable 400 instead of a 500', async () => {
+    const { baseUrl } = await startApp();
+    const response = await fetch(`${baseUrl}/api/submissions`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: '{"repositoryUrl":',
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe('invalid_json');
+  });
+
+  it('maps oversized JSON bodies to a stable 413 instead of a 500', async () => {
+    const { baseUrl } = await startApp();
+    const response = await fetch(`${baseUrl}/api/submissions`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        repositoryUrl: `https://github.com/example/${'x'.repeat(110_000)}`,
+      }),
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(413);
+    expect(body.error).toBe('request_body_too_large');
+  });
+
 });

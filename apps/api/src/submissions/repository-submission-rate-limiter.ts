@@ -1,9 +1,14 @@
+import { createHmac, randomBytes } from 'node:crypto';
+
 import type {
   NextFunction,
   Request,
   RequestHandler,
   Response,
 } from 'express';
+
+import { responseRequestId } from '../http-security.js';
+import { logger } from '../logger.js';
 
 export type RepositorySubmissionRateLimitOptions = Readonly<{
   windowMs: number;
@@ -123,13 +128,21 @@ export class RepositorySubmissionRateLimiter {
   }
 }
 
-function clientKey(request: Request): string {
+function clientAddress(request: Request): string {
   return request.ip || request.socket.remoteAddress || 'unknown-client';
+}
+
+export function hashRepositorySubmissionClientKey(
+  address: string,
+  secret: Buffer,
+): string {
+  return createHmac('sha256', secret).update(address, 'utf8').digest('hex');
 }
 
 export function createRepositorySubmissionRateLimitMiddleware(
   limiter: RepositorySubmissionRateLimiter,
 ): RequestHandler {
+  const clientKeySecret = randomBytes(32);
   return (
     request: Request,
     response: Response,
@@ -140,7 +153,12 @@ export function createRepositorySubmissionRateLimitMiddleware(
       return;
     }
 
-    const decision = limiter.consume(clientKey(request));
+    const decision = limiter.consume(
+      hashRepositorySubmissionClientKey(
+        clientAddress(request),
+        clientKeySecret,
+      ),
+    );
 
     response.setHeader('RateLimit-Limit', String(decision.limit));
     response.setHeader('RateLimit-Remaining', String(decision.remaining));
@@ -152,6 +170,11 @@ export function createRepositorySubmissionRateLimitMiddleware(
     }
 
     response.setHeader('Retry-After', String(decision.retryAfterSeconds));
+    logger.info('submission.rate_limit_rejected', {
+      requestId: responseRequestId(response),
+      limit: decision.limit,
+      retryAfterSeconds: decision.retryAfterSeconds,
+    });
     response.status(429).json({
       error: 'submission_rate_limited',
       message:

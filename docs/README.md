@@ -44,6 +44,8 @@ Start here if you are contributing to the project.
 - [PHASE_5E1_SUBMISSION_RATE_LIMITING.md](PHASE_5E1_SUBMISSION_RATE_LIMITING.md) — bounded public submission rate limiting, proxy-safe client identity, and stable 429 behavior.
 - [PHASE_5E2_SUBMISSION_ABUSE_CONTROLS.md](PHASE_5E2_SUBMISSION_ABUSE_CONTROLS.md) — repository-level terminal resubmission cooldown, generic public state, and database lookup boundary.
 - [PHASE_5E3_SUBMISSION_RETENTION.md](PHASE_5E3_SUBMISSION_RETENTION.md) — conservative workflow retention, dry-run cleanup operations, and audit-preservation boundaries.
+- [PHASE_5E4_LAUNCH_SECURITY_OBSERVABILITY.md](PHASE_5E4_LAUNCH_SECURITY_OBSERVABILITY.md) — correlation, safe operational events, dependency security, privacy review, and residual launch risks.
+- [PRIVACY.md](PRIVACY.md) — application privacy and data-handling behavior.
 - [PROJECT_STATE.md](PROJECT_STATE.md) — concise current branch, completed phase, verification, risks/decisions, and next checkpoint.
 
 ## Community

@@ -32,22 +32,19 @@ As implementation begins, contributions will include:
 
 ## Current project stage
 
-RepoScout is currently in the documentation/foundation stage.
+RepoScout has a working TypeScript/PostgreSQL application foundation, deterministic discovery, public repository submission, validation/evidence workflows, protected moderation, and launch-hardening controls.
 
-Please avoid large implementation PRs until the relevant architecture and milestone exist. This prevents contributors from building against moving assumptions.
+Please still avoid unrelated large rewrites. Align substantial implementation work with the current roadmap phase and existing architecture.
 
 ## Adding a repository
 
-The final product will provide a submission UI.
+RepoScout now has a public URL-only repository submission flow.
 
-Before that workflow exists, repository suggestions can be proposed through GitHub issues once an issue template is available.
+A product submission needs only the GitHub repository root URL. RepoScout performs the deterministic validation and evidence collection itself.
 
-A good submission includes:
-- GitHub URL;
-- one sentence about what the project does;
-- why someone might find it useful.
+Self-submission is allowed, but it follows the same validation, abuse controls, and trusted moderation as any other repository.
 
-You do not need to manually collect stars, languages, license, or activity metrics. RepoScout should automate those fields.
+Do not add promotional metadata or attempt to bypass moderation.
 
 ## Engineering contribution flow
 
@@ -70,6 +67,7 @@ You do not need to manually collect stars, languages, license, or activity metri
 - preserve existing behavior unless intentionally changed;
 - do not add dependencies without a clear reason;
 - never commit credentials or tokens;
+- report security vulnerabilities through [SECURITY.md](SECURITY.md), not with public exploit details;
 - validate external input;
 - keep user-facing ranking claims explainable;
 - treat accessibility and security as product requirements.

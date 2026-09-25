@@ -522,14 +522,54 @@ MUST:
 
 ## Observability
 
-Initially capture:
-- database connectivity failures;
-- ingestion success/failure;
-- GitHub rate-limit state;
-- job retries;
-- submission volume;
-- moderation actions;
-- slow API/database operations.
+The first launch observability surface is structured JSON logging.
+
+Phase 5E.4 adds a request ID and safe boundary events for:
+- submission acceptance/rejection;
+- submission rate-limit rejection;
+- moderation authentication failure;
+- moderation queue reads;
+- final moderation decisions;
+- moderation request rejection;
+- submission/moderation request status + duration;
+- malformed/oversized body rejection;
+- unhandled failures.
+
+Operational events deliberately exclude:
+- raw IP addresses;
+- authorization headers/bearer credentials;
+- request bodies;
+- cookies;
+- user-agent strings;
+- moderation reason text.
+
+The logger also redacts credential-like metadata keys recursively.
+
+A future log aggregation/alerting system may consume these events; Phase 5E.4 does not choose a monitoring vendor or introduce a metrics database.
+
+## Launch security boundary
+
+Phase 5E.4 adds deployment-independent API hardening:
+- request correlation IDs;
+- `X-Content-Type-Options: nosniff`;
+- `X-Frame-Options: DENY`;
+- `Referrer-Policy: no-referrer`;
+- restrictive camera/microphone/geolocation Permissions-Policy;
+- `Cache-Control: no-store` for submission/moderation responses;
+- stable 400 malformed-JSON handling;
+- stable 413 body-size handling;
+- HMAC-derived in-memory submission limiter keys;
+- high/critical production dependency audit in CI;
+- Dependabot monitoring.
+
+Transport/browser controls that require the actual hosting topology remain deployment responsibilities:
+- HTTPS/TLS termination;
+- HSTS;
+- final frontend CSP;
+- edge/shared rate limiting for multi-instance API deployment;
+- infrastructure access-log retention.
+
+The process-local rate limiter remains acceptable only for the current single-process boundary.
 
 ## Scaling rule
 

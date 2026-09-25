@@ -1,5 +1,8 @@
 import { Router } from 'express';
 
+import { responseRequestId } from '../http-security.js';
+import { logger } from '../logger.js';
+
 import {
   InvalidRepositorySubmissionError,
   RepositoryAlreadyIndexedError,
@@ -56,11 +59,20 @@ export function createRepositorySubmissionRouter(
       const repositoryUrl = parseBody(request.body);
       const submission = await service.submit(repositoryUrl);
 
+      logger.info('submission.intake_accepted', {
+        requestId: responseRequestId(response),
+        submissionId: submission.id,
+        status: submission.status,
+      });
       response.status(201).json({
         data: toResponse(submission),
       });
     } catch (error) {
       if (error instanceof InvalidRepositorySubmissionError) {
+        logger.info('submission.intake_rejected', {
+          requestId: responseRequestId(response),
+          outcome: 'invalid_submission',
+        });
         response.status(400).json({
           error: 'invalid_submission',
           message: error.message,
@@ -69,6 +81,10 @@ export function createRepositorySubmissionRouter(
       }
 
       if (error instanceof RepositoryAlreadyIndexedError) {
+        logger.info('submission.intake_rejected', {
+          requestId: responseRequestId(response),
+          outcome: 'repository_already_indexed',
+        });
         response.status(409).json({
           error: 'repository_already_indexed',
           message: error.message,
@@ -77,6 +93,10 @@ export function createRepositorySubmissionRouter(
       }
 
       if (error instanceof RepositorySubmissionAlreadyPendingError) {
+        logger.info('submission.intake_rejected', {
+          requestId: responseRequestId(response),
+          outcome: 'submission_already_pending',
+        });
         response.status(409).json({
           error: 'submission_already_pending',
           message: error.message,
@@ -86,6 +106,11 @@ export function createRepositorySubmissionRouter(
 
       if (error instanceof RepositorySubmissionCooldownError) {
         response.setHeader('Retry-After', String(error.retryAfterSeconds));
+        logger.info('submission.intake_rejected', {
+          requestId: responseRequestId(response),
+          outcome: 'submission_resubmission_cooldown',
+          retryAfterSeconds: error.retryAfterSeconds,
+        });
         response.status(409).json({
           error: 'submission_resubmission_cooldown',
           message: error.message,

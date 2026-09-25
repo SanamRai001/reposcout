@@ -177,7 +177,7 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 | Submission UI | Complete |
 | Public submission rate limiting | Complete |
 | Repository resubmission abuse guard | Complete |
-| Abuse controls / launch hardening | In progress |
+| Abuse controls / launch hardening | Complete |
 | Advanced ranking / hidden-gem scoring | Planned |
 
 <details>
@@ -228,8 +228,9 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 5E.1 — public submission rate limiting: complete.
 - Phase 5E.2 — deterministic repository resubmission abuse guard: complete.
 - Phase 5E.3 — operational cleanup / retention: complete.
-- Phase 5E.4 — observability + security review: next.
-- Phase 5E — broader launch hardening: in progress.
+- Phase 5E.4 — observability + security review: complete.
+- Phase 5E — application launch hardening: complete.
+- Phase 6 — historical snapshots: next product phase.
 
 </details>
 
@@ -282,6 +283,8 @@ Useful contributions can include:
 - improving search, ranking, and repository-analysis logic.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a substantial pull request.
+
+Security concerns should follow [SECURITY.md](SECURITY.md). Application data handling is documented in [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## Guiding principles
 

@@ -507,7 +507,7 @@ Status: complete
 
 ### Phase 5E — Abuse/launch hardening
 
-Status: in progress
+Status: complete
 
 #### Phase 5E.1 — Public submission rate limiting
 
@@ -560,13 +560,24 @@ Status: complete
 
 #### Phase 5E.4 — Observability + security review
 
-Next:
-- launch-focused submission/moderation metrics;
-- abuse and limiter observability without secret leakage;
-- dependency/security checks;
-- end-to-end public-boundary review.
+Status: complete
 
-Model output must remain advisory for permanent moderation decisions.
+- server-generated request correlation IDs;
+- baseline API security headers;
+- non-cacheable submission/moderation responses;
+- stable malformed/oversized JSON errors;
+- safe structured submission/moderation/rate-limit events;
+- recursive secret-like log metadata redaction;
+- bearer-token non-leak regression coverage;
+- HMAC-derived in-memory rate-limit identities instead of raw IP keys;
+- production high/critical dependency audit gate;
+- weekly npm/GitHub Actions Dependabot monitoring;
+- privacy/data-handling documentation;
+- security reporting policy;
+- end-to-end public submission/protected moderation boundary review;
+- explicit residual deployment/production-gate list.
+
+Model output remains advisory for permanent moderation decisions.
 
 ## Phase 6 — Historical snapshots
 

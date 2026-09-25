@@ -47,6 +47,9 @@ jobs:
       - name: Verify application
         run: npm run verify
 
+      - name: Audit production dependencies
+        run: npm run audit:prod
+
       - name: Verify Jev evaluation harness
         run: npm run test:evaluation -w @reposcout/api
 

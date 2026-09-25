@@ -1224,3 +1224,54 @@ Each run is bounded to at most 1000 rows and deletion rechecks eligibility while
 RepoScout does not schedule automatic cleanup in Phase 5E.3. Automated scheduling should be introduced only with deployment/observability requirements that justify it.
 
 Application-level cleanup is irreversible; recovery of pruned terminal rows depends on normal database backup/restore operations.
+
+
+## D-125 — Operational observability must not become identity collection
+
+**Status:** Accepted
+
+Phase 5E.4 uses structured application logs as the first launch observability surface.
+
+Submission/moderation events may carry request IDs, stable workflow outcomes, submission IDs, reviewer references, decisions, counts, status codes, and durations.
+
+They must not intentionally include raw client IP addresses, authorization headers, bearer tokens, request bodies, cookies, user-agent strings, or moderation reason text.
+
+Request IDs are per-request correlation values, not durable user identities.
+
+## D-126 — Store opaque HMAC rate-limit identities instead of raw client addresses
+
+**Status:** Accepted
+
+The process-local submission limiter resolves the client address as before, but Phase 5E.4 derives the stored bucket key with HMAC-SHA256 and a random per-process secret.
+
+The raw address is therefore not the limiter map key.
+
+The secret is not persisted. Process restart rotates it and already resets process-local rate-limit state.
+
+This does not change the existing horizontal-scale limitation: multiple API instances still require a shared/edge limiter.
+
+## D-127 — High/critical production dependency advisories fail CI
+
+**Status:** Accepted
+
+CI runs:
+
+`npm audit --omit=dev --audit-level=high`
+
+High or critical advisories affecting the installed production dependency graph fail the gate.
+
+Dependabot monitors npm and GitHub Actions dependencies weekly.
+
+This control complements application review; it does not establish that the dependency graph is risk-free.
+
+## D-128 — Transport and browser policy that depends on deployment stays at the trusted edge
+
+**Status:** Accepted
+
+The API sets deployment-independent response hardening headers and non-cacheable sensitive responses.
+
+RepoScout does not hardcode HSTS because TLS termination/topology is deployment-specific.
+
+The final frontend CSP also depends on the actual static-host asset/origin configuration.
+
+Production HTTPS/TLS, HSTS, CSP, infrastructure access logging, and horizontally scalable rate limiting must be configured and verified at deployment time.
