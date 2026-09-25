@@ -66,7 +66,9 @@ Notes:
 - `open_issues` preserves GitHub's `open_issues_count` source semantics, which may include pull requests;
 - counts are nonnegative measured values;
 - metadata has its own observation timestamp;
-- stale observations cannot overwrite newer values.
+- stale observations cannot overwrite newer values;
+- from Phase 6B onward, an accepted metadata persistence also writes the corresponding daily RepositorySnapshot in the same transaction;
+- same-day current metadata may update while the first daily snapshot remains immutable.
 
 Future measured fields may include watchers/subscribers, release data, contributor counts, and contribution issue counts when their collection cost and semantics are explicitly defined.
 
