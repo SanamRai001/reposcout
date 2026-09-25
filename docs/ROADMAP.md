@@ -452,7 +452,7 @@ Status: complete
 
 ### Phase 5C — Moderation workflow
 
-Status: in progress
+Status: complete
 
 #### Phase 5C.1 — Moderation persistence + publication boundary
 
@@ -491,10 +491,19 @@ Status: complete
 
 ### Phase 5D — Submission web UI
 
-Later:
-- simple Add a Repository form;
-- success/duplicate/error states;
-- moderation expectations.
+Status: complete
+
+- public Add a Repository form using the existing `POST /api/submissions` contract;
+- request body remains URL-only with no free-form community metadata;
+- strict same-origin web client response validation;
+- explicit success / pending-review state;
+- distinct already-indexed and already-pending states;
+- invalid repository URL feedback;
+- retryable network/server failure handling;
+- moderation expectations shown before publication;
+- responsive and accessible live-feedback treatment;
+- no reviewer credentials, moderation queue, or moderation decisions exposed in the public UI;
+- Phase 5E abuse controls remain deferred.
 
 ### Phase 5E — Abuse/launch hardening
 
