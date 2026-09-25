@@ -24,12 +24,26 @@ export type ModerationEnvironment = Readonly<{
   reviewers: readonly ModerationReviewerEnvironment[];
 }>;
 
+export type HttpEnvironment = Readonly<{
+  trustProxyHops: number;
+}>;
+
+export type SubmissionEnvironment = Readonly<{
+  rateLimit: Readonly<{
+    windowMs: number;
+    maxAttempts: number;
+    maxTrackedClients: number;
+  }>;
+}>;
+
 export type AppEnvironment = Readonly<{
   nodeEnv: NodeEnvironment;
   port: number;
+  http: HttpEnvironment;
   database: DatabaseEnvironment;
   github: GithubEnvironment;
   moderation: ModerationEnvironment;
+  submission: SubmissionEnvironment;
 }>;
 
 function parseInteger(
@@ -181,6 +195,15 @@ export function loadEnvironment(
   return Object.freeze({
     nodeEnv: parseNodeEnvironment(source.NODE_ENV),
     port: parseInteger('PORT', source.PORT, 4000, 1, 65_535),
+    http: Object.freeze({
+      trustProxyHops: parseInteger(
+        'TRUST_PROXY_HOPS',
+        source.TRUST_PROXY_HOPS,
+        0,
+        0,
+        5,
+      ),
+    }),
     database: Object.freeze({
       url: requireDatabaseUrl(source.DATABASE_URL),
       ssl: parseBoolean('DATABASE_SSL', source.DATABASE_SSL, false),
@@ -220,6 +243,31 @@ export function loadEnvironment(
       reviewers: Object.freeze(
         parseModerationReviewers(source.MODERATION_REVIEWERS_JSON),
       ),
+    }),
+    submission: Object.freeze({
+      rateLimit: Object.freeze({
+        windowMs: parseInteger(
+          'SUBMISSION_RATE_LIMIT_WINDOW_MS',
+          source.SUBMISSION_RATE_LIMIT_WINDOW_MS,
+          600_000,
+          1_000,
+          3_600_000,
+        ),
+        maxAttempts: parseInteger(
+          'SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS',
+          source.SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS,
+          10,
+          1,
+          1_000,
+        ),
+        maxTrackedClients: parseInteger(
+          'SUBMISSION_RATE_LIMIT_MAX_CLIENTS',
+          source.SUBMISSION_RATE_LIMIT_MAX_CLIENTS,
+          10_000,
+          100,
+          100_000,
+        ),
+      }),
     }),
   });
 }
