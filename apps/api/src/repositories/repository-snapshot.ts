@@ -26,3 +26,13 @@ export type CaptureRepositorySnapshotResult =
       kind: 'existing';
       snapshot: RepositorySnapshotRecord;
     }>;
+
+
+export type RepositorySnapshotBackfillCandidate = Readonly<{
+  repositoryId: string;
+  fullName: string;
+  observedAt: Date;
+  stars: number;
+  forks: number;
+  openIssues: number;
+}>;
