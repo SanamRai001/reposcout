@@ -5,6 +5,7 @@ import { isRepositoryId } from './repository-catalog.js';
 import type {
   CaptureRepositorySnapshotInput,
   CaptureRepositorySnapshotResult,
+  RepositorySnapshotBackfillCandidate,
   RepositorySnapshotRecord,
 } from './repository-snapshot.js';
 
@@ -183,4 +184,55 @@ export class RepositorySnapshotStore {
 
     return result.rows.map(mapRow);
   }
+  async listLatestMetadataBackfillCandidates(
+    limit: number,
+  ): Promise<RepositorySnapshotBackfillCandidate[]> {
+    if (!Number.isInteger(limit) || limit < 1 || limit > 500) {
+      throw new Error(
+        'backfill limit must be an integer between 1 and 500.',
+      );
+    }
+
+    const result = await this.pool.query<{
+      repository_id: string;
+      full_name: string;
+      observed_at: Date;
+      stars: string;
+      forks: string;
+      open_issues: string;
+    }>(
+      `
+        SELECT
+          r.id AS repository_id,
+          r.full_name,
+          m.observed_at,
+          m.stars,
+          m.forks,
+          m.open_issues
+        FROM repository_metadata AS m
+        INNER JOIN repositories AS r
+          ON r.id = m.repository_id
+        WHERE NOT EXISTS (
+          SELECT 1
+          FROM repository_snapshots AS s
+          WHERE s.repository_id = m.repository_id
+            AND s.captured_on =
+              ((m.observed_at AT TIME ZONE 'UTC')::date)
+        )
+        ORDER BY m.observed_at ASC, r.id ASC
+        LIMIT $1
+      `,
+      [limit],
+    );
+
+    return result.rows.map((row) => ({
+      repositoryId: row.repository_id,
+      fullName: row.full_name,
+      observedAt: row.observed_at,
+      stars: parseCount('stars', row.stars),
+      forks: parseCount('forks', row.forks),
+      openIssues: parseCount('openIssues', row.open_issues),
+    }));
+  }
+
 }

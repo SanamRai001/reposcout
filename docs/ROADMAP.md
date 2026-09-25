@@ -601,16 +601,24 @@ Status: complete
 
 #### Phase 6B — Snapshot capture + bounded backfill
 
-Next:
-- connect authoritative metadata observations to snapshot persistence;
-- avoid duplicate provider fetches when existing observations can be captured safely;
-- internal bounded capture/backfill operation;
-- preserve GitHub rate-limit/retry behavior;
-- observable capture outcomes.
+Status: complete
+
+- accepted authoritative metadata writes create the daily snapshot in the same PostgreSQL transaction;
+- no extra GitHub request is introduced for snapshot capture;
+- stale metadata writes create no history;
+- same-day current metadata may advance while the first daily historical snapshot remains immutable;
+- bounded latest-metadata backfill for pre-6A observations;
+- oldest observation first;
+- default batch 50 / maximum 500;
+- backfill includes unlisted canonical repositories;
+- backfill performs no provider calls;
+- internal `backfill:snapshots` CLI;
+- structured backfill batch/item observability;
+- ingestion/backfill integration coverage.
 
 #### Phase 6C — Deterministic deltas + trend reads
 
-Later:
+Next:
 - star/fork/open-issue deltas across explicit windows;
 - missing-history semantics;
 - deterministic trend reads;

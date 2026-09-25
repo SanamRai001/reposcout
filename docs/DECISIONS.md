@@ -1314,3 +1314,44 @@ Different-day backfills remain independent rows and may be inserted out of chron
 Phase 6A keeps daily snapshots without automatic aggregation/deletion.
 
 Weekly/monthly coarsening may be introduced later if measured storage growth justifies the added complexity.
+
+
+## D-133 — Capture history in the same transaction as accepted metadata persistence
+
+**Status:** Accepted
+
+When `RepositoryStore.upsertWithMetadata` accepts a metadata observation, RepoScout also attempts the Phase 6A daily snapshot inside the same PostgreSQL transaction.
+
+Repository canonical state, current metadata, and the corresponding historical daily observation therefore cannot partially commit through this path.
+
+The existing daily unique constraint preserves first-write-wins history when multiple accepted observations occur on the same UTC day.
+
+## D-134 — Snapshot capture must not add a duplicate GitHub fetch
+
+**Status:** Accepted
+
+Phase 6B reuses the authoritative observation already produced by the existing ingestion/refresh pipeline.
+
+Writing historical state does not perform another provider call.
+
+This preserves the established GitHub rate-limit/retry behavior and keeps snapshot storage independent from provider availability after the observation has already been fetched.
+
+## D-135 — Backfill only what RepoScout actually persisted
+
+**Status:** Accepted
+
+The Phase 6B backfill command reads the latest `repository_metadata` observation and creates its daily snapshot only when that UTC day is missing.
+
+It does not fabricate older history and does not call GitHub to infer past values.
+
+Historical observations that were never stored cannot be reconstructed accurately and remain missing.
+
+## D-136 — Unlisted canonical repository observations may have internal snapshot history
+
+**Status:** Accepted
+
+Backfill and automatic metadata capture are not filtered by public listing state.
+
+An unlisted moderation candidate may therefore accumulate measured history before approval.
+
+Snapshot history does not publish the repository and does not change `is_listed`; public discovery remains governed by the existing publication boundary.

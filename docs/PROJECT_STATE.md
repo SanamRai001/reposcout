@@ -2,68 +2,66 @@
 
 ## Objective
 
-Build historical measured repository intelligence in small phases without mixing storage, capture operations, trend math, and ranking logic.
+Build historical measured repository intelligence in small phases without mixing storage, capture operations, trend math, scheduling, and ranking logic.
 
 ## Branch
 
-`main`
+`feat/phase-6b-snapshot-capture`
 
-Current verified merge: `a52b2d4dd847022e14d659eb6ec72be0035b8b2c`
+Base: `main@61be280be77dd14de456b3ff25040b3e8defde5e`
 
-PR #40: merged
+PR: #41
 
 ## Completed phase
 
-Phase 6A — Repository snapshot persistence foundation.
+Phase 6B — Snapshot capture + bounded backfill.
 
 Phase 6 remains in progress.
 
 ## Changes
 
-- Added `repository_snapshots` as the first historical metrics table.
-- Snapshot facts are limited to currently authoritative measured metadata:
-  - stars;
-  - forks;
-  - GitHub-style open issue count.
-- Added explicit `captured_at` provenance and a UTC `captured_on` daily bucket.
-- Enforced one snapshot per repository per UTC day.
-- Snapshot capture is append-only / first-write-wins within a day.
-- Same-day retries return the existing snapshot rather than rewriting historical values.
-- Backfills for distinct UTC days remain independent historical rows.
-- Added a repository + descending capture-time history index.
-- Snapshot rows cascade only when their canonical repository is deleted.
-- Added a bounded recent-history read method for later delta/trend phases.
-- Added a dedicated snapshot PostgreSQL CI gate.
+- Connected accepted authoritative metadata writes to daily snapshot persistence.
+- Repository + metadata + same-day snapshot persistence now occurs in one PostgreSQL transaction.
+- Normal GitHub ingestion/refresh therefore creates history without issuing any extra provider request.
+- Existing Phase 6A first-write-wins daily semantics remain unchanged.
+- Same-day refresh can update current metadata while preserving the first historical snapshot for that UTC day.
+- Stale metadata writes do not create snapshots.
+- Added bounded backfill selection over existing `repository_metadata`.
+- Backfill captures only the latest stored metadata observation when its UTC day is not already represented in history.
+- Backfill is oldest-observation-first, default 50 rows, maximum 500.
+- Backfill includes unlisted canonical repositories so pre-publication history can survive later approval.
+- Added an internal `backfill:snapshots` CLI with structured operational events.
+- Backfill performs zero GitHub/provider requests.
 
 ## Verification
 
-- Phase 5E.4 verified on `main@6952d6323a5db0b51d8e293fe5bbee89306fe75b`.
-- Phase 6A code head `bc21bcd8248a79564c4dd3b8f9094a3547db4d11`: CI run 173 success.
-- Documentation-complete PR head `9d8c9225bf4b91e95cc0045d4bc06ccc1049b422`: CI run 177 success.
-- PR #40 merged as `a52b2d4dd847022e14d659eb6ec72be0035b8b2c`.
-- Post-merge `main` CI run 178: success.
-- CI verified application lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, snapshot schema, snapshot persistence, existing persistence/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Phase 6A verified on `main@61be280be77dd14de456b3ff25040b3e8defde5e`.
+- Phase 6B code head `b53f311257056ddbd3efa15a2b5bd8de057e5438`.
+- GitHub Actions CI run 181: success before documentation-only follow-up commits.
+- CI verified lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, repository persistence, automatic ingestion snapshot capture, snapshot persistence/backfill integration, content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Documentation-complete PR head must remain green before merge.
 
 ## Decisions / risks
 
-- Historical snapshots store measured GitHub facts, not model inference or ranking scores.
-- The MVP snapshot cadence unit is one UTC day per repository.
-- Same-day capture is first-write-wins to keep history append-only and retries idempotent.
-- No release/activity aggregate is stored until RepoScout has a defined authoritative collection source and semantics.
-- No automatic capture or scheduler exists in 6A.
-- Snapshot retention/coarsening remains deferred until real storage pressure exists.
+- Snapshot capture is coupled to accepted authoritative metadata persistence, not to browser reads or ranking code.
+- No second GitHub fetch is performed solely to write a snapshot.
+- The transaction may fail as a unit if snapshot persistence fails, preventing metadata/history divergence.
+- Backfill can recover the latest stored metadata observation only; observations that were never historically stored cannot be reconstructed.
+- Unlisted repository history remains internal and does not affect public listing state.
+- Scheduled fresh daily refresh/capture is still Phase 6D.
+- No delta/trend interpretation exists yet.
 
 ## Phase 6 breakdown
 
 - 6A — snapshot persistence foundation: complete.
-- 6B — snapshot capture + bounded backfill: next.
-- 6C — deterministic deltas/trend reads.
+- 6B — snapshot capture + bounded backfill: complete.
+- 6C — deterministic deltas/trend reads: next.
 - 6D — scheduled operations + retry/backfill orchestration.
 
 ## Next phase
 
-Phase 6B — Snapshot capture + bounded backfill.
+Phase 6C — Deterministic deltas + trend reads.
 
-Connect authoritative repository metadata observations to snapshot persistence, add an internal bounded capture/backfill operation, and preserve provider/rate-limit safety.
+Add explicit-window star/fork/open-issue change calculations over snapshot history, define missing-history semantics, and expose deterministic trend reads without producing a universal quality score.
 
 Do not start Phase 7 ranking work before Phase 6 is complete.

@@ -186,6 +186,28 @@ const UPSERT_METADATA_SQL = `
     updated_at
 `;
 
+const INSERT_DAILY_SNAPSHOT_SQL = `
+  INSERT INTO repository_snapshots (
+    id,
+    repository_id,
+    captured_on,
+    captured_at,
+    stars,
+    forks,
+    open_issues
+  )
+  VALUES (
+    $1,
+    $2,
+    (($3::timestamptz AT TIME ZONE 'UTC')::date),
+    $3,
+    $4,
+    $5,
+    $6
+  )
+  ON CONFLICT (repository_id, captured_on) DO NOTHING
+`;
+
 const CATALOG_SELECT_COLUMNS = `
   r.id,
   r.github_repository_id,
@@ -427,10 +449,25 @@ export class RepositoryStore {
       );
 
       if (input.lastSyncedAt.getTime() >= repository.lastSyncedAt.getTime()) {
-        await client.query<RepositoryMetadataRow>(
+        const metadataResult = await client.query<RepositoryMetadataRow>(
           UPSERT_METADATA_SQL,
           metadataParams(repository.id, metadataInput),
         );
+        const metadata = metadataResult.rows[0];
+
+        if (metadata) {
+          await client.query(
+            INSERT_DAILY_SNAPSHOT_SQL,
+            [
+              randomUUID(),
+              repository.id,
+              metadata.observed_at,
+              metadata.stars,
+              metadata.forks,
+              metadata.open_issues,
+            ],
+          );
+        }
       }
 
       await client.query('COMMIT');
