@@ -380,13 +380,34 @@ Rules:
 
 ## Data retention
 
+### Submission workflow retention — Phase 5E.3
+
+Current MVP policy:
+
+- PENDING submission rows are retained;
+- APPROVED and REJECTED submission rows are retained;
+- moderation events are retained;
+- prepared canonical repository/metadata/README/contribution evidence for moderated submissions is retained;
+- INVALID and DUPLICATE submission rows become cleanup candidates only after the configured terminal-retention period;
+- cleanup additionally requires null evidence-handoff fields and no moderation event;
+- default terminal retention is 90 days;
+- configurable minimum is 31 days and maximum is 3650 days;
+- cleanup deletes only the submission row, never the canonical repository referenced by a duplicate;
+- cleanup is manual and dry-run-first in Phase 5E.3.
+
+The 31-day minimum is deliberate: it keeps retained deterministic terminal state longer than the maximum 30-day repository resubmission cooldown.
+
+Deleted INVALID/DUPLICATE rows have no application-level undo. Recovery depends on database backups.
+
+### Future snapshot retention
+
 Historical snapshots can grow quickly. Retention should eventually use coarser granularity for older data if storage becomes material.
 
 Example future strategy:
 - daily snapshots for recent months;
 - weekly/monthly aggregates for older periods.
 
-Do not implement retention complexity before it is needed.
+Do not implement snapshot-retention complexity before it is needed.
 
 ## Constraints that should exist at the database level
 
