@@ -13,6 +13,11 @@ import {
   type RepositoryCatalogItem,
   type RepositoryDiscoveryScope,
 } from './lib/repository-catalog-client';
+import {
+  RepositorySubmissionError,
+  submitRepository,
+  type RepositorySubmission,
+} from './lib/repository-submission-client';
 
 const PAGE_SIZE = 12;
 
@@ -26,6 +31,16 @@ type DiscoveryFormState = Readonly<{
   fork: '' | 'true' | 'false';
   archived: '' | 'true' | 'false';
 }>;
+
+type SubmissionUiState =
+  | Readonly<{ kind: 'idle' }>
+  | Readonly<{ kind: 'submitting' }>
+  | Readonly<{ kind: 'success'; submission: RepositorySubmission }>
+  | Readonly<{ kind: 'invalid'; message: string }>
+  | Readonly<{ kind: 'already_indexed'; message: string }>
+  | Readonly<{ kind: 'already_pending'; message: string }>
+  | Readonly<{ kind: 'retryable_error'; message: string }>
+  | Readonly<{ kind: 'error'; message: string }>;
 
 const compactNumber = new Intl.NumberFormat(undefined, {
   notation: 'compact',
@@ -335,6 +350,10 @@ export function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [submissionUrl, setSubmissionUrl] = useState('');
+  const [submissionState, setSubmissionState] = useState<SubmissionUiState>({
+    kind: 'idle',
+  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -431,6 +450,70 @@ export function App() {
     setReloadToken((value) => value + 1);
   }
 
+  async function submitRepositoryUrl(): Promise<void> {
+    const candidate = submissionUrl.trim();
+
+    if (!candidate) {
+      setSubmissionState({
+        kind: 'invalid',
+        message: 'Enter a full GitHub repository URL before submitting.',
+      });
+      return;
+    }
+
+    setSubmissionState({ kind: 'submitting' });
+
+    try {
+      const submission = await submitRepository({ repositoryUrl: candidate });
+      setSubmissionUrl(submission.repository.githubUrl);
+      setSubmissionState({ kind: 'success', submission });
+    } catch (error) {
+      if (error instanceof RepositorySubmissionError) {
+        if (error.code === 'invalid_submission') {
+          setSubmissionState({ kind: 'invalid', message: error.message });
+          return;
+        }
+
+        if (error.code === 'repository_already_indexed') {
+          setSubmissionState({
+            kind: 'already_indexed',
+            message: error.message,
+          });
+          return;
+        }
+
+        if (error.code === 'submission_already_pending') {
+          setSubmissionState({
+            kind: 'already_pending',
+            message: error.message,
+          });
+          return;
+        }
+
+        if (error.retryable) {
+          setSubmissionState({
+            kind: 'retryable_error',
+            message: error.message,
+          });
+          return;
+        }
+
+        setSubmissionState({ kind: 'error', message: error.message });
+        return;
+      }
+
+      setSubmissionState({
+        kind: 'retryable_error',
+        message: 'RepoScout could not accept the submission right now.',
+      });
+    }
+  }
+
+  function submitRepositoryForm(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    void submitRepositoryUrl();
+  }
+
   async function loadMore(): Promise<void> {
     if (!nextCursor || loadingMore) {
       return;
@@ -491,7 +574,12 @@ export function App() {
           <span>RepoScout</span>
         </a>
 
-        <span className="phase-badge">Discovery · Phase 4C</span>
+        <div className="header-actions">
+          <a className="header-link" href="#add-repository">
+            Add a repository
+          </a>
+          <span className="phase-badge">Community · Phase 5D</span>
+        </div>
       </header>
 
       <section className="catalog-intro" aria-labelledby="catalog-title">
@@ -694,6 +782,178 @@ export function App() {
             </div>
           </div>
         ) : null}
+      </section>
+
+      <section
+        className="submission-section"
+        id="add-repository"
+        aria-labelledby="submission-heading"
+      >
+        <div className="submission-heading">
+          <div>
+            <p className="catalog-kicker">Community discovery</p>
+            <h2 id="submission-heading">Add a repository we should know about</h2>
+          </div>
+          <p>
+            Submit a public GitHub repository that is missing from RepoScout.
+            Self-submissions are welcome, but every repository follows the same
+            validation and review path.
+          </p>
+        </div>
+
+        <div className="submission-layout">
+          <form className="submission-panel" onSubmit={submitRepositoryForm}>
+            <label className="submission-field">
+              <span>GitHub repository URL</span>
+              <div className="submission-input-row">
+                <input
+                  type="url"
+                  inputMode="url"
+                  autoComplete="url"
+                  value={submissionUrl}
+                  onChange={(event) => {
+                    setSubmissionUrl(event.target.value);
+                    if (submissionState.kind !== 'submitting') {
+                      setSubmissionState({ kind: 'idle' });
+                    }
+                  }}
+                  placeholder="https://github.com/owner/repository"
+                  aria-describedby="submission-help"
+                  disabled={submissionState.kind === 'submitting'}
+                />
+                <button
+                  className="primary-button"
+                  type="submit"
+                  disabled={submissionState.kind === 'submitting'}
+                >
+                  {submissionState.kind === 'submitting'
+                    ? 'Submitting…'
+                    : 'Submit repository'}
+                </button>
+              </div>
+            </label>
+
+            <p className="submission-help" id="submission-help">
+              Use the repository root URL only. RepoScout does not accept issue,
+              pull-request, tree, query-string, or fragment URLs here.
+            </p>
+
+            <div className="submission-feedback-region" aria-live="polite">
+              {submissionState.kind === 'success' ? (
+                <div className="submission-feedback submission-feedback-success">
+                  <span className="state-signal" aria-hidden="true" />
+                  <div>
+                    <strong>Submission received</strong>
+                    <p>
+                      <span className="submission-repository-name">
+                        {submissionState.submission.repository.fullName}
+                      </span>{' '}
+                      is now pending validation and moderation. It is not public
+                      in the RepoScout catalog unless a trusted reviewer approves
+                      it.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
+              {submissionState.kind === 'already_indexed' ? (
+                <div className="submission-feedback submission-feedback-info">
+                  <span className="state-signal state-signal-info" aria-hidden="true" />
+                  <div>
+                    <strong>Already in RepoScout</strong>
+                    <p>{submissionState.message}</p>
+                  </div>
+                </div>
+              ) : null}
+
+              {submissionState.kind === 'already_pending' ? (
+                <div className="submission-feedback submission-feedback-info">
+                  <span className="state-signal state-signal-info" aria-hidden="true" />
+                  <div>
+                    <strong>Already submitted</strong>
+                    <p>
+                      {submissionState.message} The existing submission remains in
+                      the validation and review workflow.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
+              {submissionState.kind === 'invalid' ? (
+                <div className="submission-feedback submission-feedback-error" role="alert">
+                  <span
+                    className="state-signal state-signal-error"
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <strong>Check the repository URL</strong>
+                    <p>{submissionState.message}</p>
+                  </div>
+                </div>
+              ) : null}
+
+              {submissionState.kind === 'retryable_error' ? (
+                <div className="submission-feedback submission-feedback-error" role="alert">
+                  <span
+                    className="state-signal state-signal-error"
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <strong>Submission did not go through</strong>
+                    <p>{submissionState.message}</p>
+                    <button
+                      className="submission-retry"
+                      type="button"
+                      onClick={() => void submitRepositoryUrl()}
+                    >
+                      Try again
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
+              {submissionState.kind === 'error' ? (
+                <div className="submission-feedback submission-feedback-error" role="alert">
+                  <span
+                    className="state-signal state-signal-error"
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <strong>Submission unavailable</strong>
+                    <p>{submissionState.message}</p>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </form>
+
+          <aside className="moderation-expectations" aria-label="What happens after submission">
+            <p className="moderation-kicker">What happens next</p>
+            <ol>
+              <li>
+                <span>01</span>
+                <div>
+                  <strong>Validate</strong>
+                  <p>Confirm the public GitHub repository and canonical identity.</p>
+                </div>
+              </li>
+              <li>
+                <span>02</span>
+                <div>
+                  <strong>Prepare evidence</strong>
+                  <p>Collect the same repository facts and contribution evidence used by RepoScout.</p>
+                </div>
+              </li>
+              <li>
+                <span>03</span>
+                <div>
+                  <strong>Moderate</strong>
+                  <p>A trusted reviewer makes the final listing decision. Submission never bypasses review.</p>
+                </div>
+              </li>
+            </ol>
+          </aside>
+        </div>
       </section>
 
       <section className="catalog-section" aria-labelledby="catalog-heading">
