@@ -507,12 +507,47 @@ Status: complete
 
 ### Phase 5E — Abuse/launch hardening
 
-Before broad public launch:
-- rate limits;
-- spam/abuse controls;
-- operational cleanup/retention;
-- observability;
-- security review.
+Status: in progress
+
+#### Phase 5E.1 — Public submission rate limiting
+
+Status: complete
+
+- bounded fixed-window limiter for `POST /api/submissions`;
+- limit applied before JSON body parsing;
+- default 10 attempts per 10 minutes per resolved client IP;
+- bounded tracked-client memory;
+- stable `429 submission_rate_limited` contract;
+- `Retry-After` and rate-limit response headers;
+- explicit reverse-proxy trust configuration;
+- forwarded IP headers ignored unless proxy trust is configured;
+- retryable web-client handling;
+- no moderation/publication behavior change.
+
+The current limiter is process-local. Horizontal/multi-instance deployment requires a shared-store or edge limiter.
+
+#### Phase 5E.2 — Submission spam / abuse controls
+
+Next:
+- deterministic low-cost spam/abuse checks;
+- preserve self-submission and beginner-friendly contribution;
+- avoid model-driven final moderation;
+- avoid storing unnecessary personal/network data.
+
+#### Phase 5E.3 — Operational cleanup / retention
+
+Later:
+- define submission/audit retention boundaries;
+- cleanup policy for stale terminal workflow data where safe;
+- operational recovery considerations.
+
+#### Phase 5E.4 — Observability + security review
+
+Later:
+- launch-focused submission/moderation metrics;
+- abuse and limiter observability without secret leakage;
+- dependency/security checks;
+- end-to-end public-boundary review.
 
 Model output must remain advisory for permanent moderation decisions.
 

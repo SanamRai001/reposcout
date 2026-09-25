@@ -1121,3 +1121,36 @@ Configured bearer secrets are authentication material only.
 Secrets are hashed in memory by the authenticator and are never returned by moderation APIs or stored in moderation events.
 
 Audit records store only stable reviewer references.
+
+
+## D-116 — Rate-limit public submission attempts before request-body processing
+
+**Status:** Accepted
+
+Phase 5E.1 applies the public submission limiter to `POST /api/submissions` before the JSON body parser.
+
+This keeps repeated rejected attempts from consuming normal submission parsing/service work and ensures invalid submission bodies do not bypass attempt accounting.
+
+The limiter does not alter the Phase 5A submission service or Phase 5C moderation transaction.
+
+## D-117 — Forwarded client IPs are untrusted unless reverse-proxy hops are explicitly configured
+
+**Status:** Accepted
+
+RepoScout defaults `TRUST_PROXY_HOPS` to 0.
+
+Client-controlled `X-Forwarded-For` data therefore cannot change the rate-limit identity in the default configuration.
+
+A deployment may set a positive hop count only when the API is reachable through the corresponding trusted reverse-proxy topology. Incorrect proxy trust can allow spoofed client identity or cause unrelated users to share one rate-limit bucket.
+
+## D-118 — The initial submission limiter is bounded and process-local
+
+**Status:** Accepted
+
+Phase 5E.1 uses a bounded in-memory fixed-window limiter because RepoScout currently has no shared cache/rate-limit datastore and should not add distributed infrastructure solely for the first launch-hardening slice.
+
+The default tracked-client map is bounded to prevent unbounded memory growth.
+
+This limiter is not sufficient for horizontal/multi-instance deployment because each process has independent counters. Before scaling the API across multiple processes/instances, RepoScout must move this control to a shared store or trusted edge/reverse-proxy limiter.
+
+Rate limiting is an abuse-reduction control, not a replacement for deterministic spam checks or trusted moderation.

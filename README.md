@@ -175,7 +175,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 | Moderation persistence/publication boundary | Complete |
 | Reviewer authorization / protected moderation API | Complete |
 | Submission UI | Complete |
-| Abuse controls / launch hardening | Planned |
+| Public submission rate limiting | Complete |
+| Abuse controls / launch hardening | In progress |
 | Advanced ranking / hidden-gem scoring | Planned |
 
 <details>
@@ -223,7 +224,9 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 5C.2 — reviewer authorization + protected moderation API: complete.
 - Phase 5C — moderation workflow: complete.
 - Phase 5D — public repository submission UI: complete.
-- Phase 5E — abuse / launch hardening: next.
+- Phase 5E.1 — public submission rate limiting: complete.
+- Phase 5E.2 — deterministic spam / abuse controls: next.
+- Phase 5E — broader launch hardening: in progress.
 
 </details>
 

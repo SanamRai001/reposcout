@@ -6,6 +6,10 @@ import { createRepositoryRouter } from './repositories/repository-routes.js';
 import type { RepositorySubmissionService } from './submissions/repository-submission-service.js';
 import { createRepositorySubmissionRouter } from './submissions/repository-submission-routes.js';
 import {
+  createRepositorySubmissionRateLimitMiddleware,
+  type RepositorySubmissionRateLimiter,
+} from './submissions/repository-submission-rate-limiter.js';
+import {
   createRepositoryModerationRouter,
   type RepositoryModerationRouterDependencies,
 } from './submissions/repository-moderation-routes.js';
@@ -14,7 +18,9 @@ export type AppDependencies = Readonly<{
   checkReadiness?: () => Promise<void>;
   repositoryCatalog?: RepositoryCatalogReader;
   repositorySubmissionService?: RepositorySubmissionService;
+  repositorySubmissionRateLimiter?: RepositorySubmissionRateLimiter;
   repositoryModeration?: RepositoryModerationRouterDependencies;
+  trustProxyHops?: number;
 }>;
 
 export function createApp(dependencies: AppDependencies = {}) {
@@ -22,6 +28,17 @@ export function createApp(dependencies: AppDependencies = {}) {
   const checkReadiness = dependencies.checkReadiness ?? (async () => undefined);
 
   app.disable('x-powered-by');
+  app.set('trust proxy', dependencies.trustProxyHops ?? 0);
+
+  if (dependencies.repositorySubmissionRateLimiter) {
+    app.use(
+      '/api/submissions',
+      createRepositorySubmissionRateLimitMiddleware(
+        dependencies.repositorySubmissionRateLimiter,
+      ),
+    );
+  }
+
   app.use(express.json({ limit: '100kb' }));
 
   app.get('/health', (_request, response) => {

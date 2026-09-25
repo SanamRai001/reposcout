@@ -41,6 +41,7 @@ Start here if you are contributing to the project.
 - [PHASE_5C1_MODERATION_FOUNDATION.md](PHASE_5C1_MODERATION_FOUNDATION.md) — unlisted pre-approval repositories, atomic moderation/publication, and append-only decision audit.
 - [PHASE_5C2_PROTECTED_MODERATION_API.md](PHASE_5C2_PROTECTED_MODERATION_API.md) — trusted reviewer Bearer auth, protected queue/decision routes, and authenticated audit identity.
 - [PHASE_5D_SUBMISSION_WEB_UI.md](PHASE_5D_SUBMISSION_WEB_UI.md) — public URL-only Add a Repository UI, submission states, retry behavior, and moderation expectations.
+- [PHASE_5E1_SUBMISSION_RATE_LIMITING.md](PHASE_5E1_SUBMISSION_RATE_LIMITING.md) — bounded public submission rate limiting, proxy-safe client identity, and stable 429 behavior.
 - [PROJECT_STATE.md](PROJECT_STATE.md) — concise current branch, completed phase, verification, risks/decisions, and next checkpoint.
 
 ## Community
