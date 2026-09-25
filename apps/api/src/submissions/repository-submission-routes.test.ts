@@ -53,8 +53,12 @@ async function startApp(
 ) {
   const app = createApp({
     repositorySubmissionService: service,
-    repositorySubmissionRateLimiter: options.rateLimiter,
-    trustProxyHops: options.trustProxyHops,
+    ...(options.rateLimiter
+      ? { repositorySubmissionRateLimiter: options.rateLimiter }
+      : {}),
+    ...(options.trustProxyHops !== undefined
+      ? { trustProxyHops: options.trustProxyHops }
+      : {}),
   });
   const server = app.listen(0);
   servers.push(server);
