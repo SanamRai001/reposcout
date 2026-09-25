@@ -1187,3 +1187,40 @@ It does not reveal whether the preceding submission was INVALID, DUPLICATE, REJE
 The response may expose only the remaining retry delay needed to make the public UI actionable.
 
 This abuse control does not change final moderation authority.
+
+
+## D-122 — Moderated submission history is retained in the MVP
+
+**Status:** Accepted
+
+Phase 5E.3 does not delete PENDING, APPROVED, or REJECTED submission rows.
+
+It also does not delete moderation events or the canonical repository/evidence rows prepared for moderation.
+
+This preserves the existing audit, publication, rejection-evidence, and recovery contracts.
+
+## D-123 — Only old deterministic INVALID/DUPLICATE submission rows are cleanup candidates
+
+**Status:** Accepted
+
+Cleanup may delete only submission rows whose status is INVALID or DUPLICATE, whose evidence handoff fields are null, and which have no moderation event.
+
+The default retention period is 90 days.
+
+The configurable minimum is 31 days so cleanup cannot undercut the maximum 30-day repository resubmission cooldown.
+
+Deleting a duplicate submission never deletes the canonical repository it referenced.
+
+## D-124 — Submission cleanup is dry-run-first, bounded, and manually applied
+
+**Status:** Accepted
+
+The operational cleanup command previews candidates by default.
+
+Deletion requires an explicit `--apply` flag.
+
+Each run is bounded to at most 1000 rows and deletion rechecks eligibility while locking selected candidates with `FOR UPDATE SKIP LOCKED`.
+
+RepoScout does not schedule automatic cleanup in Phase 5E.3. Automated scheduling should be introduced only with deployment/observability requirements that justify it.
+
+Application-level cleanup is irreversible; recovery of pruned terminal rows depends on normal database backup/restore operations.
