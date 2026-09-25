@@ -14,6 +14,7 @@ export type RepositorySubmissionErrorCode =
   | 'invalid_submission'
   | 'repository_already_indexed'
   | 'submission_already_pending'
+  | 'submission_resubmission_cooldown'
   | 'submission_rate_limited'
   | 'network_error'
   | 'invalid_response'
@@ -25,6 +26,7 @@ export class RepositorySubmissionError extends Error {
     public readonly code: RepositorySubmissionErrorCode,
     public readonly status: number | null,
     public readonly retryable: boolean,
+    public readonly retryAfterSeconds: number | null = null,
   ) {
     super(message);
     this.name = 'RepositorySubmissionError';
@@ -88,6 +90,7 @@ function errorCode(value: unknown): RepositorySubmissionErrorCode {
     case 'invalid_submission':
     case 'repository_already_indexed':
     case 'submission_already_pending':
+    case 'submission_resubmission_cooldown':
     case 'submission_rate_limited':
       return value;
     default:
@@ -148,11 +151,19 @@ export async function submitRepository(
           ? 'RepoScout could not accept the submission right now.'
           : 'RepoScout could not accept this repository submission.';
 
+    const retryAfterSeconds =
+      typeof bodyRecord?.retryAfterSeconds === 'number' &&
+      Number.isInteger(bodyRecord.retryAfterSeconds) &&
+      bodyRecord.retryAfterSeconds > 0
+        ? bodyRecord.retryAfterSeconds
+        : null;
+
     throw new RepositorySubmissionError(
       message,
       code,
       response.status,
       response.status >= 500 || response.status === 429,
+      retryAfterSeconds,
     );
   }
 
