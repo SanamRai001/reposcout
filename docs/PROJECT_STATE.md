@@ -2,54 +2,55 @@
 
 ## Objective
 
-Harden the public community-submission boundary for launch while preserving the existing validation, evidence, and protected moderation flow.
+Harden the public community-submission boundary for launch while preserving validation, evidence, auditability, and trusted moderation.
 
 ## Branch
 
-`main`
+`feat/phase-5e3-submission-retention`
 
-Current verified merge: `30fadbcec5a62624c69a10a222ab23dfbd669c6d`
+Base: `main@c4603ccfbf36821a7e52430cc8666580e0fa809b`
 
-PR #33: merged
+PR: #34
 
 ## Completed phase
 
-Phase 5E.2 — Deterministic repository resubmission abuse guard.
+Phase 5E.3 — Operational cleanup / retention.
 
 ## Changes
 
-- Added a repository-level cooldown after terminal submission outcomes.
-- Default cooldown is 24 hours and is configurable from 1 minute to 30 days.
-- Immediate resubmission of the same normalized repository no longer creates repeated validation/moderation work.
-- Kept the public cooldown response generic so prior INVALID, DUPLICATE, REJECTED, or other terminal state is not disclosed.
-- Added stable `409 submission_resubmission_cooldown`, `Retry-After`, and `retryAfterSeconds`.
-- Added a dedicated public UI state without an immediate retry action.
-- Added a partial PostgreSQL lookup index and verified migration apply/rollback/reapply.
-- Preserved self-submission, unauthenticated intake, trusted final moderation, and the existing pending-submission uniqueness boundary.
-- Added no submitter identity, account, fingerprint, CAPTCHA, or model-driven moderation decision.
+- Defined a conservative retention boundary for community-submission workflow data.
+- PENDING, APPROVED, REJECTED, moderation events, and prepared repository/evidence data are retained.
+- Only old INVALID/DUPLICATE submission rows are cleanup candidates.
+- Candidates must have no evidence handoff and no moderation event.
+- Default terminal retention is 90 days.
+- Minimum retention is 31 days, intentionally longer than the maximum 30-day resubmission cooldown.
+- Added a dry-run-first cleanup CLI; deletion requires explicit `--apply`.
+- Cleanup runs in bounded batches: default 100, maximum 1000.
+- Deletion rechecks eligibility with `FOR UPDATE SKIP LOCKED`.
+- Added a partial PostgreSQL cleanup-candidate index with rollback/reapply verification.
+- Cleanup never deletes canonical repositories referenced by duplicate submissions.
 
 ## Verification
 
-- Phase 5E.1 source checkpoint verified on `main@67ca82371447548eff04365256e5b7548573736b`.
-- Phase 5E.2 code head `a5d5cd7d1e7b85f854baf43d58497b2f8f93b023`: CI run 142 success.
-- Documentation-complete PR head `1956c95360d5fabc7fc75f4c0378ea62dc71487f`: CI run 146 success.
-- PR #33 merged as `30fadbcec5a62624c69a10a222ab23dfbd669c6d`.
-- Post-merge `main` CI run 147: success.
-- CI verified lint, TypeScript, unit tests, production build, Jev harness, migration apply/rollback/reapply, persistence/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Phase 5E.2 verified on `main@c4603ccfbf36821a7e52430cc8666580e0fa809b`.
+- PR #34 code head `888e54177e105ef0afdb044eb70b073a7ab4a9f9`.
+- GitHub Actions CI run 149: success before documentation-only follow-up commits.
+- CI verified lint, TypeScript, unit tests, production build, Jev harness, migration apply/rollback/reapply, cleanup integration, existing submission/moderation regressions, and PostgreSQL connectivity.
+- Documentation-complete PR head must remain green before merge.
 
 ## Risks / decisions
 
-- The cooldown is keyed to normalized repository identity, not submitter identity.
-- RepoScout intentionally does not permanently blacklist a repository after a terminal result; a later resubmission is allowed after the configured cooldown.
-- The generic public response does not reveal whether a prior terminal submission was rejected, invalid, duplicate, or otherwise finalized.
-- A 24-hour default reduces queue churn while leaving room for maintainers to correct a repository and try again later.
-- IP rate limiting from Phase 5E.1 and repository cooldown serve different abuse boundaries and remain complementary.
-- Permanent listing decisions remain protected trusted-reviewer actions.
+- Cleanup is intentionally manual, not scheduled.
+- INVALID/DUPLICATE records are retained long enough to outlive the resubmission cooldown.
+- Moderation audit history is not eligible for cleanup in this phase.
+- REJECTED evidence remains retained and unlisted, preserving the Phase 5C audit/review contract.
+- Cleanup is irreversible at application level; recovery of deleted terminal rows requires a database backup/restore path.
+- Broad backup/deployment-runbook work remains a production gate, not silently implemented here.
 
 ## Next phase
 
-Phase 5E.3 — Operational cleanup / retention.
+Phase 5E.4 — Observability + security review.
 
-Define what terminal submission, evidence, and moderation records must be retained, what may be cleaned up safely, and how cleanup interacts with audit/recovery requirements.
+Focus on launch-facing metrics/logging, abuse/limiter observability without secret leakage, dependency/security checks, privacy documentation, and an end-to-end public-boundary review.
 
 Do not start Phase 6 until Phase 5E is explicitly completed or deferred by decision.
