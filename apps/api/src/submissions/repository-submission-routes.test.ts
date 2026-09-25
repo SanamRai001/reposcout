@@ -3,6 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createApp } from '../app.js';
+import { RepositorySubmissionRateLimiter } from './repository-submission-rate-limiter.js';
 import { RepositorySubmissionService } from './repository-submission-service.js';
 import type { RepositorySubmissionRecord } from './repository-submission.js';
 
@@ -43,9 +44,17 @@ afterEach(async () => {
   );
 });
 
-async function startApp(service: RepositorySubmissionService) {
+async function startApp(
+  service: RepositorySubmissionService,
+  options: Readonly<{
+    rateLimiter?: RepositorySubmissionRateLimiter;
+    trustProxyHops?: number;
+  }> = {},
+) {
   const app = createApp({
     repositorySubmissionService: service,
+    repositorySubmissionRateLimiter: options.rateLimiter,
+    trustProxyHops: options.trustProxyHops,
   });
   const server = app.listen(0);
   servers.push(server);
@@ -179,4 +188,97 @@ describe('repository submission routes', () => {
     expect(response.status).toBe(409);
     expect(body.error).toBe('submission_already_pending');
   });
+
+  it('returns a stable 429 contract after the client exhausts its submission window', async () => {
+    const limiter = new RepositorySubmissionRateLimiter({
+      windowMs: 60_000,
+      maxAttempts: 1,
+      maxTrackedClients: 100,
+      now: () => 10_000,
+    });
+    const baseUrl = await startApp(serviceWith(), {
+      rateLimiter: limiter,
+    });
+    const request = () =>
+      fetch(`${baseUrl}/api/submissions`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          repositoryUrl: 'https://github.com/example/project',
+        }),
+      });
+
+    const first = await request();
+    expect(first.status).toBe(201);
+    expect(first.headers.get('ratelimit-limit')).toBe('1');
+    expect(first.headers.get('ratelimit-remaining')).toBe('0');
+
+    const second = await request();
+    const body = (await second.json()) as {
+      error: string;
+      message: string;
+      retryAfterSeconds: number;
+    };
+
+    expect(second.status).toBe(429);
+    expect(second.headers.get('retry-after')).toBe('60');
+    expect(second.headers.get('ratelimit-reset')).toBe('60');
+    expect(body).toEqual({
+      error: 'submission_rate_limited',
+      message:
+        'Too many repository submission attempts. Try again after the retry window.',
+      retryAfterSeconds: 60,
+    });
+  });
+
+  it('ignores forwarded client IPs unless trusted proxy hops are explicitly configured', async () => {
+    const directLimiter = new RepositorySubmissionRateLimiter({
+      windowMs: 60_000,
+      maxAttempts: 1,
+      maxTrackedClients: 100,
+      now: () => 20_000,
+    });
+    const directBaseUrl = await startApp(serviceWith(), {
+      rateLimiter: directLimiter,
+    });
+    const submit = (baseUrl: string, forwardedFor: string) =>
+      fetch(`${baseUrl}/api/submissions`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-forwarded-for': forwardedFor,
+        },
+        body: JSON.stringify({
+          repositoryUrl: 'https://github.com/example/project',
+        }),
+      });
+
+    expect(
+      (await submit(directBaseUrl, '203.0.113.10')).status,
+    ).toBe(201);
+    expect(
+      (await submit(directBaseUrl, '203.0.113.11')).status,
+    ).toBe(429);
+
+    const proxyLimiter = new RepositorySubmissionRateLimiter({
+      windowMs: 60_000,
+      maxAttempts: 1,
+      maxTrackedClients: 100,
+      now: () => 20_000,
+    });
+    const proxyBaseUrl = await startApp(serviceWith(), {
+      rateLimiter: proxyLimiter,
+      trustProxyHops: 1,
+    });
+
+    expect(
+      (await submit(proxyBaseUrl, '203.0.113.10')).status,
+    ).toBe(201);
+    expect(
+      (await submit(proxyBaseUrl, '203.0.113.11')).status,
+    ).toBe(201);
+  });
+
 });
