@@ -167,7 +167,10 @@ export class RepositorySubmissionStore {
 
   async createPending(
     input: CreateRepositorySubmissionInput,
-    policy: CreateRepositorySubmissionPolicy,
+    policy: CreateRepositorySubmissionPolicy = {
+      requestedAt: new Date(),
+      resubmissionCooldownMs: 86_400_000,
+    },
   ): Promise<CreateRepositorySubmissionResult> {
     if (
       !(policy.requestedAt instanceof Date) ||
