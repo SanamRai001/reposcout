@@ -2,138 +2,99 @@
 
 ## Objective
 
-Close Phase 7 with a reproducible deterministic benchmark for Hidden Gems and Rising, verify the current formulas against explicit ranking invariants, report known failure risks separately, and avoid unsupported weight/threshold tuning.
+Start Phase 8 with a versioned deterministic contribution-discovery evidence contract before ingesting GitHub issues or inventing a beginner-friendly score.
 
 ## Branch
 
-`main`
+`feat/phase-8a-contribution-signal-contract`
 
-Current verified merge: `b8ae0d2498ac1a3ff520f12e9f6dd8b1107d9dfb`
+Base: `main@9233385a9b8a9cc0375393753a0d6cb5164943b2`
 
-PR #48: merged
+PR: #49
 
 ## Completed phase
 
-Phase 7E — Ranking benchmark, evaluation, and documented tuning decision.
+Phase 8A — Contribution discovery signal contract.
 
-Phase 7 — Hidden Gems and Rising is implementation-complete on this branch, pending documentation-complete and merged-state verification.
+Phase 8 remains in progress.
 
 ## Changes
 
-- Added offline deterministic benchmark version:
-  - `ranking-benchmark-v1`.
-- Benchmark contains 18 controlled synthetic ranking cases:
-  - 7 Hidden Gems cases;
-  - 11 Rising cases.
-- Added 13 gating expectations covering:
-  - Hidden Gems popularity saturation;
-  - evidence-over-obscurity behavior;
-  - mature supported repositories;
-  - community evidence monotonicity;
-  - required evidence eligibility;
-  - optional historical eligibility;
-  - Rising lifetime-popularity invariance;
-  - sustained-vs-short-burst momentum;
-  - strong-vs-weak momentum;
-  - required historical eligibility;
-  - sparse-history rejection;
-  - optional maintenance;
-  - sparse-window normalization.
-- Added two explicit non-gating risk probes:
-  - Hidden Gems community-file checklist sensitivity;
-  - Rising artificial star/fork burst sensitivity.
-- Added deterministic benchmark evaluator with formula-version provenance.
-- Evaluator accepts alternate scorer functions so future formula revisions can be compared against the same benchmark.
-- Added CLI:
-  - `npm run eval:ranking -w @reposcout/api`.
-- Added dedicated CI command:
-  - `npm run test:ranking -w @reposcout/api`.
-- Added CI step:
-  - `Verify ranking benchmark`.
-- Current formulas pass all 13 gating expectations.
-- No `hidden-gem-v2` or `rising-v2` was created.
-- No current weight, threshold, sparse-window tolerance, or saturation target was changed.
-- No model/Jev reranking was introduced.
+- Added executable contract version:
+  - `contribution-signals-v1`.
+- Added contribution-discovery signal roles:
+  - entry hint;
+  - repository process;
+  - availability;
+  - activity;
+  - discussion.
+- Added deterministic issue-label normalization:
+  - case-insensitive;
+  - trims/collapses whitespace;
+  - treats hyphen/underscore variants consistently.
+- Added explicit entry-hint signals:
+  - `entry.good_first_issue_label`;
+  - `entry.help_wanted_label`.
+- Label hints are explicitly not beginner-suitability judgments.
+- Reused existing repository contribution evidence semantics for:
+  - CONTRIBUTING;
+  - Code of Conduct;
+  - issue template;
+  - pull request template.
+- Preserved the distinction between:
+  - observed absence;
+  - not collected;
+  - not applicable for unsupported fork evidence.
+- Added issue availability signals:
+  - open;
+  - unassigned;
+  - unlocked.
+- Added deterministic activity/discussion context:
+  - issue age in whole days;
+  - days since update;
+  - comment count.
+- Added explicit evaluation timestamp to make time-derived signals reproducible.
+- Added validation for invalid issue identity/count/date observations.
+- Added unit coverage for normalization, missing-data semantics, process evidence, availability, age/freshness, deduplication, and invalid inputs.
+- The signal snapshot deliberately has no:
+  - score;
+  - beginner-friendly boolean;
+  - recommendation rank;
+  - model inference.
 
 ## Verification
 
-- Phase 7D verified on `main@af818b7cb098408dc1c07135b16b3c689b19c4a3`.
-- Initial Phase 7E head `8acab841017de6c124e343d2f9994d0efb091e27`:
-  - CI run 242 failed lint because an intentionally omitted formula-version binding was unused.
-- Follow-up head `a527f8c227f3cbfa694d45606429d800ffc57c1d`:
-  - CI run 243 failed TypeScript because the sparse-history fixture helper inferred actual window days too narrowly.
-- Corrected Phase 7E code head `f785dbf56cf99ff855470ed336d9d4af17802c87`:
-  - CI run 244 success.
-- Documentation-complete PR head `33cd7ec21abb90d76ca42db0e5d5b2daf0c9d83f`:
-  - CI run 252 success.
-- PR #48 merged as `b8ae0d2498ac1a3ff520f12e9f6dd8b1107d9dfb`.
-- Post-merge `main` CI run 253: success.
-- CI passed application verification, production dependency audit, Jev harness, dedicated ranking benchmark gate, migration apply/rollback/reapply, repository/snapshot/history checks, ranking catalog API integration, search/submission regressions, and PostgreSQL connectivity.
-
-## Benchmark conclusion
-
-The controlled benchmark does not justify changing `hidden-gem-v1` or `rising-v1`.
-
-All 13 gating expectations pass.
-
-Changing weights now would be tuning to intuition or to a synthetic fixture set rather than correcting an observed deterministic invariant failure.
-
-The next formula revision should require a frozen dataset of real repository observations with documented human labels or another clearly defined ground truth.
-
-## Known risks retained
-
-### Hidden Gems community checklist sensitivity
-
-Repository/community-file presence is useful evidence but can be created cheaply.
-
-The benchmark reports this score exposure explicitly.
-
-The current formula cannot distinguish a thoughtful contribution process from empty/template files using file-presence signals alone.
-
-This needs richer evidence, not arbitrary lower weights based only on suspicion.
-
-### Rising artificial growth bursts
-
-The current history model measures star/fork count changes.
-
-It cannot determine whether growth is organic, promotional, or manipulated.
-
-A synthetic maximal growth burst can saturate Rising v1.
-
-Anti-abuse protection requires richer provenance/activity/fraud signals; weight changes alone cannot establish authenticity.
+- Phase 7E verified on `main@9233385a9b8a9cc0375393753a0d6cb5164943b2`.
+- Initial Phase 8A code head `44742ad871015f00e3d890cc3e85a232989506cb`:
+  - CI run 256 failed TypeScript because the test fixture inferred two evidence fields as always non-null.
+- Corrected Phase 8A code head `cb624fa359ea147bffc3d0ae7fd128974b2065b5`:
+  - CI run 257 success.
+- CI run 257 passed application verification, production dependency audit, Jev harness, ranking benchmark, migration apply/rollback/reapply, repository/snapshot/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Documentation-complete PR head must remain green before merge.
 
 ## Decisions / risks
 
-- The benchmark is intentionally offline and synthetic so CI is reproducible.
-- Synthetic benchmark success is an invariant check, not proof that the formula is optimal in the real world.
-- Risk probes are separated from pass/fail expectations so known signal limitations are not falsely presented as successful evidence.
-- No model-assisted reranking is justified by this benchmark.
-- Future formula changes must:
-  1. use the same benchmark;
-  2. document which failure they address;
-  3. receive a new formula version;
-  4. preserve deterministic fallback.
-- Real-world benchmark expansion should freeze measured repository observations rather than querying live GitHub during CI.
+- `good first issue` and `help wanted` are maintainer-provided entry hints, not proof that an issue is easy, well-scoped, or actively supported.
+- Repository process-file presence remains measured evidence; it does not prove contributor experience quality.
+- Issue comment volume is context only.
+- An unassigned issue is not automatically available for a newcomer; it is only one availability fact.
+- Closed or locked issues remain represented explicitly rather than silently filtered by the signal builder.
+- Time-derived signals use an explicit evaluation timestamp.
+- Phase 8A performs no network/database/model work.
+- The current contract has no issue-body complexity, maintainer-response, merged-PR, or contributor-outcome evidence.
+- Those richer signals should be added only when their source/semantics are defined and testable.
 
-## Phase 7 breakdown
+## Phase 8 breakdown
 
-- 7A — ranking signal contract: complete.
-- 7B — Hidden Gems v1 deterministic scoring: complete.
-- 7C — Rising v1 deterministic scoring: complete.
-- 7D — explanation/public ranking API: complete.
-- 7E — benchmark/evaluation + documented tuning: complete.
-- Phase 7 — Hidden Gems and Rising: complete.
+- 8A — contribution discovery signal contract: complete.
+- 8B — GitHub issue ingestion + persistence: next.
+- 8C — public contribution discovery + filters.
+- 8D — evidence-based recommendation/explanation + evaluation.
 
 ## Next phase
 
-Phase 8 — Contribution Discovery.
+Phase 8B — GitHub issue ingestion + persistence.
 
-Start with a narrow evidence contract before any "beginner friendly" score:
+Add a narrow measured issue entity, GitHub issue client parsing, bounded ingestion for listed repositories, stale-safe upsert/update semantics, and persistence tests.
 
-- contribution signals;
-- good-first-issue/help-wanted discovery;
-- contributor-friendly filters;
-- evidence-based project recommendations;
-- avoid equating labels alone with contributor friendliness.
-
-Do not mix Phase 9 semantic search into Phase 8.
+Do not add a beginner-friendly score or Phase 9 semantic search in 8B.
