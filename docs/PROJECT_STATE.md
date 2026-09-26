@@ -2,67 +2,69 @@
 
 ## Objective
 
-Build historical measured repository intelligence in small phases without mixing storage, capture operations, trend math, scheduling, and ranking logic.
+Build historical measured repository intelligence in small phases without mixing persistence, capture, deterministic trend math, scheduling, and ranking logic.
 
 ## Branch
 
-`main`
+`feat/phase-6c-deterministic-trends`
 
-Current verified merge: `c7aeadebe6457a1923111c632e6c6052089ac270`
+Base: `main@e8be23644019fb863e7d8527848965995c4082ab`
 
-PR #41: merged
+PR: #42
 
 ## Completed phase
 
-Phase 6B — Snapshot capture + bounded backfill.
+Phase 6C — Deterministic deltas + trend reads.
 
 Phase 6 remains in progress.
 
 ## Changes
 
-- Connected accepted authoritative metadata writes to daily snapshot persistence.
-- Repository + metadata + same-day snapshot persistence now occurs in one PostgreSQL transaction.
-- Normal GitHub ingestion/refresh therefore creates history without issuing any extra provider request.
-- Existing Phase 6A first-write-wins daily semantics remain unchanged.
-- Same-day refresh can update current metadata while preserving the first historical snapshot for that UTC day.
-- Stale metadata writes do not create snapshots.
-- Added bounded backfill selection over existing `repository_metadata`.
-- Backfill captures only the latest stored metadata observation when its UTC day is not already represented in history.
-- Backfill is oldest-observation-first, default 50 rows, maximum 500.
-- Backfill includes unlisted canonical repositories so pre-publication history can survive later approval.
-- Added an internal `backfill:snapshots` CLI with structured operational events.
-- Backfill performs zero GitHub/provider requests.
+- Added explicit trend windows from 1 to 365 days.
+- Trend reads use only persisted daily repository snapshots.
+- The latest historical snapshot is the trend endpoint.
+- The requested cutoff is derived from the latest snapshot's UTC day.
+- Baseline selection uses the closest snapshot on or before that cutoff.
+- Responses expose both requested window and actual covered span.
+- Added signed star, fork, and GitHub-style open-issue deltas.
+- Added explicit insufficient-history states:
+  - `no_snapshots`;
+  - `window_not_covered`.
+- Insufficient history never fabricates or scales a partial-window delta.
+- Added public listed-only trend endpoint:
+  - `GET /api/repositories/:id/trend?windowDays=<1..365>`.
+- Unlisted canonical repository history remains internal and returns the existing public 404 boundary.
+- Added snapshot-level and route-level PostgreSQL integration coverage.
 
 ## Verification
 
-- Phase 6A verified on `main@61be280be77dd14de456b3ff25040b3e8defde5e`.
-- Phase 6B code head `b53f311257056ddbd3efa15a2b5bd8de057e5438`: CI run 181 success.
-- Documentation-complete PR head `5092ef64e1e085120f74f37a71609554d3f2f208`: CI run 188 success.
-- PR #41 merged as `c7aeadebe6457a1923111c632e6c6052089ac270`.
-- Post-merge `main` CI run 189: success.
-- CI verified lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, repository persistence, automatic ingestion snapshot capture, snapshot persistence/backfill integration, content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Phase 6B verified on `main@e8be23644019fb863e7d8527848965995c4082ab`.
+- Phase 6C code head `847827f59ab53cf1853ccf401eb1878624d43d7e`.
+- GitHub Actions CI run 192: success before documentation-only follow-up commits.
+- CI verified lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, deterministic snapshot trends, listed-only trend API, existing persistence/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Documentation-complete PR head must remain green before merge.
 
 ## Decisions / risks
 
-- Snapshot capture is coupled to accepted authoritative metadata persistence, not to browser reads or ranking code.
-- No second GitHub fetch is performed solely to write a snapshot.
-- The transaction may fail as a unit if snapshot persistence fails, preventing metadata/history divergence.
-- Backfill can recover the latest stored metadata observation only; observations that were never historically stored cannot be reconstructed.
-- Unlisted repository history remains internal and does not affect public listing state.
-- Scheduled fresh daily refresh/capture is still Phase 6D.
-- No delta/trend interpretation exists yet.
+- Trend math is descriptive, not a quality judgment.
+- A requested window may have an actual span larger than requested when history is sparse; that span is always returned explicitly.
+- RepoScout does not use a newer-than-cutoff baseline to fake full-window coverage.
+- Missing history returns structured insufficiency rather than a synthetic zero or extrapolated delta.
+- Open-issue direction is not labeled positive/negative; it is only a signed factual change.
+- Trend reads are derived at request time and are not persisted as ranking scores.
+- Fresh daily coverage still depends on Phase 6D scheduled operations.
 
 ## Phase 6 breakdown
 
 - 6A — snapshot persistence foundation: complete.
 - 6B — snapshot capture + bounded backfill: complete.
-- 6C — deterministic deltas/trend reads: next.
-- 6D — scheduled operations + retry/backfill orchestration.
+- 6C — deterministic deltas/trend reads: complete.
+- 6D — scheduled operations + retry/backfill orchestration: next.
 
 ## Next phase
 
-Phase 6C — Deterministic deltas + trend reads.
+Phase 6D — Scheduled snapshot operations.
 
-Add explicit-window star/fork/open-issue change calculations over snapshot history, define missing-history semantics, and expose deterministic trend reads without producing a universal quality score.
+Add bounded scheduled refresh/capture orchestration, preserve GitHub rate-limit and retry behavior, make work selection observable/idempotent, and close Phase 6 without adding ranking logic.
 
-Do not start Phase 7 ranking work before Phase 6 is complete.
+Do not start Phase 7 Hidden Gems/Rising until Phase 6D is complete.
