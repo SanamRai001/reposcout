@@ -7,6 +7,9 @@ import {
   verifyDatabaseConnection,
 } from './database/database.js';
 import { logger } from './logger.js';
+import { RepositoryContributionEvidenceStore } from './repositories/repository-contribution-evidence-store.js';
+import { RepositoryRankingService } from './repositories/repository-ranking-service.js';
+import { RepositoryReadmeStore } from './repositories/repository-readme-store.js';
 import { RepositorySnapshotStore } from './repositories/repository-snapshot-store.js';
 import { RepositoryStore } from './repositories/repository-store.js';
 import { RepositorySubmissionService } from './submissions/repository-submission-service.js';
@@ -23,6 +26,15 @@ async function bootstrap(): Promise<void> {
 
   const repositoryStore = new RepositoryStore(databasePool);
   const repositorySnapshotStore = new RepositorySnapshotStore(databasePool);
+  const repositoryReadmeStore = new RepositoryReadmeStore(databasePool);
+  const repositoryContributionEvidenceStore =
+    new RepositoryContributionEvidenceStore(databasePool);
+  const repositoryRankingService = new RepositoryRankingService(
+    repositoryStore,
+    repositoryReadmeStore,
+    repositoryContributionEvidenceStore,
+    repositorySnapshotStore,
+  );
   const repositorySubmissionStore = new RepositorySubmissionStore(
     databasePool,
   );
@@ -50,6 +62,7 @@ async function bootstrap(): Promise<void> {
     checkReadiness: () => verifyDatabaseConnection(databasePool),
     repositoryCatalog: repositoryStore,
     repositoryTrend: repositorySnapshotStore,
+    repositoryRanking: repositoryRankingService,
     repositorySubmissionService,
     repositorySubmissionRateLimiter,
     trustProxyHops: environment.http.trustProxyHops,
