@@ -1460,3 +1460,66 @@ The maintenance command does not implement a separate retry algorithm; it preser
 Snapshot maintenance, backfill, and trend reads do not compute or persist a Hidden Gem, Rising, momentum, or quality score.
 
 Phase 7 may consume these measured and derived historical signals, but it must remain a distinct explainable ranking layer.
+
+
+## D-146 — Define a versioned ranking signal contract before defining ranking weights
+
+**Status:** Accepted
+
+Phase 7A introduces `ranking-signals-v1` as an executable signal schema.
+
+The schema defines signal identity, provenance class, semantic role, mode applicability, availability, and historical-window provenance.
+
+It intentionally does not assign weights or produce a ranking score.
+
+Future scoring formulas version separately so signal meaning does not silently change when weights change.
+
+## D-147 — Missing ranking evidence is not zero
+
+**Status:** Accepted
+
+A measured zero remains an available value.
+
+Unavailable or uncollected evidence remains explicitly missing with one of:
+
+- `not_collected`;
+- `unavailable`;
+- `not_applicable`;
+- `insufficient_history`.
+
+A scorer may later define eligibility/minimum-evidence rules, but it must not silently convert missing evidence into a factual zero.
+
+## D-148 — Hidden Gems and Rising use distinct primary signal sets
+
+**Status:** Accepted
+
+`hidden-gems-signals-v1` treats maintenance/documentation/community evidence and visibility context as core inputs, with momentum supporting the result.
+
+`rising-signals-v1` treats measured historical momentum as primary evidence. Lifetime stars/forks are supporting context and must not substitute for growth.
+
+This prevents a popular repository from being labeled Rising merely because it is already popular, and prevents Hidden Gems from becoming a renamed momentum leaderboard.
+
+## D-149 — Ranking history observations preserve Phase 6 window provenance
+
+**Status:** Accepted
+
+A historical ranking observation carries:
+
+- requested window;
+- actual covered window;
+- baseline day;
+- latest day.
+
+If Phase 6 uses an older baseline because history is sparse, later ranking code must retain that fact.
+
+Scorers must not silently relabel sparse coverage as an exact requested interval.
+
+## D-150 — Model assessments are outside the deterministic Phase 7A signal contract
+
+**Status:** Accepted
+
+Jev/model output remains a separate probabilistic information class.
+
+Phase 7A contains only GitHub-sourced facts/evidence and RepoScout deterministic derivatives.
+
+A later bounded model-assisted reranking experiment must use explicit provenance and must remain optional; it cannot overwrite measured ranking signals.
