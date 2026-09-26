@@ -656,11 +656,56 @@ Phase 6 is complete. Phase 7 consumes Phase 6 history but remains a separate ran
 
 ## Phase 7 — Hidden Gems and Rising
 
-- implement ranking v1;
-- expose explanation;
-- evaluate results manually;
-- tune weights with documented changes;
-- prevent popularity from dominating Hidden Gems.
+Status: in progress
+
+#### Phase 7A — Ranking signal contract
+
+Status: complete
+
+- versioned deterministic signal contract: `ranking-signals-v1`;
+- measured/current, measured/evidence, derived/current, and derived/history provenance classes;
+- visibility, maintenance, documentation, community, momentum, and context roles;
+- explicit zero-vs-missing semantics;
+- missing reasons: not collected, unavailable, not applicable, insufficient history;
+- Phase 6 historical provenance preserved on ranking observations;
+- separate `hidden-gems-signals-v1` and `rising-signals-v1` mode contracts;
+- Hidden Gems and Rising primary signals kept distinct;
+- open-issue movement remains context only;
+- no weights, score, ranking endpoint, or model-assisted signal.
+
+#### Phase 7B — Hidden Gems v1
+
+Next:
+- deterministic scorer over Phase 7A signals;
+- explicit minimum evidence and eligibility rules;
+- bounded popularity saturation influence;
+- explainable score components;
+- versioned formula.
+
+#### Phase 7C — Rising v1
+
+Later:
+- momentum-focused deterministic scorer;
+- sufficient-history requirement;
+- explicit handling of sparse actual windows;
+- measured growth must dominate lifetime popularity.
+
+#### Phase 7D — Ranking explanation + public API
+
+Later:
+- public named ranking modes;
+- stable explanation payload;
+- candidate ordering/pagination;
+- preserve listed-only discovery boundary.
+
+#### Phase 7E — Benchmark + tuning
+
+Later:
+- labeled/manual evaluation set;
+- compare formula revisions;
+- document every weight/threshold change;
+- check popularity dominance and anti-gaming failure modes;
+- model assistance only if it demonstrably improves bounded reranking.
 
 ## Phase 8 — Contribution discovery
 
