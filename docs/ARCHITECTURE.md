@@ -812,6 +812,42 @@ Lifetime stars/forks are returned only as context.
 
 Public ranking retrieval/order remains Phase 7D.
 
+
+
+## Phase 7D public ranking boundary
+
+Public ranking composes existing deterministic layers:
+
+~~~text
+GET /api/repositories/rankings/:mode
+        |
+listed RepositoryCatalogReader
+        |
+README + contribution evidence readers
+        |
+Phase 6 trend reader (7d / 30d)
+        |
+ranking-signals-v1
+        |
+hidden-gem-v1 OR rising-v1
+        |
+eligible items only
+        |
+score DESC, repository UUID ASC
+        |
+scope-bound cursor + structured explanation
+~~~
+
+No ranking table is persisted.
+
+The service currently evaluates the complete listed catalog and reuses existing readers. This favors semantic correctness and reuse for the curated MVP over premature query optimization.
+
+The ranking cursor binds mode/formula/evaluation-time/score/UUID, but it does not freeze mutable repository evidence. Live data changes between page requests can therefore change ranking membership/order.
+
+The API returns canonical public repository serialization and deterministic explanation structures only.
+
+No model provider participates in this path.
+
 ## Scaling rule
 
 Do not prematurely design for millions of repositories.
