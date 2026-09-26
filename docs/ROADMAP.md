@@ -755,7 +755,7 @@ Phase 7 is complete.
 
 ## Phase 8 — Contribution discovery
 
-Status: in progress
+Status: complete
 
 #### Phase 8A — Contribution discovery signal contract
 
@@ -764,53 +764,107 @@ Status: complete
 - versioned deterministic contract: `contribution-signals-v1`;
 - entry-hint, process, availability, activity, and discussion roles;
 - normalized `good first issue` / `help wanted` label hints;
-- labels remain hints rather than beginner-suitability truth;
-- repository process evidence reuses Phase 3D contribution-file semantics;
-- observed absence stays distinct from not-collected/not-applicable;
-- open/unassigned/unlocked issue availability facts;
-- issue age, update recency, and comment-count context;
-- explicit evaluation timestamp;
-- no score, beginner-friendly boolean, recommendation rank, provider call, or persistence.
+- repository process evidence with explicit missing/not-applicable states;
+- open/unassigned/unlocked availability facts;
+- deterministic issue age/update recency;
+- no unsupported beginner-friendly truth claim.
 
 #### Phase 8B — GitHub issue ingestion + persistence
 
-Next:
-- measured issue entity + migration;
-- strict GitHub issue response parsing;
-- exclude pull requests from issue opportunities;
-- bounded issue retrieval for listed repositories;
+Status: complete
+
+- measured GitHub issue entity + migration;
+- pull-request-shaped records excluded;
+- bounded listed-repository ingestion;
 - stale-safe/idempotent persistence;
-- provider retry/rate-limit preservation;
-- integration + migration rollback/reapply coverage.
+- rate-limit/retry semantics preserved.
 
 #### Phase 8C — Public contribution discovery + filters
 
-Later:
-- listed-repository contribution opportunity endpoint;
-- good-first/help-wanted filters;
-- availability/activity filters;
+Status: complete
+
+- listed/open contribution discovery endpoint;
+- availability, label, language, recency, and CONTRIBUTING filters;
 - stable scope-bound pagination;
-- repository + issue evidence response;
-- no friendliness claim from labels alone.
+- Phase 8A evidence in the public response.
 
 #### Phase 8D — Evidence-based recommendation/explanation + evaluation
 
-Later:
-- combine issue hints, repository process evidence, availability, freshness, and richer measured contribution signals;
-- structured explanations;
-- benchmark failure cases and anti-gaming checks;
-- only introduce a suitability score if a labeled benchmark justifies one;
-- no Phase 9 semantic search.
+Status: complete
+
+- versioned `contribution-recommendation-v1`;
+- conservative `consider` / `needs_review` states;
+- structured evidence/caution explanations;
+- explicit unmeasured limitations;
+- frozen benchmark and CI gate;
+- no numeric suitability score or new recommendation ordering.
+
+Phase 8 is complete.
 
 ## Phase 9 — Semantic discovery
 
-Only after normal search has real usage/data:
-- embeddings;
-- semantic similarity;
-- hybrid search;
-- natural-language query parsing.
+Status: in progress
 
-The AI layer should improve an existing discovery engine, not substitute for one.
+Semantic discovery must improve the existing deterministic discovery engine rather than replace it.
+
+#### Phase 9A — Semantic document + retrieval benchmark foundation
+
+Status: complete
+
+- versioned `repository-semantic-document-v1`;
+- deterministic semantic fields from repository identity, description, language, topics, and stored README evidence;
+- explicit missing-data reasons;
+- 6,000-code-point README input ceiling;
+- repository/metadata/README provenance;
+- popularity/ranking/suitability inputs excluded;
+- frozen `semantic-retrieval-benchmark-v1`;
+- 6 synthetic repository cases + 6 natural-language query cases;
+- dedicated CI gate;
+- no embeddings, vector persistence, or production search behavior change.
+
+#### Phase 9B — Embedding provider contract + offline retrieval evaluation
+
+Next:
+- provider-neutral embedding interface;
+- strict vector validation and model/dimension provenance;
+- deterministic fixture provider for CI;
+- candidate-provider evaluation harness when credentials are available;
+- compare lexical baseline vs semantic retrieval on the frozen benchmark;
+- no production embedding table yet.
+
+#### Phase 9C — Embedding persistence + bounded backfill
+
+Later, only if 9B justifies adoption:
+- versioned embedding persistence;
+- exact document/provider/model provenance;
+- stale-document invalidation;
+- bounded resumable backfill;
+- migration rollback/reapply coverage.
+
+#### Phase 9D — Semantic similarity API
+
+Later:
+- listed-only semantic candidate retrieval;
+- stable similarity response contract;
+- bounded result limits;
+- query embedding failure behavior;
+- no silent fallback that mislabels lexical results as semantic.
+
+#### Phase 9E — Hybrid lexical + semantic discovery
+
+Later:
+- compare lexical/semantic retrieval;
+- explicit hybrid policy;
+- benchmark regression gate;
+- preserve structured filters;
+- transparent result provenance.
+
+#### Phase 9F — Bounded natural-language query interpretation
+
+Later, only if still useful:
+- translate natural-language intent into explicit search/filter intent;
+- keep generated interpretation inspectable;
+- never let model parsing bypass deterministic filter validation.
 
 ## Later possibilities
 
