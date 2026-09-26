@@ -59,6 +59,9 @@ jobs:
       - name: Verify contribution recommendation benchmark
         run: npm run test:contribution-recommendation -w @reposcout/api
 
+      - name: Verify semantic discovery foundation
+        run: npm run test:semantic-foundation -w @reposcout/api
+
       - name: Apply migrations
         run: npm run db:migrate -w @reposcout/api
 
