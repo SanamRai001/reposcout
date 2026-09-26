@@ -384,4 +384,130 @@ describe('GithubClient', () => {
       kind: 'invalid_response',
     });
   });
+
+  it('fetches bounded issues and excludes pull requests from issue opportunities', async () => {
+    const issue = {
+      id: 700000001,
+      number: 42,
+      title: 'Improve parser errors',
+      html_url: 'https://github.com/openai/openai-node/issues/42',
+      state: 'open',
+      locked: false,
+      assignees: [],
+      comments: 3,
+      labels: [
+        { name: 'good first issue' },
+        { name: 'help wanted' },
+      ],
+      created_at: '2026-09-01T00:00:00Z',
+      updated_at: '2026-09-20T00:00:00Z',
+    };
+    const pullRequest = {
+      id: 700000002,
+      number: 43,
+      pull_request: {
+        url: 'https://api.github.com/repos/openai/openai-node/pulls/43',
+      },
+    };
+    const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify([issue, pullRequest]), { status: 200 }),
+    );
+    const client = new GithubClient({
+      token: 'secret-token',
+      fetchImplementation,
+    });
+
+    const result = await client.fetchIssues(reference, 50);
+
+    expect(fetchImplementation).toHaveBeenCalledWith(
+      'https://api.github.com/repos/openai/openai-node/issues?state=all&sort=updated&direction=desc&per_page=50&page=1',
+      expect.objectContaining({
+        method: 'GET',
+        redirect: 'error',
+      }),
+    );
+    expect(result).toEqual({
+      fetchedItems: 2,
+      excludedPullRequests: 1,
+      issues: [
+        {
+          githubIssueId: '700000001',
+          number: 42,
+          title: 'Improve parser errors',
+          htmlUrl: 'https://github.com/openai/openai-node/issues/42',
+          state: 'open',
+          locked: false,
+          assigneeCount: 0,
+          commentCount: 3,
+          labels: ['good first issue', 'help wanted'],
+          createdAt: new Date('2026-09-01T00:00:00Z'),
+          updatedAt: new Date('2026-09-20T00:00:00Z'),
+        },
+      ],
+    });
+  });
+
+  it('rejects malformed GitHub issue fields before persistence', async () => {
+    const client = new GithubClient({
+      fetchImplementation: vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(
+          JSON.stringify([
+            {
+              id: 700000003,
+              number: 44,
+              title: 'Broken labels',
+              html_url: 'https://github.com/openai/openai-node/issues/44',
+              state: 'open',
+              locked: false,
+              assignees: [],
+              comments: 0,
+              labels: [{ name: '' }],
+              created_at: '2026-09-01T00:00:00Z',
+              updated_at: '2026-09-20T00:00:00Z',
+            },
+          ]),
+          { status: 200 },
+        ),
+      ),
+    });
+
+    await expect(client.fetchIssues(reference, 25)).rejects.toMatchObject({
+      kind: 'invalid_response',
+    });
+  });
+
+  it('preserves GitHub issue rate-limit reset information', async () => {
+    const client = new GithubClient({
+      fetchImplementation: vi.fn<typeof fetch>().mockResolvedValue(
+        new Response('{}', {
+          status: 403,
+          headers: {
+            'x-ratelimit-remaining': '0',
+            'x-ratelimit-reset': '1790000000',
+          },
+        }),
+      ),
+    });
+
+    await expect(client.fetchIssues(reference, 25)).rejects.toMatchObject({
+      name: 'GithubApiError',
+      kind: 'rate_limited',
+      status: 403,
+      retryAt: new Date(1790000000 * 1000),
+    } satisfies Partial<GithubApiError>);
+  });
+
+  it('bounds GitHub issue page size before making a request', async () => {
+    const fetchImplementation = vi.fn<typeof fetch>();
+    const client = new GithubClient({ fetchImplementation });
+
+    await expect(client.fetchIssues(reference, 0)).rejects.toThrow(
+      'GitHub issue limit must be an integer between 1 and 100.',
+    );
+    await expect(client.fetchIssues(reference, 101)).rejects.toThrow(
+      'GitHub issue limit must be an integer between 1 and 100.',
+    );
+    expect(fetchImplementation).not.toHaveBeenCalled();
+  });
+
 });
