@@ -6,13 +6,13 @@ Expose measured contribution opportunities from listed repositories through dete
 
 ## Branch
 
-`feat/phase-8c-contribution-discovery`
+`main`
 
-Base:
+Current verified merge:
 
-`main@d21c29ecbea6f167340443a13da48fc04e739449`
+`cf32cbbf94a30ac5fab3adc87a60a9a2bf43896e`
 
-PR #51: open.
+PR #51: merged.
 
 ## Completed phase
 
@@ -63,8 +63,11 @@ Phase 8 remains in progress.
 - Phase 8A verified on `main@3162aeed98f057e06c92bed5ceab41aa76aef422`.
 - Phase 8B merge: `8a0ad13812a783bab3f5287e1e69b2bbeb3562e9`.
 - Phase 8B final project-state checkpoint: `main@d21c29ecbea6f167340443a13da48fc04e739449`.
-- Phase 8C implementation/test head `2997a65837a9f51009f7ac604e5eac1476254596`: CI run 276 success.
-- CI #276 passed:
+- Phase 8C implementation/test head `2997a65837a9f51009f7ac604e5eac1476254596`: CI #276 success.
+- Phase 8C documentation-complete PR head `dfd560dbc71c1618eb709f6b83567c71f9ff7138`: CI #277 success.
+- PR #51 merged as `cf32cbbf94a30ac5fab3adc87a60a9a2bf43896e`.
+- Post-merge `main` CI #278: success.
+- CI passed:
   - application build/typecheck/test verification;
   - production dependency audit;
   - Jev evaluation harness;
