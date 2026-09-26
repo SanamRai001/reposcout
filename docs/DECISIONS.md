@@ -1764,3 +1764,79 @@ The Phase 7D service composes:
 This preserves established semantics at the cost of additional reads.
 
 Bulk ranking SQL/materialization is deferred until measurements show it is necessary.
+
+
+## D-169 — Ranking benchmark v1 is deterministic and offline
+
+**Status:** Accepted
+
+`ranking-benchmark-v1` uses controlled synthetic ranking-signal snapshots.
+
+It does not query live GitHub, PostgreSQL, or a model provider.
+
+This makes benchmark results reproducible in local tests and CI.
+
+Synthetic cases are used to test ranking invariants and failure boundaries; they are not treated as proof that a formula is globally optimal.
+
+## D-170 — Ranking benchmark expectations and risk probes are separate
+
+**Status:** Accepted
+
+Gating expectations represent behavior RepoScout currently claims the formula should satisfy.
+
+Risk probes represent known limitations of the available signal set.
+
+A risk probe is not marked "passed" merely because the formula produces a deterministic number.
+
+Current risk probes cover:
+
+- community-file checklist sensitivity in Hidden Gems;
+- artificial star/fork burst sensitivity in Rising.
+
+## D-171 — Phase 7E makes no v1 formula change because all benchmark gates pass
+
+**Status:** Accepted
+
+The current `hidden-gem-v1` and `rising-v1` formulas pass all 13 `ranking-benchmark-v1` gating expectations.
+
+Phase 7E therefore does not create a v2 formula and does not alter weights, thresholds, history tolerances, or saturation targets.
+
+Changing those values without a demonstrated benchmark failure would be intuition-driven tuning.
+
+## D-172 — Future ranking revisions must compare against the same benchmark
+
+**Status:** Accepted
+
+The benchmark evaluator accepts alternate scorer functions.
+
+A future formula revision must:
+
+1. identify the benchmark or real-world failure it is intended to address;
+2. run against the existing benchmark;
+3. document any expectation changed or added;
+4. receive a new formula version;
+5. preserve deterministic fallback behavior.
+
+Existing benchmark cases must not be silently rewritten solely to make a proposed formula pass.
+
+## D-173 — Real-world ranking evaluation must freeze observations
+
+**Status:** Accepted
+
+A later real-repository benchmark should store/freeze the measured evidence used for evaluation.
+
+CI must not depend on live GitHub values that can change independently of the code.
+
+Human labels or another explicit ground truth must be versioned with the frozen observations.
+
+## D-174 — Current anti-gaming risks require richer signals, not blind weight tuning
+
+**Status:** Accepted
+
+Community-file presence cannot prove that contribution processes are meaningful.
+
+Star/fork growth cannot prove that momentum is organic.
+
+These limitations cannot be solved reliably by arbitrarily lowering existing weights.
+
+Future anti-gaming work should add traceable evidence or anomaly signals and then evaluate those signals against a benchmark before changing public ranking behavior.

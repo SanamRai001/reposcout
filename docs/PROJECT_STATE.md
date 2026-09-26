@@ -2,83 +2,124 @@
 
 ## Objective
 
-Expose the deterministic Hidden Gems and Rising scorers through a public listed-only ranking API with stable explanation payloads and scope-bound pagination, without tuning formulas or persisting ranking state.
+Close Phase 7 with a reproducible deterministic benchmark for Hidden Gems and Rising, verify the current formulas against explicit ranking invariants, report known failure risks separately, and avoid unsupported weight/threshold tuning.
 
 ## Branch
 
-`main`
+`feat/phase-7e-ranking-benchmark`
 
-Current verified merge: `051847a79bd4b75d0f8d20cf1239ae3df96c632c`
+Base: `main@af818b7cb098408dc1c07135b16b3c689b19c4a3`
 
-PR #47: merged
+PR: #48
 
 ## Completed phase
 
-Phase 7D — Ranking explanation + public API.
+Phase 7E — Ranking benchmark, evaluation, and documented tuning decision.
 
-Phase 7 remains in progress.
+Phase 7 — Hidden Gems and Rising is implementation-complete on this branch, pending documentation-complete and merged-state verification.
 
 ## Changes
 
-- Added public ranking endpoint:
-  - `GET /api/repositories/rankings/hidden_gems`;
-  - `GET /api/repositories/rankings/rising`.
-- Ranking candidates come only from the existing listed repository catalog.
-- Unlisted moderation candidates are neither evaluated nor exposed.
-- The current curated MVP evaluates the complete listed catalog before ordering; no partial preselection can hide a better-ranked repository.
-- Ineligible repositories are omitted from public ranking results.
-- Eligible ordering is deterministic:
-  1. score descending;
-  2. repository UUID ascending.
-- Added opaque ranking cursors bound to:
-  - ranking mode;
-  - active formula version;
-  - evaluation timestamp;
-  - last score;
-  - last repository ID.
-- Cross-mode and stale-formula cursors are rejected.
-- Cursor continuation reuses the original evaluation timestamp.
-- Ranked repositories use the same canonical public repository serializer as the catalog/detail API.
-- Hidden Gems explanations expose:
-  - component points/maxima;
-  - positive subtotal;
-  - popularity saturation penalty;
-  - optional momentum coverage.
-- Rising explanations expose:
-  - component points/maxima;
-  - normalized momentum deltas;
-  - exact history coverage;
-  - lifetime visibility context;
-  - maintenance coverage.
-- Formula versions remain frozen:
-  - `hidden-gem-v1`;
-  - `rising-v1`.
-- No ranking score table, model/Jev influence, or formula tuning was added.
-- Added route/cursor unit tests and PostgreSQL ranking API integration coverage.
-- Ranking route integration is part of the existing catalog API CI gate.
+- Added offline deterministic benchmark version:
+  - `ranking-benchmark-v1`.
+- Benchmark contains 18 controlled synthetic ranking cases:
+  - 7 Hidden Gems cases;
+  - 11 Rising cases.
+- Added 13 gating expectations covering:
+  - Hidden Gems popularity saturation;
+  - evidence-over-obscurity behavior;
+  - mature supported repositories;
+  - community evidence monotonicity;
+  - required evidence eligibility;
+  - optional historical eligibility;
+  - Rising lifetime-popularity invariance;
+  - sustained-vs-short-burst momentum;
+  - strong-vs-weak momentum;
+  - required historical eligibility;
+  - sparse-history rejection;
+  - optional maintenance;
+  - sparse-window normalization.
+- Added two explicit non-gating risk probes:
+  - Hidden Gems community-file checklist sensitivity;
+  - Rising artificial star/fork burst sensitivity.
+- Added deterministic benchmark evaluator with formula-version provenance.
+- Evaluator accepts alternate scorer functions so future formula revisions can be compared against the same benchmark.
+- Added CLI:
+  - `npm run eval:ranking -w @reposcout/api`.
+- Added dedicated CI command:
+  - `npm run test:ranking -w @reposcout/api`.
+- Added CI step:
+  - `Verify ranking benchmark`.
+- Current formulas pass all 13 gating expectations.
+- No `hidden-gem-v2` or `rising-v2` was created.
+- No current weight, threshold, sparse-window tolerance, or saturation target was changed.
+- No model/Jev reranking was introduced.
 
 ## Verification
 
-- Phase 7C verified on `main@79009e3edc9042234fdbab5fa3ec265c1b334e7e`.
-- Phase 7D code head `1cbff9f6145bff1877ce0d249b57083d340a7fcc`: CI run 231 success.
-- Documentation-complete PR head `d06e24ca572a7683ca2047f2dd5ce5a165aba990`: CI run 239 success.
-- PR #47 merged as `051847a79bd4b75d0f8d20cf1239ae3df96c632c`.
-- Post-merge `main` CI run 240: success.
-- CI passed lint/typecheck/tests/build, dependency audit, Jev harness, migration apply/rollback/reapply, repository/snapshot/history checks, ranking catalog API integration, search/submission regressions, and PostgreSQL connectivity.
+- Phase 7D verified on `main@af818b7cb098408dc1c07135b16b3c689b19c4a3`.
+- Initial Phase 7E head `8acab841017de6c124e343d2f9994d0efb091e27`:
+  - CI run 242 failed lint because an intentionally omitted formula-version binding was unused.
+- Follow-up head `a527f8c227f3cbfa694d45606429d800ffc57c1d`:
+  - CI run 243 failed TypeScript because the sparse-history fixture helper inferred actual window days too narrowly.
+- Corrected Phase 7E code head `f785dbf56cf99ff855470ed336d9d4af17802c87`:
+  - CI run 244 success.
+- CI run 244 passed:
+  - application verification;
+  - production dependency audit;
+  - Jev harness;
+  - dedicated ranking benchmark gate;
+  - migration apply/rollback/reapply;
+  - repository/snapshot/history checks;
+  - ranking catalog API integration;
+  - search/submission regressions;
+  - PostgreSQL connectivity.
+- Documentation-complete PR head must remain green before merge.
+
+## Benchmark conclusion
+
+The controlled benchmark does not justify changing `hidden-gem-v1` or `rising-v1`.
+
+All 13 gating expectations pass.
+
+Changing weights now would be tuning to intuition or to a synthetic fixture set rather than correcting an observed deterministic invariant failure.
+
+The next formula revision should require a frozen dataset of real repository observations with documented human labels or another clearly defined ground truth.
+
+## Known risks retained
+
+### Hidden Gems community checklist sensitivity
+
+Repository/community-file presence is useful evidence but can be created cheaply.
+
+The benchmark reports this score exposure explicitly.
+
+The current formula cannot distinguish a thoughtful contribution process from empty/template files using file-presence signals alone.
+
+This needs richer evidence, not arbitrary lower weights based only on suspicion.
+
+### Rising artificial growth bursts
+
+The current history model measures star/fork count changes.
+
+It cannot determine whether growth is organic, promotional, or manipulated.
+
+A synthetic maximal growth burst can saturate Rising v1.
+
+Anti-abuse protection requires richer provenance/activity/fraud signals; weight changes alone cannot establish authenticity.
 
 ## Decisions / risks
 
-- Public ranking remains deterministic and model-free.
-- Ranking evaluates only public/listed repositories.
-- The current service reuses existing catalog/evidence/trend readers instead of adding duplicate ranking SQL.
-- This creates more database reads than a future bulk ranking read path, but preserves established publication/history semantics for the curated MVP.
-- Ranking pages are deterministic for the evidence state they evaluate, but they are not immutable database snapshots.
-- The cursor fixes ranking mode, formula version, evaluation time, score boundary, and UUID tie-breaker.
-- If repository metadata/evidence changes between page requests, live ranks may move because Phase 7D intentionally persists no ranking snapshot.
-- Persisted/materialized ranking snapshots should only be introduced later if usage/performance/product requirements justify them.
-- Ineligible repositories are omitted rather than publicly exposing internal evidence gaps.
-- Explanation payloads are structured facts/components, not generated prose.
-- Formula tuning remains strictly deferred to Phase 7E.
+- The benchmark is intentionally offline and synthetic so CI is reproducible.
+- Synthetic benchmark success is an invariant check, not proof that the formula is optimal in the real world.
+- Risk probes are separated from pass/fail expectations so known signal limitations are not falsely presented as successful evidence.
+- No model-assisted reranking is justified by this benchmark.
+- Future formula changes must:
+  1. use the same benchmark;
+  2. document which failure they address;
+  3. receive a new formula version;
+  4. preserve deterministic fallback.
+- Real-world benchmark expansion should freeze measured repository observations rather than querying live GitHub during CI.
 
 ## Phase 7 breakdown
 
@@ -86,12 +127,19 @@ Phase 7 remains in progress.
 - 7B — Hidden Gems v1 deterministic scoring: complete.
 - 7C — Rising v1 deterministic scoring: complete.
 - 7D — explanation/public ranking API: complete.
-- 7E — benchmark/evaluation + documented tuning: next.
+- 7E — benchmark/evaluation + documented tuning: complete.
+- Phase 7 — Hidden Gems and Rising: complete.
 
 ## Next phase
 
-Phase 7E — ranking benchmark, evaluation, and tuning.
+Phase 8 — Contribution Discovery.
 
-Build a reproducible labeled/manual evaluation set for Hidden Gems and Rising, measure popularity dominance and ranking failure cases, compare formula revisions, and document every threshold/weight change.
+Start with a narrow evidence contract before any "beginner friendly" score:
 
-Do not add model-assisted reranking unless deterministic benchmarks first show a specific gap and a bounded experiment demonstrates improvement.
+- contribution signals;
+- good-first-issue/help-wanted discovery;
+- contributor-friendly filters;
+- evidence-based project recommendations;
+- avoid equating labels alone with contributor friendliness.
+
+Do not mix Phase 9 semantic search into Phase 8.

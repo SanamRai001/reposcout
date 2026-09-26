@@ -848,6 +848,41 @@ The API returns canonical public repository serialization and deterministic expl
 
 No model provider participates in this path.
 
+
+
+## Phase 7E ranking evaluation boundary
+
+Ranking evaluation is intentionally separate from the public ranking request path:
+
+~~~text
+frozen synthetic benchmark cases
+        |
+ranking-signals-v1 snapshots
+        |
+hidden-gem-v1 / rising-v1
+        |
+gating expectations
+        +-- eligibility invariants
+        +-- pairwise ordering invariants
+        +-- normalization/invariance checks
+        |
+non-gating risk probes
+        |
+machine-readable benchmark report
+        |
+CI gate
+~~~
+
+The benchmark performs no network/database/model calls.
+
+It supports alternate scorer functions so a future formula revision can be compared against the same cases.
+
+Risk probes do not claim success; they preserve known limitations that require richer evidence.
+
+The current benchmark does not justify a v2 formula.
+
+A future real-world benchmark should freeze measured observations and labels rather than querying mutable live provider state during CI.
+
 ## Scaling rule
 
 Do not prematurely design for millions of repositories.

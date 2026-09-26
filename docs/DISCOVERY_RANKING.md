@@ -695,6 +695,135 @@ That is acceptable for the curated MVP.
 
 If measurements later show ranking latency/query volume is a bottleneck, optimize the read path without changing the public ranking semantics.
 
+
+
+## Phase 7E ranking benchmark
+
+Benchmark version:
+
+~~~text
+ranking-benchmark-v1
+~~~
+
+### Purpose
+
+The benchmark tests explicit ranking invariants before any formula revision is accepted.
+
+It is intentionally offline and deterministic.
+
+Current dataset:
+
+~~~text
+18 controlled cases
+13 gating expectations
+2 non-gating risk probes
+~~~
+
+The cases are synthetic archetypes with frozen ranking-signal snapshots.
+
+They are not live GitHub lookups.
+
+### Hidden Gems gating coverage
+
+The benchmark verifies:
+
+- a healthy low-visibility repository beats an equally healthy highly visible repository;
+- concrete evidence beats obscurity alone;
+- a mature supported repository beats an unsupported obscure repository;
+- additional observed community-readiness evidence is monotonic;
+- missing required evidence remains ineligible;
+- missing optional history does not block an otherwise eligible Hidden Gem.
+
+### Rising gating coverage
+
+The benchmark verifies:
+
+- identical measured momentum scores the same regardless of lifetime popularity;
+- balanced sustained growth beats an isolated one-week star burst;
+- strong measured momentum beats weak momentum;
+- missing primary history remains ineligible;
+- excessively sparse history remains ineligible;
+- missing maintenance context does not block sufficient momentum evidence;
+- bounded sparse-window normalization approximately matches an exact-window peer.
+
+### Risk probes
+
+Risk probes are intentionally **not** pass/fail claims.
+
+#### Hidden Gems community-file checklist sensitivity
+
+Community files can be created without proving that a project has a healthy contributor experience.
+
+The benchmark reports the score delta caused by these file-presence signals.
+
+A future improvement should collect richer evidence before changing the formula.
+
+#### Rising artificial growth bursts
+
+A large star/fork burst can saturate the measured momentum components.
+
+Current snapshot data cannot establish whether that burst is organic.
+
+This is an anti-abuse/data problem, not something a weight tweak can reliably solve.
+
+### Current v1 result
+
+~~~text
+13 / 13 gating expectations pass
+~~~
+
+Therefore Phase 7E leaves:
+
+~~~text
+hidden-gem-v1
+rising-v1
+~~~
+
+unchanged.
+
+No weight, threshold, history tolerance, or saturation target is changed.
+
+### Revision-comparison rule
+
+The evaluator accepts alternate scorers.
+
+A future formula revision can therefore be evaluated against the exact same benchmark before adoption.
+
+Benchmark cases must not be rewritten merely to make a proposed revision pass.
+
+### Commands
+
+~~~bash
+npm run test:ranking -w @reposcout/api
+npm run eval:ranking -w @reposcout/api
+~~~
+
+The CLI prints a machine-readable report and exits nonzero when a gating expectation fails.
+
+### CI
+
+Every pull request/push now includes:
+
+~~~text
+Verify ranking benchmark
+~~~
+
+This makes ranking invariants a first-class regression gate.
+
+### Real-world benchmark next step
+
+Synthetic cases protect invariants but cannot prove real-world ranking quality.
+
+Before creating a v2 formula from production observations, RepoScout should freeze:
+
+- repository evidence;
+- historical measurements;
+- evaluation timestamp;
+- human/manual labels or another explicit ground truth;
+- benchmark version.
+
+CI should evaluate the frozen fixture, not query changing live provider data.
+
 ## Versioning
 
 Each derived ranking should have an internal version:
