@@ -43,7 +43,10 @@
     "eval:contribution-recommendation": "tsx src/cli/evaluate-contribution-recommendation.ts",
     "test:semantic-foundation": "vitest run src/repositories/repository-semantic-document.test.ts src/evaluation/repository-semantic-retrieval-benchmark.test.ts",
     "test:semantic-evaluation": "vitest run src/repositories/repository-embedding-provider.test.ts src/evaluation/repository-semantic-retrieval-evaluator.test.ts",
-    "eval:semantic-retrieval": "tsx src/cli/evaluate-semantic-retrieval.ts"
+    "eval:semantic-retrieval": "tsx src/cli/evaluate-semantic-retrieval.ts",
+    "test:semantic-benchmark-v2": "vitest run src/evaluation/repository-semantic-retrieval-benchmark-v2.test.ts",
+    "test:semantic-provider-adapter": "vitest run src/evaluation/openai-embedding-env.test.ts src/evaluation/openai-embedding-provider.test.ts",
+    "eval:semantic-retrieval:live": "tsx src/cli/run-live-semantic-retrieval.ts"
   },
   "dependencies": {
     "dotenv": "18.0.1",
