@@ -13,8 +13,16 @@ import {
   toRepositoryResponse,
   type RepositoryCatalogReader,
 } from './repository-catalog.js';
+import {
+  parseRepositoryTrendWindowDays,
+  toRepositoryTrendResponse,
+  type RepositoryTrendReader,
+} from './repository-trend.js';
 
-export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReader) {
+export function createRepositoryRouter(
+  repositoryCatalog: RepositoryCatalogReader,
+  repositoryTrend?: RepositoryTrendReader,
+) {
   const router = Router();
 
   router.get('/', async (request, response, next) => {
@@ -155,6 +163,59 @@ export function createRepositoryRouter(repositoryCatalog: RepositoryCatalogReade
       next(error);
     }
   });
+
+
+  if (repositoryTrend) {
+    router.get('/:id/trend', async (request, response, next) => {
+      try {
+        const id = request.params.id;
+
+        if (!id || !isRepositoryId(id)) {
+          response.status(400).json({
+            error: 'invalid_repository_id',
+            message: 'Repository id must be a valid UUID.',
+          });
+          return;
+        }
+
+        let windowDays: number;
+
+        try {
+          windowDays = parseRepositoryTrendWindowDays(
+            request.query.windowDays,
+          );
+        } catch (error) {
+          if (error instanceof Error) {
+            response.status(400).json({
+              error: 'invalid_trend_window',
+              message: error.message,
+            });
+            return;
+          }
+
+          throw error;
+        }
+
+        const repository = await repositoryCatalog.findById(id);
+
+        if (!repository) {
+          response.status(404).json({
+            error: 'repository_not_found',
+            message: 'Repository was not found.',
+          });
+          return;
+        }
+
+        const trend = await repositoryTrend.readTrend(id, windowDays);
+
+        response.status(200).json({
+          data: toRepositoryTrendResponse(trend),
+        });
+      } catch (error) {
+        next(error);
+      }
+    });
+  }
 
   router.get('/:id', async (request, response, next) => {
     try {

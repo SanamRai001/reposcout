@@ -47,6 +47,7 @@ Start here if you are contributing to the project.
 - [PHASE_5E4_LAUNCH_SECURITY_OBSERVABILITY.md](PHASE_5E4_LAUNCH_SECURITY_OBSERVABILITY.md) — correlation, safe operational events, dependency security, privacy review, and residual launch risks.
 - [PHASE_6A_SNAPSHOT_PERSISTENCE.md](PHASE_6A_SNAPSHOT_PERSISTENCE.md) — daily append-only repository metric history, UTC idempotency buckets, and persistence verification.
 - [PHASE_6B_SNAPSHOT_CAPTURE_BACKFILL.md](PHASE_6B_SNAPSHOT_CAPTURE_BACKFILL.md) — transactional metadata-to-history capture and bounded stored-metadata backfill.
+- [PHASE_6C_DETERMINISTIC_TRENDS.md](PHASE_6C_DETERMINISTIC_TRENDS.md) — explicit historical windows, sparse-history semantics, signed deltas, and listed-only trend API.
 - [PRIVACY.md](PRIVACY.md) — application privacy and data-handling behavior.
 - [PROJECT_STATE.md](PROJECT_STATE.md) — concise current branch, completed phase, verification, risks/decisions, and next checkpoint.
 

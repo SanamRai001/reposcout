@@ -7,6 +7,7 @@ import {
   verifyDatabaseConnection,
 } from './database/database.js';
 import { logger } from './logger.js';
+import { RepositorySnapshotStore } from './repositories/repository-snapshot-store.js';
 import { RepositoryStore } from './repositories/repository-store.js';
 import { RepositorySubmissionService } from './submissions/repository-submission-service.js';
 import { RepositorySubmissionRateLimiter } from './submissions/repository-submission-rate-limiter.js';
@@ -21,6 +22,7 @@ async function bootstrap(): Promise<void> {
   await verifyDatabaseConnection(databasePool);
 
   const repositoryStore = new RepositoryStore(databasePool);
+  const repositorySnapshotStore = new RepositorySnapshotStore(databasePool);
   const repositorySubmissionStore = new RepositorySubmissionStore(
     databasePool,
   );
@@ -47,6 +49,7 @@ async function bootstrap(): Promise<void> {
   const app = createApp({
     checkReadiness: () => verifyDatabaseConnection(databasePool),
     repositoryCatalog: repositoryStore,
+    repositoryTrend: repositorySnapshotStore,
     repositorySubmissionService,
     repositorySubmissionRateLimiter,
     trustProxyHops: environment.http.trustProxyHops,

@@ -618,15 +618,22 @@ Status: complete
 
 #### Phase 6C — Deterministic deltas + trend reads
 
-Next:
-- star/fork/open-issue deltas across explicit windows;
-- missing-history semantics;
-- deterministic trend reads;
-- no universal quality score.
+Status: complete
+
+- required explicit `windowDays` from 1 to 365;
+- latest snapshot as the deterministic end point;
+- closest snapshot on or before the requested cutoff as baseline;
+- requested cutoff + actual covered span returned explicitly;
+- signed star/fork/open-issue deltas;
+- `no_snapshots` and `window_not_covered` insufficiency states;
+- no partial-window extrapolation or fabricated zero delta;
+- public `GET /api/repositories/:id/trend` for listed repositories only;
+- unlisted internal history remains non-public;
+- no persisted quality/trend score.
 
 #### Phase 6D — Scheduled snapshot operations
 
-Later:
+Next:
 - scheduled snapshot execution;
 - bounded batches;
 - safe retries;

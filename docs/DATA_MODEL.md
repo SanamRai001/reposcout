@@ -171,6 +171,45 @@ Indexes:
 
 Phase 6A intentionally does not store release counts or optional activity aggregates because RepoScout does not yet have a defined authoritative source/semantic contract for those fields.
 
+
+
+#### Derived trend read — Phase 6C
+
+Trend results are **not** a new persisted entity.
+
+They are computed from `repository_snapshots` using:
+
+- explicit requested window: 1–365 days;
+- latest snapshot as endpoint;
+- UTC cutoff = latest `captured_on` minus requested days;
+- closest snapshot on or before the cutoff as baseline;
+- signed deltas for stars, forks, and open issues.
+
+A complete result carries:
+
+~~~text
+repository_id
+requested_window_days
+cutoff_on
+actual_window_days
+baseline snapshot
+latest snapshot
+stars delta
+forks delta
+open_issues delta
+~~~
+
+Insufficient history is represented explicitly as:
+
+~~~text
+no_snapshots
+window_not_covered
+~~~
+
+`window_not_covered` includes the oldest/latest available snapshots and available day span, but no fabricated delta.
+
+Derived trend output is recomputable and must not be stored as canonical repository truth or a universal quality score.
+
 ### RepositoryLanguage
 
 ```text

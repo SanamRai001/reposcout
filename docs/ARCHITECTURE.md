@@ -428,6 +428,34 @@ Unlisted canonical repositories are included because snapshot persistence is int
 
 Phase 6B still does not add scheduled provider refreshes, delta math, or ranking.
 
+
+
+### Deterministic trend reads — Phase 6C
+
+Trend reads stay inside the PostgreSQL historical-data boundary:
+
+~~~text
+GET /api/repositories/:id/trend?windowDays=N
+        |
+listed repository lookup
+        |
+latest repository snapshot
+        |
+UTC cutoff = latest day - N
+        |
+closest snapshot on/before cutoff
+        |
+signed measured deltas
+~~~
+
+The public route first resolves the repository through the existing listed catalog reader. Snapshot history for an unlisted canonical repository is therefore not exposed.
+
+For sparse history, baseline selection is conservative: use the closest observation on or **before** the requested cutoff. The response exposes `actualWindowDays`, which may be greater than `requestedWindowDays`.
+
+If no baseline reaches the cutoff, the result is `window_not_covered`; if no history exists at all, it is `no_snapshots`. Neither case produces an extrapolated or synthetic delta.
+
+Phase 6C derives trends at read time. It does not persist trend scores, assign good/bad direction, call GitHub, or invoke a model provider.
+
 ## Community submission intake
 
 Phase 5A introduces the first community write path:

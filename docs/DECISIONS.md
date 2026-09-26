@@ -1355,3 +1355,46 @@ Backfill and automatic metadata capture are not filtered by public listing state
 An unlisted moderation candidate may therefore accumulate measured history before approval.
 
 Snapshot history does not publish the repository and does not change `is_listed`; public discovery remains governed by the existing publication boundary.
+
+
+## D-137 — Trend windows must be explicit
+
+**Status:** Accepted
+
+The public trend read requires `windowDays` and accepts integer windows from 1 through 365 days.
+
+RepoScout does not silently choose a default comparison period because different windows answer different questions and later ranking logic must be able to state exactly which historical horizon it uses.
+
+## D-138 — A trend baseline is the closest snapshot on or before the requested cutoff
+
+**Status:** Accepted
+
+For a requested window, RepoScout anchors the end at the latest historical snapshot and derives a UTC cutoff day.
+
+The baseline is the newest snapshot whose `captured_on` is less than or equal to that cutoff.
+
+When history is sparse, the actual covered span may therefore be larger than the requested window. The response must expose `actualWindowDays` so consumers never mistake sparse coverage for an exact interval.
+
+RepoScout does not select a newer-than-cutoff baseline merely to return a delta.
+
+## D-139 — Missing history returns insufficiency, not an invented trend
+
+**Status:** Accepted
+
+If no snapshots exist, the result is `no_snapshots`.
+
+If snapshots exist but none reach the requested cutoff, the result is `window_not_covered` with the oldest/latest available points and the actual available span.
+
+RepoScout does not extrapolate, annualize, scale, synthesize zero, or otherwise manufacture a full-window delta from insufficient history.
+
+## D-140 — Snapshot deltas are descriptive signals, not quality scores
+
+**Status:** Accepted
+
+Phase 6C exposes signed changes in stars, forks, and GitHub-style open issue count.
+
+A positive or negative value is not labeled good or bad. In particular, open-issue movement has context-dependent meaning.
+
+Trend reads remain derived/recomputable and are not persisted as a universal repository score.
+
+Public trend access follows the existing listing boundary; internal history for unlisted repositories is not exposed by the public catalog API.

@@ -6,6 +6,7 @@ import {
 } from './http-security.js';
 import { logger } from './logger.js';
 import type { RepositoryCatalogReader } from './repositories/repository-catalog.js';
+import type { RepositoryTrendReader } from './repositories/repository-trend.js';
 import { createRepositoryRouter } from './repositories/repository-routes.js';
 import type { RepositorySubmissionService } from './submissions/repository-submission-service.js';
 import { createRepositorySubmissionRouter } from './submissions/repository-submission-routes.js';
@@ -21,6 +22,7 @@ import {
 export type AppDependencies = Readonly<{
   checkReadiness?: () => Promise<void>;
   repositoryCatalog?: RepositoryCatalogReader;
+  repositoryTrend?: RepositoryTrendReader;
   repositorySubmissionService?: RepositorySubmissionService;
   repositorySubmissionRateLimiter?: RepositorySubmissionRateLimiter;
   repositoryModeration?: RepositoryModerationRouterDependencies;
@@ -78,7 +80,10 @@ export function createApp(dependencies: AppDependencies = {}) {
   if (dependencies.repositoryCatalog) {
     app.use(
       '/api/repositories',
-      createRepositoryRouter(dependencies.repositoryCatalog),
+      createRepositoryRouter(
+        dependencies.repositoryCatalog,
+        dependencies.repositoryTrend,
+      ),
     );
   }
 
