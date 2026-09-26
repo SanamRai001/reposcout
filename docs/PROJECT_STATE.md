@@ -6,13 +6,13 @@ Evaluate semantic repository retrieval against RepoScout's existing lexical base
 
 ## Branch
 
-`feat/phase-9b-embedding-evaluation`
+`main`
 
-Base:
+Current verified merge:
 
-`main@91b924261d47cdf628bf3a5ea8fada888d54a6ad`
+`e5395afab5d371598de4cbedfab5771032b3c57b`
 
-PR #54: open.
+PR #54: merged.
 
 ## Completed phase
 
@@ -63,7 +63,9 @@ Phase 9 remains in progress.
 - Phase 9A final project-state checkpoint: `main@91b924261d47cdf628bf3a5ea8fada888d54a6ad`.
 - Initial Phase 9B head `730ffbadf66408319987730e2abce2c8d9f20c4f`: CI #293 failed only because the evaluation test incorrectly required semantic > lexical on a saturated benchmark.
 - Corrected Phase 9B implementation head `ecf2ff35644ae8e9a5399f2387c4ae6a572508e1`: CI #294 success.
-- CI #294 passed:
+- Phase 9B documentation-complete head `90fb930dd3fad3e93f8207fcbc57b7b8d3fbc6d0`: CI #297 success.
+- PR #54 merged with the exact CI-green head as `e5395afab5d371598de4cbedfab5771032b3c57b`.
+- CI #294 and #297 passed:
   - application lint/typecheck/unit tests/build;
   - production dependency audit;
   - Jev evaluation harness;
