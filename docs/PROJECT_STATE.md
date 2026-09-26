@@ -6,11 +6,11 @@ Close Phase 7 with a reproducible deterministic benchmark for Hidden Gems and Ri
 
 ## Branch
 
-`feat/phase-7e-ranking-benchmark`
+`main`
 
-Base: `main@af818b7cb098408dc1c07135b16b3c689b19c4a3`
+Current verified merge: `b8ae0d2498ac1a3ff520f12e9f6dd8b1107d9dfb`
 
-PR: #48
+PR #48: merged
 
 ## Completed phase
 
@@ -64,17 +64,11 @@ Phase 7 — Hidden Gems and Rising is implementation-complete on this branch, pe
   - CI run 243 failed TypeScript because the sparse-history fixture helper inferred actual window days too narrowly.
 - Corrected Phase 7E code head `f785dbf56cf99ff855470ed336d9d4af17802c87`:
   - CI run 244 success.
-- CI run 244 passed:
-  - application verification;
-  - production dependency audit;
-  - Jev harness;
-  - dedicated ranking benchmark gate;
-  - migration apply/rollback/reapply;
-  - repository/snapshot/history checks;
-  - ranking catalog API integration;
-  - search/submission regressions;
-  - PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
+- Documentation-complete PR head `33cd7ec21abb90d76ca42db0e5d5b2daf0c9d83f`:
+  - CI run 252 success.
+- PR #48 merged as `b8ae0d2498ac1a3ff520f12e9f6dd8b1107d9dfb`.
+- Post-merge `main` CI run 253: success.
+- CI passed application verification, production dependency audit, Jev harness, dedicated ranking benchmark gate, migration apply/rollback/reapply, repository/snapshot/history checks, ranking catalog API integration, search/submission regressions, and PostgreSQL connectivity.
 
 ## Benchmark conclusion
 
