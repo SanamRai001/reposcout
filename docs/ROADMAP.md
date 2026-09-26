@@ -716,15 +716,26 @@ Status: complete
 
 #### Phase 7D — Ranking explanation + public API
 
-Next:
-- public named ranking modes;
-- stable explanation payload;
-- candidate ordering/pagination;
-- preserve listed-only discovery boundary.
+Status: complete
+
+- public `GET /api/repositories/rankings/:mode`;
+- named `hidden_gems` and `rising` modes;
+- listed-only candidate boundary;
+- complete current listed-catalog evaluation for the curated MVP;
+- ineligible repositories omitted;
+- deterministic `score DESC, repository UUID ASC` ordering;
+- opaque cursor bound to mode, formula, evaluation time, score, and repository ID;
+- cross-mode/stale-formula cursor rejection;
+- canonical repository response serialization;
+- stable structured Hidden Gems/Rising explanations;
+- no generated explanation prose;
+- no ranking persistence;
+- no model/Jev influence;
+- PostgreSQL ranking API integration in the catalog CI gate.
 
 #### Phase 7E — Benchmark + tuning
 
-Later:
+Next:
 - labeled/manual evaluation set;
 - compare formula revisions;
 - document every weight/threshold change;
