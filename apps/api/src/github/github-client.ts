@@ -56,6 +56,26 @@ export type GithubSecurityPolicySnapshot = Readonly<{
   sizeBytes: number;
 }> | null;
 
+export type GithubIssueSnapshot = Readonly<{
+  githubIssueId: string;
+  number: number;
+  title: string;
+  htmlUrl: string;
+  state: 'open' | 'closed';
+  locked: boolean;
+  assigneeCount: number;
+  commentCount: number;
+  labels: readonly string[];
+  createdAt: Date;
+  updatedAt: Date;
+}>;
+
+export type GithubIssuePageSnapshot = Readonly<{
+  issues: readonly GithubIssueSnapshot[];
+  fetchedItems: number;
+  excludedPullRequests: number;
+}>;
+
 export type GithubRepositorySnapshot = Readonly<{
   githubRepositoryId: string;
   owner: string;
@@ -241,6 +261,160 @@ function repositoryId(source: JsonObject): string {
   }
 
   return String(value);
+}
+
+function issueId(source: JsonObject): string {
+  const value = source.id;
+
+  if (
+    typeof value !== 'number' ||
+    !Number.isSafeInteger(value) ||
+    value <= 0
+  ) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub issue id is invalid or exceeds safe JSON integer precision.',
+    );
+  }
+
+  return String(value);
+}
+
+function requiredPositiveSafeInteger(
+  source: JsonObject,
+  field: string,
+): number {
+  const value = requiredNonnegativeSafeInteger(source, field);
+
+  if (value < 1) {
+    throw new GithubApiError(
+      'invalid_response',
+      `GitHub response field "${field}" must be positive.`,
+    );
+  }
+
+  return value;
+}
+
+function issueLabels(source: JsonObject): string[] {
+  const value = source.labels;
+
+  if (!Array.isArray(value)) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub issue labels are invalid.',
+    );
+  }
+
+  const labels = value.map((item) => {
+    if (!isObject(item)) {
+      throw new GithubApiError(
+        'invalid_response',
+        'GitHub issue label is invalid.',
+      );
+    }
+
+    return requiredString(item, 'name');
+  });
+
+  return [...new Set(labels)].sort((left, right) =>
+    left.localeCompare(right),
+  );
+}
+
+function issueAssigneeCount(source: JsonObject): number {
+  const value = source.assignees;
+
+  if (
+    !Array.isArray(value) ||
+    !value.every((item) => isObject(item))
+  ) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub issue assignees are invalid.',
+    );
+  }
+
+  return value.length;
+}
+
+function normalizeIssue(payload: unknown): GithubIssueSnapshot {
+  if (!isObject(payload)) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub issue response item must be an object.',
+    );
+  }
+
+  const state = requiredString(payload, 'state');
+
+  if (state !== 'open' && state !== 'closed') {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub issue state must be open or closed.',
+    );
+  }
+
+  return {
+    githubIssueId: issueId(payload),
+    number: requiredPositiveSafeInteger(payload, 'number'),
+    title: requiredString(payload, 'title'),
+    htmlUrl: validateTrustedUrl(
+      requiredString(payload, 'html_url'),
+      'github.com',
+      'GitHub issue html_url',
+    ),
+    state,
+    locked: requiredBoolean(payload, 'locked'),
+    assigneeCount: issueAssigneeCount(payload),
+    commentCount: requiredNonnegativeSafeInteger(payload, 'comments'),
+    labels: issueLabels(payload),
+    createdAt: requiredDate(payload, 'created_at'),
+    updatedAt: requiredDate(payload, 'updated_at'),
+  };
+}
+
+function normalizeIssuePage(payload: unknown): GithubIssuePageSnapshot {
+  if (!Array.isArray(payload)) {
+    throw new GithubApiError(
+      'invalid_response',
+      'GitHub issues response must be an array.',
+    );
+  }
+
+  const issues: GithubIssueSnapshot[] = [];
+  let excludedPullRequests = 0;
+
+  for (const item of payload) {
+    if (!isObject(item)) {
+      throw new GithubApiError(
+        'invalid_response',
+        'GitHub issues response item must be an object.',
+      );
+    }
+
+    if (item.pull_request !== undefined && item.pull_request !== null) {
+      excludedPullRequests += 1;
+      continue;
+    }
+
+    const issue = normalizeIssue(item);
+
+    if (issue.updatedAt < issue.createdAt) {
+      throw new GithubApiError(
+        'invalid_response',
+        'GitHub issue updated_at must not be earlier than created_at.',
+      );
+    }
+
+    issues.push(issue);
+  }
+
+  return {
+    issues,
+    fetchedItems: payload.length,
+    excludedPullRequests,
+  };
 }
 
 function validateTrustedUrl(
@@ -620,6 +794,84 @@ export class GithubClient {
     }
 
     return normalizeRepository(payload);
+  }
+
+  async fetchIssues(
+    reference: GithubRepositoryReference,
+    limit: number,
+  ): Promise<GithubIssuePageSnapshot> {
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+      throw new Error('GitHub issue limit must be an integer between 1 and 100.');
+    }
+
+    const owner = encodeURIComponent(reference.owner);
+    const name = encodeURIComponent(reference.name);
+    const url =
+      `${GITHUB_API_ORIGIN}/repos/${owner}/${name}/issues` +
+      `?state=all&sort=updated&direction=desc&per_page=${limit}&page=1`;
+    const headers = createGithubHeaders(this.token);
+
+    let response: Response;
+
+    try {
+      response = await this.fetchImplementation(url, {
+        method: 'GET',
+        headers,
+        redirect: 'error',
+        signal: AbortSignal.timeout(this.requestTimeoutMs),
+      });
+    } catch (error) {
+      throw new GithubApiError(
+        'request_failed',
+        error instanceof Error
+          ? `GitHub issues request failed: ${error.message}`
+          : 'GitHub issues request failed.',
+      );
+    }
+
+    if (response.status === 404) {
+      throw new GithubApiError(
+        'not_found',
+        'GitHub repository issues were not found or are not publicly accessible.',
+        404,
+      );
+    }
+
+    const rateLimited =
+      response.status === 429 ||
+      (response.status === 403 &&
+        response.headers.get('x-ratelimit-remaining') === '0');
+
+    if (rateLimited) {
+      throw new GithubApiError(
+        'rate_limited',
+        'GitHub API rate limit was reached.',
+        response.status,
+        parseRateLimitReset(response.headers),
+      );
+    }
+
+    if (!response.ok) {
+      throw new GithubApiError(
+        'request_failed',
+        `GitHub issues request failed with HTTP ${response.status}.`,
+        response.status,
+      );
+    }
+
+    let payload: unknown;
+
+    try {
+      payload = await response.json();
+    } catch {
+      throw new GithubApiError(
+        'invalid_response',
+        'GitHub issues API returned invalid JSON.',
+        response.status,
+      );
+    }
+
+    return normalizeIssuePage(payload);
   }
 
   async fetchCommunityProfile(
