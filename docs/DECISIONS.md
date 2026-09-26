@@ -1840,3 +1840,84 @@ Star/fork growth cannot prove that momentum is organic.
 These limitations cannot be solved reliably by arbitrarily lowering existing weights.
 
 Future anti-gaming work should add traceable evidence or anomaly signals and then evaluate those signals against a benchmark before changing public ranking behavior.
+
+
+## D-175 — Good-first-issue and help-wanted labels are entry hints, not suitability truth
+
+**Status:** Accepted
+
+Phase 8A normalizes common label variants into:
+
+- `entry.good_first_issue_label`;
+- `entry.help_wanted_label`.
+
+These signals mean only that the repository/maintainer applied a recognizable GitHub label.
+
+RepoScout does not infer from the label alone that an issue is:
+
+- easy;
+- well-scoped;
+- actively supported;
+- safe for a first contribution;
+- likely to be accepted.
+
+## D-176 — Contribution discovery separates issue facts from repository process evidence
+
+**Status:** Accepted
+
+`contribution-signals-v1` keeps distinct roles for:
+
+- issue entry hints;
+- repository contribution-process evidence;
+- issue availability;
+- activity/freshness;
+- discussion context.
+
+This prevents one convenient signal, such as a label or CONTRIBUTING file, from silently standing in for the whole contribution experience.
+
+## D-177 — Contribution process evidence preserves observed absence vs missing semantics
+
+**Status:** Accepted
+
+For CONTRIBUTING, Code of Conduct, issue template, and pull-request template:
+
+- observed absence is an available `false`;
+- missing collection state is `not_collected`;
+- unsupported fork evidence is `not_applicable`.
+
+Phase 8 must not collapse these states into one false value.
+
+## D-178 — Time-derived contribution signals use an explicit evaluation timestamp
+
+**Status:** Accepted
+
+Issue age and days-since-update are derived from an explicit `evaluatedAt`.
+
+This makes snapshots deterministic and prevents pagination/evaluation behavior from changing merely because code executes a few seconds later.
+
+## D-179 — Phase 8A defines no beginner-friendly score
+
+**Status:** Accepted
+
+The Phase 8A snapshot has no:
+
+- score;
+- beginner-friendly boolean;
+- recommendation rank.
+
+The current evidence cannot reliably measure issue complexity, maintainer responsiveness, contributor outcomes, or whether process files contain substantive guidance.
+
+A future suitability formula requires richer evidence and a benchmark/ground truth before becoming public behavior.
+
+## D-180 — Phase 8 is split into evidence, collection, discovery, then recommendation
+
+**Status:** Accepted
+
+Phase 8 delivery order is:
+
+1. 8A — evidence contract;
+2. 8B — issue ingestion/persistence;
+3. 8C — public contribution discovery/filtering;
+4. 8D — evidence-based recommendation/explanation + evaluation.
+
+Phase 9 semantic discovery remains separate.
