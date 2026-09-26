@@ -6,11 +6,11 @@ Expose the deterministic Hidden Gems and Rising scorers through a public listed-
 
 ## Branch
 
-`feat/phase-7d-ranking-api`
+`main`
 
-Base: `main@79009e3edc9042234fdbab5fa3ec265c1b334e7e`
+Current verified merge: `051847a79bd4b75d0f8d20cf1239ae3df96c632c`
 
-PR: #47
+PR #47: merged
 
 ## Completed phase
 
@@ -60,10 +60,11 @@ Phase 7 remains in progress.
 ## Verification
 
 - Phase 7C verified on `main@79009e3edc9042234fdbab5fa3ec265c1b334e7e`.
-- Phase 7D code head `1cbff9f6145bff1877ce0d249b57083d340a7fcc`.
-- GitHub Actions CI run 231: success before documentation-only follow-up commits.
-- CI run 231 passed lint/typecheck/tests/build, dependency audit, Jev harness, migration apply/rollback/reapply, repository/snapshot/history checks, ranking catalog API integration, search/submission regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
+- Phase 7D code head `1cbff9f6145bff1877ce0d249b57083d340a7fcc`: CI run 231 success.
+- Documentation-complete PR head `d06e24ca572a7683ca2047f2dd5ce5a165aba990`: CI run 239 success.
+- PR #47 merged as `051847a79bd4b75d0f8d20cf1239ae3df96c632c`.
+- Post-merge `main` CI run 240: success.
+- CI passed lint/typecheck/tests/build, dependency audit, Jev harness, migration apply/rollback/reapply, repository/snapshot/history checks, ranking catalog API integration, search/submission regressions, and PostgreSQL connectivity.
 
 ## Decisions / risks
 
