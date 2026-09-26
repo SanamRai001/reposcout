@@ -86,6 +86,9 @@ jobs:
       - name: Verify contribution issue persistence
         run: npm run test:contribution-issues -w @reposcout/api
 
+      - name: Verify contribution discovery
+        run: npm run test:contribution-discovery -w @reposcout/api
+
       - name: Verify repository catalog API
         run: npm run test:catalog -w @reposcout/api
 

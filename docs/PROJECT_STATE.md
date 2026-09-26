@@ -2,105 +2,112 @@
 
 ## Objective
 
-Persist a narrow, measured GitHub issue entity for listed repositories so Phase 8 contribution discovery can use real issue observations without introducing a beginner-friendly score or public recommendation API yet.
+Expose measured contribution opportunities from listed repositories through deterministic public filters while preserving the Phase 8A evidence semantics and avoiding an unsupported beginner-friendly score.
 
 ## Branch
 
-`main`
+`feat/phase-8c-contribution-discovery`
 
-Current verified merge: `8a0ad13812a783bab3f5287e1e69b2bbeb3562e9`
+Base:
 
-PR #50: merged
+`main@d21c29ecbea6f167340443a13da48fc04e739449`
+
+PR #51: open.
 
 ## Completed phase
 
-Phase 8B — GitHub issue ingestion + persistence.
+Phase 8C — public contribution discovery + filters.
 
 Phase 8 remains in progress.
 
 ## Changes
 
-- Added `repository_contribution_issues` persistence for measured GitHub issue observations.
-- Stored issue fields include:
-  - canonical GitHub issue ID;
-  - repository + issue number identity;
-  - title + GitHub URL;
-  - open/closed state;
-  - locked flag;
-  - assignee count;
-  - comment count;
-  - raw label names;
-  - GitHub created/updated timestamps;
-  - RepoScout observed timestamp.
-- Added schema constraints for:
-  - globally unique GitHub issue ID;
-  - unique issue number within a repository;
-  - open/closed state;
-  - nonnegative assignee/comment counts;
-  - positive issue number and GitHub issue ID;
-  - `updated_at_github >= created_at_github`.
-- Added repository/state/update lookup index.
-- Added stale-safe issue upsert:
-  - newer GitHub issue observations replace older state;
-  - equal GitHub update time may advance with a newer/equal RepoScout observation;
-  - stale observations cannot overwrite newer issue state;
-  - a GitHub issue identity cannot silently move to another repository.
-- Added strict GitHub issue parsing and bounded issue fetch:
-  - one page only;
-  - maximum 100 items;
-  - `state=all`;
-  - most-recently-updated first;
-  - pull-request-shaped GitHub issue API items are excluded before issue parsing.
-- Added strict validation for issue identity, URLs, counts, dates, state, and labels.
-- Reused existing GitHub rate-limit/retry classification.
-- Added listed-only issue ingestion:
-  - repository must resolve through the public catalog reader;
-  - unknown/unlisted repository performs no provider work.
-- Added bounded batch operation:
-  - default 20 repositories / maximum 50;
-  - default 50 issues per repository / maximum 100;
-  - sequential provider calls;
-  - unavailable repositories may be skipped;
-  - `retry_later` and `manual_review` halt remaining provider work;
-  - a repository cursor is returned for resumable processing.
-- Added CLI:
-  - `npm run ingest:contribution-issues -w @reposcout/api -- [repositoryLimit] [issueLimit] [cursorRepositoryId]`.
-- Added unit/integration/schema/rollback coverage and a dedicated contribution-issue persistence CI gate.
-- No public contribution-discovery endpoint, recommendation score, or model inference was added.
+- Added public read-only endpoint:
+  - `GET /api/contributions/issues`.
+- Discovery is hard-bounded to:
+  - listed repositories only;
+  - stored open issues only.
+- Added deterministic factual filters:
+  - `unassigned=true|false`;
+  - `unlocked=true|false`;
+  - `goodFirstIssue=true|false`;
+  - `helpWanted=true|false`;
+  - `language=<primary language>`;
+  - `updatedWithinDays=1..3650`;
+  - `contributing=present|absent|missing|not_applicable`.
+- Reused Phase 8A label normalization so common spacing/hyphen/underscore variants resolve to the same entry-hint labels.
+- Preserved contribution-process missing-data semantics:
+  - observed CONTRIBUTING absence remains different from evidence not collected;
+  - unsupported-fork evidence remains `not_applicable`.
+- Added public Phase 8A signal evidence for each result:
+  - entry hints;
+  - repository process evidence;
+  - open/unassigned/unlocked availability facts;
+  - issue age/update recency;
+  - comment-count context.
+- Added stable keyset pagination ordered by:
+  - GitHub issue update timestamp descending;
+  - RepoScout issue UUID ascending.
+- Contribution-discovery cursors are bound to:
+  - normalized filter scope;
+  - last result position;
+  - original evaluation timestamp.
+- Recency filters therefore remain deterministic across later pages instead of drifting with wall-clock time.
+- Added global open/recent contribution discovery index:
+  - `repository_contribution_issues_discovery_updated_idx`.
+- Added route/unit, PostgreSQL integration, schema, rollback, and dedicated CI coverage.
+- No beginner-friendly score, recommendation rank, issue-body analysis, or Phase 9 semantic search was added.
 
 ## Verification
 
 - Phase 8A verified on `main@3162aeed98f057e06c92bed5ceab41aa76aef422`.
-- Phase 8B code head `2a88c76218f19825e0a6be7f8fb579590df3b770`: CI run 268 success.
-- Documentation-complete PR head `b1c717cf27ba63d1f039532dc12d0e25fd27f084`: CI run 272 success.
-- PR #50 merged as `8a0ad13812a783bab3f5287e1e69b2bbeb3562e9`.
-- Post-merge `main` CI run 273: success.
-- CI passed application verification, dependency audit, Jev harness, ranking benchmark, migrations apply/rollback/reapply, contribution-issue schema/persistence, repository/snapshot/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Phase 8B merge: `8a0ad13812a783bab3f5287e1e69b2bbeb3562e9`.
+- Phase 8B final project-state checkpoint: `main@d21c29ecbea6f167340443a13da48fc04e739449`.
+- Phase 8C implementation/test head `2997a65837a9f51009f7ac604e5eac1476254596`: CI run 276 success.
+- CI #276 passed:
+  - application build/typecheck/test verification;
+  - production dependency audit;
+  - Jev evaluation harness;
+  - ranking benchmark;
+  - migration apply/rollback/reapply;
+  - repository schema checks;
+  - repository persistence;
+  - snapshot persistence/trends;
+  - repository content evidence;
+  - GitHub ingestion;
+  - contribution-issue persistence;
+  - contribution discovery;
+  - catalog;
+  - lexical search;
+  - submission workflows;
+  - PostgreSQL connectivity.
 
 ## Decisions / risks
 
-- Phase 8B stores measured GitHub issue facts, not suitability labels.
-- GitHub pull requests are excluded because GitHub's issues API can return PR-shaped records.
-- Only one bounded issue page is fetched per repository in this phase; RepoScout does not claim complete issue history.
-- The ingestion page is ordered by most recently updated issue, so the stored bounded set favors current contribution opportunities.
-- Labels are stored as raw measured names; Phase 8A normalization/meaning remains a separate deterministic signal layer.
-- `state=all` is intentional so later discovery can distinguish open vs closed rather than treating absence from an open-only fetch as authoritative history.
-- Listed-only ingestion reserves recurring provider work for the public catalog and prevents unlisted moderation candidates from leaking into contribution discovery.
-- Batch processing is sequential and conservative under provider pressure.
-- Issue body text, maintainer response latency, linked PR outcomes, contributor identity, and difficulty are not collected in 8B.
-- Those richer signals require explicit privacy/semantics decisions before collection.
+- Phase 8C exposes evidence, not suitability judgments.
+- `good first issue` and `help wanted` remain label hints only.
+- Unassigned does not prove nobody is already working on an issue.
+- Open does not prove maintainers still want a contribution.
+- Recently updated is contextual activity evidence, not a quality direction.
+- Repository process evidence distinguishes observed absence, missing collection, and unsupported-fork applicability.
+- The discovery surface is limited to the bounded issue observations collected by Phase 8B; RepoScout still does not claim complete GitHub issue history.
+- Keyset pagination uses stored GitHub update time plus issue UUID for stable ordering.
+- The cursor preserves one evaluation timestamp so time-derived evidence and recency filters stay internally consistent across pages.
+- Phase 8C does not collect additional personal/contributor identity data.
+- Issue complexity, maintainer response latency, linked PR outcomes, and external-contributor success remain unmeasured.
+- Phase 8D must evaluate whether current evidence is sufficient before introducing recommendation semantics.
 
 ## Phase 8 breakdown
 
 - 8A — contribution discovery signal contract: complete.
 - 8B — GitHub issue ingestion + persistence: complete.
-- 8C — public contribution discovery + filters: next.
-- 8D — evidence-based recommendation/explanation + evaluation.
+- 8C — public contribution discovery + filters: complete.
+- 8D — evidence-based recommendation/explanation + evaluation: next.
 
 ## Next phase
 
-Phase 8C — public contribution discovery + filters.
+Phase 8D — evidence-based recommendation/explanation + evaluation.
 
-Expose listed-repository contribution issues through deterministic filters over measured issue state and Phase 8A signals, including entry-hint labels and availability facts.
+Define the recommendation contract and evaluation methodology before adding any public suitability judgment.
 
-Do not add a beginner-friendly score or Phase 9 semantic search in 8C.
+Do not start Phase 9 semantic search as part of 8D.

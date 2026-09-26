@@ -6,6 +6,8 @@ import {
 } from './http-security.js';
 import { logger } from './logger.js';
 import type { RepositoryCatalogReader } from './repositories/repository-catalog.js';
+import type { ContributionDiscoveryReader } from './repositories/repository-contribution-discovery.js';
+import { createContributionDiscoveryRouter } from './repositories/repository-contribution-routes.js';
 import type { RepositoryTrendReader } from './repositories/repository-trend.js';
 import type { RepositoryRankingReader } from './repositories/repository-ranking.js';
 import { createRepositoryRouter } from './repositories/repository-routes.js';
@@ -23,6 +25,7 @@ import {
 export type AppDependencies = Readonly<{
   checkReadiness?: () => Promise<void>;
   repositoryCatalog?: RepositoryCatalogReader;
+  contributionDiscovery?: ContributionDiscoveryReader;
   repositoryTrend?: RepositoryTrendReader;
   repositoryRanking?: RepositoryRankingReader;
   repositorySubmissionService?: RepositorySubmissionService;
@@ -87,6 +90,13 @@ export function createApp(dependencies: AppDependencies = {}) {
         dependencies.repositoryTrend,
         dependencies.repositoryRanking,
       ),
+    );
+  }
+
+  if (dependencies.contributionDiscovery) {
+    app.use(
+      '/api/contributions',
+      createContributionDiscoveryRouter(dependencies.contributionDiscovery),
     );
   }
 

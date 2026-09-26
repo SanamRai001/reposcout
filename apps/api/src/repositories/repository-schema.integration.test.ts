@@ -1069,4 +1069,19 @@ describe('repositories schema', () => {
   });
 
 
+
+  it('creates the global open-issue contribution discovery index', async () => {
+    const result = await pool.query<{ index_name: string | null }>(
+      `
+        SELECT to_regclass(
+          'public.repository_contribution_issues_discovery_updated_idx'
+        )::text AS index_name
+      `,
+    );
+
+    expect(result.rows[0]?.index_name).toBe(
+      'repository_contribution_issues_discovery_updated_idx',
+    );
+  });
+
 });
