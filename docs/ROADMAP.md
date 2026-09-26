@@ -824,17 +824,32 @@ Status: complete
 
 #### Phase 9B — Embedding provider contract + offline retrieval evaluation
 
-Next:
+Status: complete
+
 - provider-neutral embedding interface;
-- strict vector validation and model/dimension provenance;
-- deterministic fixture provider for CI;
-- candidate-provider evaluation harness when credentials are available;
-- compare lexical baseline vs semantic retrieval on the frozen benchmark;
-- no production embedding table yet.
+- strict provider/model/dimension/vector validation;
+- deterministic six-dimension fixture provider for CI;
+- cosine-similarity semantic evaluator;
+- lexical baseline evaluated beside semantic retrieval;
+- Top-1 accuracy, MRR, and Recall@3 metrics;
+- per-query retrieval evidence;
+- machine-readable evaluation CLI;
+- dedicated CI gate;
+- Phase 9A v1 benchmark found to be lexically saturated;
+- no production provider adoption or vector persistence justified yet.
+
+#### Phase 9B.1 — Retrieval benchmark hardening + real-provider evaluation
+
+Next:
+- add a new versioned lexical-hard/ambiguous benchmark instead of rewriting v1;
+- freeze representative real repository observations when available;
+- evaluate a real embedding provider through the existing provider-neutral contract;
+- measure retrieval quality, latency, model/dimension provenance, cost, rate limits, and failure behavior;
+- make an explicit adoption/defer decision before persistence.
 
 #### Phase 9C — Embedding persistence + bounded backfill
 
-Later, only if 9B justifies adoption:
+Blocked until 9B.1 justifies adoption:
 - versioned embedding persistence;
 - exact document/provider/model provenance;
 - stale-document invalidation;
