@@ -657,6 +657,55 @@ Transport/browser controls that require the actual hosting topology remain deplo
 
 The process-local rate limiter remains acceptable only for the current single-process boundary.
 
+
+
+## Phase 6D scheduled history maintenance
+
+Scheduled history work is exposed as a one-run operation rather than a timer embedded in the API server:
+
+~~~text
+deployment scheduler
+        |
+npm run maintain:snapshots
+        |
+PostgreSQL advisory lock
+        |
+        +-- provider-free metadata backfill
+        |
+        +-- listed refresh candidate selection
+        |      - refresh eligible
+        |      - no snapshot for current UTC day
+        |
+        +-- sequential RepositoryRefreshService calls
+                   |
+                   +-- existing GitHub retry policy
+                   |
+                   +-- transactional metadata + snapshot persistence
+~~~
+
+Candidate selection is deterministic and bounded.
+
+Defaults:
+- 25 provider refresh candidates;
+- 100 stored-metadata backfill candidates.
+
+Maximums:
+- 100 provider refresh candidates;
+- 500 stored-metadata backfill candidates.
+
+The advisory lock makes overlapping invocations sharing the same PostgreSQL database a safe no-op.
+
+The maintenance operation does not refresh repositories whose current UTC day is already represented in `repository_snapshots`, because Phase 6A history is first-write-wins for that day.
+
+Provider-pressure behavior:
+- `retry_later` stops the remaining refresh batch and exposes `retryAt`;
+- `manual_review` stops the remaining refresh batch;
+- `unavailable` records the repository and continues.
+
+The initial operational cadence should be once per UTC day. The deployment environment owns the actual scheduler. RepoScout does not start a background timer inside each API instance.
+
+Phase 6D adds no ranking logic.
+
 ## Scaling rule
 
 Do not prematurely design for millions of repositories.
