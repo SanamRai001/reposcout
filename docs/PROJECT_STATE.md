@@ -6,11 +6,11 @@ Define a versioned, explainable ranking-signal boundary before any Hidden Gems o
 
 ## Branch
 
-`feat/phase-7a-ranking-signal-contract`
+`main`
 
-Base: `main@5284df8855c42094494f41e70b69eddfb417caca`
+Current verified merge: `7d3f5a2600a8ad79446c832148425feef25ec78e`
 
-PR: #44
+PR #44: merged
 
 ## Completed phase
 
@@ -63,8 +63,10 @@ Phase 7 remains in progress.
 - Phase 6 verified on `main@5284df8855c42094494f41e70b69eddfb417caca`.
 - Initial Phase 7A head `28401b93260e1c4c0a42cca654942d596ff94dce`: CI run 206 failed TypeScript verification because two new test/array types were narrower/wider than intended.
 - Corrected Phase 7A code head `d928615830989ab18acc4255723b3cc0b254ad73`: CI run 207 success.
-- CI run 207 passed lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, repository/snapshot/history checks, ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
+- Documentation-complete PR head `510db6c98139400d803f340e28ebd742f2fdcab2`: CI run 211 success.
+- PR #44 merged as `7d3f5a2600a8ad79446c832148425feef25ec78e`.
+- Post-merge `main` CI run 212: success.
+- CI passed lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, repository/snapshot/history checks, ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
 
 ## Decisions / risks
 
