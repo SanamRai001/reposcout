@@ -368,6 +368,24 @@ const hiddenGemCases: RepositoryRankingBenchmarkCase[] = [
     'hidden_gems',
     '10000000-0000-4000-8000-000000000007',
     {
+      'visibility.stars_total': available(
+        'visibility.stars_total',
+        180,
+      ),
+      'visibility.forks_total': available(
+        'visibility.forks_total',
+        12,
+      ),
+      'momentum.stars_delta_30d': available(
+        'momentum.stars_delta_30d',
+        8,
+        trendProvenance(30),
+      ),
+      'momentum.forks_delta_30d': available(
+        'momentum.forks_delta_30d',
+        1,
+        trendProvenance(30),
+      ),
       'community.code_of_conduct_present': available(
         'community.code_of_conduct_present',
         false,
