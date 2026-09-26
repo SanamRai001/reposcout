@@ -58,7 +58,7 @@ function signalInput(
     evaluatedAt: new Date('2026-09-26T12:00:00Z'),
     repository: {
       id: repositoryId,
-      pushedAtGithub: new Date('2026-09-24T12:00:00Z'),
+      pushedAtGithub: new Date('2026-09-26T12:00:00Z'),
     },
     metadata: {
       stars: 200,
