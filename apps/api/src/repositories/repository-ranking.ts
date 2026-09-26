@@ -6,7 +6,11 @@ import {
   RISING_FORMULA_VERSION,
   type RisingScoreResult,
 } from './repository-rising-score.js';
-import type { RepositoryCatalogRecord } from './repository-catalog.js';
+import {
+  toRepositoryResponse,
+  type RepositoryCatalogRecord,
+  type RepositoryResponse,
+} from './repository-catalog.js';
 
 export type RepositoryRankingMode = 'hidden_gems' | 'rising';
 
@@ -31,7 +35,7 @@ type EncodedRepositoryRankingCursor = Readonly<{
 export type RepositoryRankedItem =
   | Readonly<{
       mode: 'hidden_gems';
-      repository: RepositoryCatalogRecord;
+      repository: RepositoryResponse;
       score: Extract<HiddenGemScoreResult, { status: 'eligible' }>;
     }>
   | Readonly<{
@@ -207,7 +211,7 @@ export function toRepositoryRankingResponseItem(
 ): RepositoryRankingResponseItem {
   if (item.mode === 'hidden_gems') {
     return {
-      repository: item.repository,
+      repository: toRepositoryResponse(item.repository),
       ranking: {
         mode: item.mode,
         formulaVersion: item.score.formulaVersion,
@@ -224,7 +228,7 @@ export function toRepositoryRankingResponseItem(
   }
 
   return {
-    repository: item.repository,
+    repository: toRepositoryResponse(item.repository),
     ranking: {
       mode: item.mode,
       formulaVersion: item.score.formulaVersion,
