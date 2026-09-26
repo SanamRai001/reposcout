@@ -6,13 +6,13 @@ Build semantic repository discovery on top of RepoScout's existing deterministic
 
 ## Branch
 
-`feat/phase-9a-semantic-document-contract`
+`main`
 
-Base:
+Current verified merge:
 
-`main@3ec45ac1f07c4eff33b4fb28302a8c04394071d8`
+`679409353aed68a4738273450cbb07be9ab46bf8`
 
-PR #53: open.
+PR #53: merged.
 
 ## Completed phase
 
@@ -69,7 +69,9 @@ Phase 9 is in progress.
 
 - Phase 8 final project-state checkpoint: `main@3ec45ac1f07c4eff33b4fb28302a8c04394071d8`.
 - Phase 9A implementation head `88a5afdf881d0e08b4a014bfd24a802f70dd3341`: CI #286 success.
-- CI #286 passed:
+- Phase 9A documentation-complete head `1d975455d7a73311d5b4a87559647e469c5f0a94`: CI #289 success.
+- PR #53 merged with the exact CI-green head as `679409353aed68a4738273450cbb07be9ab46bf8`.
+- CI #286 and #289 passed:
   - application lint/typecheck/unit tests/build;
   - production dependency audit;
   - Jev evaluation harness;
