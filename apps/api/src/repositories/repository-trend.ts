@@ -78,3 +78,82 @@ export function toTrendSnapshot(
     openIssues: snapshot.openIssues,
   };
 }
+
+
+export type RepositoryTrendResponse =
+  | Readonly<{
+      status: 'complete';
+      repositoryId: string;
+      requestedWindowDays: number;
+      cutoffOn: string;
+      actualWindowDays: number;
+      baseline: Readonly<{
+        capturedOn: string;
+        capturedAt: string;
+        stars: number;
+        forks: number;
+        openIssues: number;
+      }>;
+      latest: Readonly<{
+        capturedOn: string;
+        capturedAt: string;
+        stars: number;
+        forks: number;
+        openIssues: number;
+      }>;
+      delta: RepositoryMetricDelta;
+    }>
+  | Readonly<{
+      status: 'insufficient_history';
+      reason: 'no_snapshots' | 'window_not_covered';
+      repositoryId: string;
+      requestedWindowDays: number;
+      cutoffOn: string | null;
+      availableWindowDays: number | null;
+      oldestAvailable: null | Readonly<{
+        capturedOn: string;
+        capturedAt: string;
+        stars: number;
+        forks: number;
+        openIssues: number;
+      }>;
+      latest: null | Readonly<{
+        capturedOn: string;
+        capturedAt: string;
+        stars: number;
+        forks: number;
+        openIssues: number;
+      }>;
+    }>;
+
+function toTrendSnapshotResponse(snapshot: RepositoryTrendSnapshot) {
+  return {
+    capturedOn: snapshot.capturedOn,
+    capturedAt: snapshot.capturedAt.toISOString(),
+    stars: snapshot.stars,
+    forks: snapshot.forks,
+    openIssues: snapshot.openIssues,
+  };
+}
+
+export function toRepositoryTrendResponse(
+  trend: RepositoryTrendResult,
+): RepositoryTrendResponse {
+  if (trend.status === 'complete') {
+    return {
+      ...trend,
+      baseline: toTrendSnapshotResponse(trend.baseline),
+      latest: toTrendSnapshotResponse(trend.latest),
+    };
+  }
+
+  return {
+    ...trend,
+    oldestAvailable: trend.oldestAvailable
+      ? toTrendSnapshotResponse(trend.oldestAvailable)
+      : null,
+    latest: trend.latest
+      ? toTrendSnapshotResponse(trend.latest)
+      : null,
+  };
+}
