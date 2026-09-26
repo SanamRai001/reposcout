@@ -706,6 +706,47 @@ The initial operational cadence should be once per UTC day. The deployment envir
 
 Phase 6D adds no ranking logic.
 
+
+
+## Phase 7A ranking signal boundary
+
+Ranking evidence is built as a deterministic in-memory snapshot over already-stored repository state:
+
+~~~text
+canonical repository + current metadata
+        |
+README / contribution evidence
+        |
+Phase 6 trend results
+        |
+Repository ranking signal collector
+        |
+ranking-signals-v1
+        |
+mode-specific scorer (Phase 7B+)
+~~~
+
+The signal layer is deliberately separate from scoring.
+
+It preserves:
+- source/provenance class;
+- semantic role;
+- zero vs missing;
+- explicit missing reason;
+- historical requested/actual window provenance.
+
+Mode contracts classify signal use as primary, supporting, or context for Hidden Gems and Rising.
+
+The signal layer does not:
+- assign weights;
+- persist a score;
+- order candidates;
+- call GitHub;
+- call Jev/model providers;
+- change canonical repository data.
+
+This keeps future formula tuning recomputable and auditable.
+
 ## Scaling rule
 
 Do not prematurely design for millions of repositories.

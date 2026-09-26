@@ -49,6 +49,7 @@ Start here if you are contributing to the project.
 - [PHASE_6B_SNAPSHOT_CAPTURE_BACKFILL.md](PHASE_6B_SNAPSHOT_CAPTURE_BACKFILL.md) — transactional metadata-to-history capture and bounded stored-metadata backfill.
 - [PHASE_6C_DETERMINISTIC_TRENDS.md](PHASE_6C_DETERMINISTIC_TRENDS.md) — explicit historical windows, sparse-history semantics, signed deltas, and listed-only trend API.
 - [PHASE_6D_SCHEDULED_SNAPSHOT_OPERATIONS.md](PHASE_6D_SCHEDULED_SNAPSHOT_OPERATIONS.md) — bounded once-daily maintenance, advisory locking, backfill-first orchestration, and provider-pressure behavior.
+- [PHASE_7A_RANKING_SIGNAL_CONTRACT.md](PHASE_7A_RANKING_SIGNAL_CONTRACT.md) — versioned deterministic ranking evidence, missing-data semantics, and separate Hidden Gems/Rising signal roles.
 - [PRIVACY.md](PRIVACY.md) — application privacy and data-handling behavior.
 - [PROJECT_STATE.md](PROJECT_STATE.md) — concise current branch, completed phase, verification, risks/decisions, and next checkpoint.
 
