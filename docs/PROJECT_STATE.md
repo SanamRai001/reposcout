@@ -6,13 +6,13 @@ Harden semantic retrieval evaluation with real repository observations and a rea
 
 ## Branch
 
-`feat/phase-9b1-benchmark-real-provider`
+`main`
 
-Base:
+Current verified merge:
 
-`main@dff7022b501c9697acb311683c9dc89dbc631b64`
+`b7baf53b0fe0383ed474618a2dbde1ab80c787f4`
 
-PR #55: open.
+PR #55: merged.
 
 ## Completed phase
 
@@ -74,7 +74,9 @@ Phase 9B.1 remains in progress because the credentialed live provider evaluation
 
 - Phase 9B final checkpoint: `main@dff7022b501c9697acb311683c9dc89dbc631b64`.
 - Phase 9B.1A implementation head `1565149a05aa329b203ada17d27860fbee94f269`: CI #301 success.
-- CI #301 passed:
+- Phase 9B.1A documentation-complete head `8504301148e1c1437abec14b5f21929729b63878`: CI #306 success.
+- PR #55 merged with the exact CI-green head as `b7baf53b0fe0383ed474618a2dbde1ab80c787f4`.
+- CI #301 and #306 passed:
   - application lint/typecheck/unit tests/build;
   - production dependency audit;
   - Jev evaluation harness;
