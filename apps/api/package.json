@@ -36,7 +36,7 @@
     "maintain:snapshots": "tsx src/cli/maintain-repository-snapshots.ts",
     "test:ranking": "vitest run src/evaluation/repository-ranking-evaluator.test.ts",
     "eval:ranking": "tsx src/cli/evaluate-ranking.ts",
-    "test:issues": "vitest run src/repositories/repository-issue-store.integration.test.ts src/github/repository-issue-batch-service.test.ts --maxWorkers=1",
+    "test:issues": "vitest run src/repositories/repository-issue-store.integration.test.ts src/github/repository-issue-ingestion-service.test.ts src/github/repository-issue-batch-service.test.ts --maxWorkers=1",
     "refresh:issues": "tsx src/cli/refresh-repository-issues.ts"
   },
   "dependencies": {
