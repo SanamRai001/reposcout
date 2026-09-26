@@ -181,7 +181,7 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 | Historical snapshot persistence | Complete |
 | Hidden Gems / Rising deterministic scoring | Complete |
 | Public ranking API | Complete |
-| Ranking benchmark / tuning | In progress |
+| Ranking benchmark / tuning | Complete |
 
 <details>
 <summary><strong>Detailed implementation phases</strong></summary>
@@ -246,8 +246,11 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 7 — Hidden Gems and Rising: complete.
 - Phase 8A — contribution discovery signal contract: complete.
 - Phase 8B — GitHub issue ingestion + persistence: complete.
-- Phase 8C — public contribution discovery + filters: next.
-- Phase 8 — Contribution discovery: in progress.
+- Phase 8C — public contribution discovery + filters: complete.
+- Phase 8D — contribution recommendation/explanation + evaluation: complete.
+- Phase 8 — Contribution discovery: complete.
+- Phase 9A — semantic document + retrieval benchmark foundation: complete.
+- Phase 9 — Semantic discovery: in progress.
 
 </details>
 
