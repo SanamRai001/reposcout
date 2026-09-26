@@ -54,6 +54,7 @@ Start here if you are contributing to the project.
 - [PHASE_7C_RISING_V1.md](PHASE_7C_RISING_V1.md) — momentum-first Rising scoring, sparse-window normalization, required history, and popularity-as-context semantics.
 - [PHASE_7D_PUBLIC_RANKING_API.md](PHASE_7D_PUBLIC_RANKING_API.md) — listed-only Hidden Gems/Rising endpoints, deterministic ordering, cursor semantics, and structured explanations.
 - [PHASE_7E_RANKING_BENCHMARK.md](PHASE_7E_RANKING_BENCHMARK.md) — deterministic ranking benchmark, invariant gates, risk probes, and evidence-backed no-change tuning decision.
+- [PHASE_8A_CONTRIBUTION_SIGNAL_CONTRACT.md](PHASE_8A_CONTRIBUTION_SIGNAL_CONTRACT.md) — versioned issue/repository contribution evidence, label-hint semantics, availability, and freshness context.
 - [PRIVACY.md](PRIVACY.md) — application privacy and data-handling behavior.
 - [PROJECT_STATE.md](PROJECT_STATE.md) — concise current branch, completed phase, verification, risks/decisions, and next checkpoint.
 

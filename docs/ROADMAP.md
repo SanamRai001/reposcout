@@ -755,12 +755,52 @@ Phase 7 is complete.
 
 ## Phase 8 — Contribution discovery
 
-Status: next
+Status: in progress
 
-- contribution signals;
-- good-first-issue discovery;
-- contributor-friendly filters;
-- evidence-based project recommendations.
+#### Phase 8A — Contribution discovery signal contract
+
+Status: complete
+
+- versioned deterministic contract: `contribution-signals-v1`;
+- entry-hint, process, availability, activity, and discussion roles;
+- normalized `good first issue` / `help wanted` label hints;
+- labels remain hints rather than beginner-suitability truth;
+- repository process evidence reuses Phase 3D contribution-file semantics;
+- observed absence stays distinct from not-collected/not-applicable;
+- open/unassigned/unlocked issue availability facts;
+- issue age, update recency, and comment-count context;
+- explicit evaluation timestamp;
+- no score, beginner-friendly boolean, recommendation rank, provider call, or persistence.
+
+#### Phase 8B — GitHub issue ingestion + persistence
+
+Next:
+- measured issue entity + migration;
+- strict GitHub issue response parsing;
+- exclude pull requests from issue opportunities;
+- bounded issue retrieval for listed repositories;
+- stale-safe/idempotent persistence;
+- provider retry/rate-limit preservation;
+- integration + migration rollback/reapply coverage.
+
+#### Phase 8C — Public contribution discovery + filters
+
+Later:
+- listed-repository contribution opportunity endpoint;
+- good-first/help-wanted filters;
+- availability/activity filters;
+- stable scope-bound pagination;
+- repository + issue evidence response;
+- no friendliness claim from labels alone.
+
+#### Phase 8D — Evidence-based recommendation/explanation + evaluation
+
+Later:
+- combine issue hints, repository process evidence, availability, freshness, and richer measured contribution signals;
+- structured explanations;
+- benchmark failure cases and anti-gaming checks;
+- only introduce a suitability score if a labeled benchmark justifies one;
+- no Phase 9 semantic search.
 
 ## Phase 9 — Semantic discovery
 
