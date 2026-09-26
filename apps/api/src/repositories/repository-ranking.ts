@@ -35,7 +35,7 @@ type EncodedRepositoryRankingCursor = Readonly<{
 export type RepositoryRankedItem =
   | Readonly<{
       mode: 'hidden_gems';
-      repository: RepositoryResponse;
+      repository: RepositoryCatalogRecord;
       score: Extract<HiddenGemScoreResult, { status: 'eligible' }>;
     }>
   | Readonly<{
@@ -159,7 +159,7 @@ export function parseRepositoryRankingCursor(
 }
 
 export type RepositoryRankingResponseItem = Readonly<{
-  repository: RepositoryCatalogRecord;
+  repository: RepositoryResponse;
   ranking:
     | Readonly<{
         mode: 'hidden_gems';
