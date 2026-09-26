@@ -6,11 +6,11 @@ Build historical measured repository intelligence in small phases without mixing
 
 ## Branch
 
-`feat/phase-6c-deterministic-trends`
+`main`
 
-Base: `main@e8be23644019fb863e7d8527848965995c4082ab`
+Current verified merge: `3270f3f93ed06702be70068326646f461e941b6d`
 
-PR: #42
+PR #42: merged
 
 ## Completed phase
 
@@ -39,10 +39,11 @@ Phase 6 remains in progress.
 ## Verification
 
 - Phase 6B verified on `main@e8be23644019fb863e7d8527848965995c4082ab`.
-- Phase 6C code head `847827f59ab53cf1853ccf401eb1878624d43d7e`.
-- GitHub Actions CI run 192: success before documentation-only follow-up commits.
+- Phase 6C code head `847827f59ab53cf1853ccf401eb1878624d43d7e`: CI run 192 success.
+- Documentation-complete PR head `7b6387e1d7ccbd59a39292c0aac6030b93824e7d`: CI run 195 success.
+- PR #42 merged as `3270f3f93ed06702be70068326646f461e941b6d`.
+- Post-merge `main` CI run 196: success.
 - CI verified lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, deterministic snapshot trends, listed-only trend API, existing persistence/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
 
 ## Decisions / risks
 
