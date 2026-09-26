@@ -15,7 +15,7 @@ const repository = {
 
 function completeTrend(
   windowDays: 7 | 30,
-  actualWindowDays = windowDays,
+  actualWindowDays: number = windowDays,
 ): RepositoryTrendResult {
   const baselineOn =
     windowDays === 7 ? '2026-09-19' : '2026-08-27';
