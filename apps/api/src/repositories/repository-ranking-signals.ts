@@ -172,6 +172,60 @@ export const REPOSITORY_RANKING_SIGNAL_DEFINITIONS: readonly RepositoryRankingSi
     },
   ]);
 
+
+export type RepositoryRankingModeContract = Readonly<{
+  mode: RepositoryRankingMode;
+  contractVersion: string;
+  primarySignals: readonly RepositoryRankingSignalId[];
+  supportingSignals: readonly RepositoryRankingSignalId[];
+  contextSignals: readonly RepositoryRankingSignalId[];
+}>;
+
+export const REPOSITORY_RANKING_MODE_CONTRACTS: Readonly<
+  Record<RepositoryRankingMode, RepositoryRankingModeContract>
+> = Object.freeze({
+  hidden_gems: Object.freeze({
+    mode: 'hidden_gems',
+    contractVersion: 'hidden-gems-signals-v1',
+    primarySignals: Object.freeze([
+      'visibility.stars_total',
+      'maintenance.days_since_push',
+      'documentation.readme_present',
+      'community.contributing_present',
+    ]),
+    supportingSignals: Object.freeze([
+      'visibility.forks_total',
+      'community.code_of_conduct_present',
+      'community.issue_template_present',
+      'community.pull_request_template_present',
+      'community.security_policy_present',
+      'momentum.stars_delta_30d',
+      'momentum.forks_delta_30d',
+    ]),
+    contextSignals: Object.freeze([
+      'momentum.stars_delta_7d',
+      'context.open_issues_delta_30d',
+    ]),
+  }),
+  rising: Object.freeze({
+    mode: 'rising',
+    contractVersion: 'rising-signals-v1',
+    primarySignals: Object.freeze([
+      'momentum.stars_delta_7d',
+      'momentum.stars_delta_30d',
+      'momentum.forks_delta_30d',
+    ]),
+    supportingSignals: Object.freeze([
+      'maintenance.days_since_push',
+      'visibility.stars_total',
+      'visibility.forks_total',
+    ]),
+    contextSignals: Object.freeze([
+      'context.open_issues_delta_30d',
+    ]),
+  }),
+});
+
 export type RepositoryRankingSignalMissingReason =
   | 'not_collected'
   | 'unavailable'
