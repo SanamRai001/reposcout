@@ -419,6 +419,54 @@ Rules:
 - rejection preserves the handoff repository/evidence internally but leaves it unlisted;
 - events are not updated/deleted by Phase 5C.1.
 
+
+
+### ContributionIssueObservation — Phase 8A contract / Phase 8B persistence target
+
+Phase 8A defines the measured issue shape needed by contribution discovery but does **not** persist it yet.
+
+Contract fields:
+
+~~~text
+repository_id
+github_issue_id
+issue_number
+title
+state                open | closed
+locked
+assignee_count
+comment_count
+labels[]
+created_at_github
+updated_at_github
+observed_at / evaluation context
+~~~
+
+Derived Phase 8A signals include:
+
+~~~text
+good-first-issue label hint
+help-wanted label hint
+open
+unassigned
+unlocked
+issue age days
+days since update
+comment count
+repository contribution-process evidence
+~~~
+
+Rules:
+- issue labels are measured maintainer metadata, not beginner-suitability truth;
+- pull requests must not be persisted as issue opportunities in Phase 8B;
+- observed absence of repository process evidence differs from not-collected/not-applicable;
+- GitHub issue identity should be authoritative for upsert/idempotency;
+- stale observations must not overwrite newer issue state;
+- issue bodies/comments are not part of the Phase 8A contract;
+- no contributor-suitability score is persisted.
+
+Phase 8B will define the actual PostgreSQL table/indexes/retention behavior.
+
 ## Future entities, not MVP requirements
 
 - Collection;
