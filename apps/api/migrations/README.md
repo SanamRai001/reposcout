@@ -30,12 +30,12 @@ Migration rules:
 
 ## Current migrations
 
-RepoScout migrations now cover canonical repositories, measured metadata, README/contribution evidence, community submissions, validation, evidence handoff, protected moderation/publication, launch-hardening indexes, and repository snapshot history.
+RepoScout migrations now cover canonical repositories, measured metadata, README/contribution evidence, community submissions, validation, evidence handoff, protected moderation/publication, launch-hardening indexes, repository snapshot history, and measured GitHub issue opportunities.
 
 The newest migration is:
 
-- `1790731200000_create_repository_snapshots.ts` — daily append-only measured snapshot history for stars, forks, and open issues.
+- `1790817600000_create_repository_issues.ts` — measured GitHub issue persistence with canonical issue identity, stale-safe update support, and contribution-discovery lookup index.
 
-The preceding `1790644800000_add_submission_cleanup_lookup.ts` migration retains the bounded cleanup lookup index.
+The preceding `1790731200000_create_repository_snapshots.ts` migration retains daily append-only measured repository history.
 
 CI verifies the current schema, rolls back the newest migration, verifies the rollback state, and reapplies migrations.
