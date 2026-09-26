@@ -840,16 +840,35 @@ Status: complete
 
 #### Phase 9B.1 — Retrieval benchmark hardening + real-provider evaluation
 
+Status: in progress
+
+##### Phase 9B.1A — Hardened benchmark + real-provider adapter
+
+Status: complete
+
+- added versioned `semantic-retrieval-benchmark-v2` without rewriting v1;
+- froze six real public repositories with README ref/blob provenance;
+- added six lexical-hard and four ambiguous natural-language queries;
+- verified the v2 lexical baseline is no longer saturated;
+- generalized the evaluator to versioned benchmark inputs;
+- added a credential-isolated OpenAI embeddings provider using the existing provider-neutral contract;
+- verified current `text-embedding-3-small` / `text-embedding-3-large` request/response behavior;
+- added live-evaluation latency + usage reporting;
+- added mocked provider protocol/failure tests and dedicated CI gates;
+- added no vector persistence or production search behavior.
+
+##### Phase 9B.1B — Credentialed real-provider evaluation + adoption decision
+
 Next:
-- add a new versioned lexical-hard/ambiguous benchmark instead of rewriting v1;
-- freeze representative real repository observations when available;
-- evaluate a real embedding provider through the existing provider-neutral contract;
-- measure retrieval quality, latency, model/dimension provenance, cost, rate limits, and failure behavior;
-- make an explicit adoption/defer decision before persistence.
+- run `semantic-retrieval-benchmark-v2` with a valid evaluation credential;
+- record lexical vs real semantic Top-1, MRR, and Recall@3;
+- record actual model/dimensions, latency, usage, and repeat-run consistency;
+- document provider cost/rate-limit/failure observations;
+- make an explicit ADOPT or DEFER decision.
 
 #### Phase 9C — Embedding persistence + bounded backfill
 
-Blocked until 9B.1 justifies adoption:
+Blocked until 9B.1B justifies adoption:
 - versioned embedding persistence;
 - exact document/provider/model provenance;
 - stale-document invalidation;
