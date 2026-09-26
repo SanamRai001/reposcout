@@ -85,7 +85,7 @@ function missing(
 
 function trendProvenance(
   requestedWindowDays: 7 | 30,
-  actualWindowDays = requestedWindowDays,
+  actualWindowDays: number = requestedWindowDays,
 ): RepositoryRankingTrendProvenance {
   return {
     requestedWindowDays,
