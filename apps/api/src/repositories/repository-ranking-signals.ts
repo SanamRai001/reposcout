@@ -192,7 +192,7 @@ export const REPOSITORY_RANKING_MODE_CONTRACTS: Readonly<
       'maintenance.days_since_push',
       'documentation.readme_present',
       'community.contributing_present',
-    ]),
+    ] satisfies RepositoryRankingSignalId[]),
     supportingSignals: Object.freeze([
       'visibility.forks_total',
       'community.code_of_conduct_present',
@@ -201,11 +201,11 @@ export const REPOSITORY_RANKING_MODE_CONTRACTS: Readonly<
       'community.security_policy_present',
       'momentum.stars_delta_30d',
       'momentum.forks_delta_30d',
-    ]),
+    ] satisfies RepositoryRankingSignalId[]),
     contextSignals: Object.freeze([
       'momentum.stars_delta_7d',
       'context.open_issues_delta_30d',
-    ]),
+    ] satisfies RepositoryRankingSignalId[]),
   }),
   rising: Object.freeze({
     mode: 'rising',
@@ -214,15 +214,15 @@ export const REPOSITORY_RANKING_MODE_CONTRACTS: Readonly<
       'momentum.stars_delta_7d',
       'momentum.stars_delta_30d',
       'momentum.forks_delta_30d',
-    ]),
+    ] satisfies RepositoryRankingSignalId[]),
     supportingSignals: Object.freeze([
       'maintenance.days_since_push',
       'visibility.stars_total',
       'visibility.forks_total',
-    ]),
+    ] satisfies RepositoryRankingSignalId[]),
     contextSignals: Object.freeze([
       'context.open_issues_delta_30d',
-    ]),
+    ] satisfies RepositoryRankingSignalId[]),
   }),
 });
 
