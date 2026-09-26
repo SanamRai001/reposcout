@@ -2,70 +2,79 @@
 
 ## Objective
 
-Build historical measured repository intelligence in small phases without mixing persistence, capture, deterministic trend math, scheduling, and ranking logic.
+Complete historical repository intelligence through deterministic daily capture, backfill, trend reads, and scheduler-safe operations while keeping ranking as a separate later phase.
 
 ## Branch
 
-`main`
+`feat/phase-6d-snapshot-operations`
 
-Current verified merge: `3270f3f93ed06702be70068326646f461e941b6d`
+Base: `main@87bf7f567f4ed37947e2a72cd4a68a6937d06177`
 
-PR #42: merged
+PR: #43
 
 ## Completed phase
 
-Phase 6C — Deterministic deltas + trend reads.
+Phase 6D — Scheduled snapshot operations.
 
-Phase 6 remains in progress.
+Phase 6 — Historical snapshots is now implementation-complete on this branch, pending documentation-complete and merged-state verification.
 
 ## Changes
 
-- Added explicit trend windows from 1 to 365 days.
-- Trend reads use only persisted daily repository snapshots.
-- The latest historical snapshot is the trend endpoint.
-- The requested cutoff is derived from the latest snapshot's UTC day.
-- Baseline selection uses the closest snapshot on or before that cutoff.
-- Responses expose both requested window and actual covered span.
-- Added signed star, fork, and GitHub-style open-issue deltas.
-- Added explicit insufficient-history states:
-  - `no_snapshots`;
-  - `window_not_covered`.
-- Insufficient history never fabricates or scales a partial-window delta.
-- Added public listed-only trend endpoint:
-  - `GET /api/repositories/:id/trend?windowDays=<1..365>`.
-- Unlisted canonical repository history remains internal and returns the existing public 404 boundary.
-- Added snapshot-level and route-level PostgreSQL integration coverage.
+- Added a scheduler-safe one-run snapshot maintenance operation.
+- Maintenance order is:
+  1. provider-free stored-metadata backfill;
+  2. bounded refresh-candidate selection;
+  3. sequential refresh through the existing refresh/ingestion pipeline.
+- Added PostgreSQL advisory locking so overlapping maintenance invocations cannot run concurrently.
+- An overlapping invocation returns `already_running` and performs no backfill or GitHub work.
+- Refresh candidates are:
+  - publicly listed canonical repositories;
+  - older than the existing refresh eligibility interval;
+  - missing a snapshot for the current UTC day.
+- Candidate order is oldest `last_synced_at` first with deterministic repository-ID tie behavior.
+- Refresh default batch is 25; maximum is 100.
+- Backfill default batch is 100; maximum is 500.
+- Existing Phase 6B backfill can satisfy historical gaps before any provider work occurs.
+- Repositories already represented by today's UTC snapshot are excluded from provider refresh by this maintenance operation.
+- `retry_later` halts the remaining provider batch and exposes `retryAt`.
+- `manual_review` halts the remaining provider batch.
+- `unavailable` repositories are recorded while unrelated candidates may continue.
+- Added structured maintenance start/item/completion/failure events.
+- Added `maintain:snapshots` CLI intended for an external once-daily scheduler.
+- No in-process timer is embedded in the API server.
 
 ## Verification
 
-- Phase 6B verified on `main@e8be23644019fb863e7d8527848965995c4082ab`.
-- Phase 6C code head `847827f59ab53cf1853ccf401eb1878624d43d7e`: CI run 192 success.
-- Documentation-complete PR head `7b6387e1d7ccbd59a39292c0aac6030b93824e7d`: CI run 195 success.
-- PR #42 merged as `3270f3f93ed06702be70068326646f461e941b6d`.
-- Post-merge `main` CI run 196: success.
-- CI verified lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, deterministic snapshot trends, listed-only trend API, existing persistence/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Phase 6C verified on `main@87bf7f567f4ed37947e2a72cd4a68a6937d06177`.
+- Initial Phase 6D code head `9ea71248c59f140ad9e5703f95b481d2ef053a42`: CI run 198 found one unused import during lint.
+- Corrected Phase 6D code head `3c52c0321411b0a0625b483ebd03b17371c76263`: CI run 199 success.
+- CI run 199 verified lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, snapshot maintenance selection + advisory locking, existing snapshot/trend persistence, ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Documentation-complete PR head must remain green before merge.
 
 ## Decisions / risks
 
-- Trend math is descriptive, not a quality judgment.
-- A requested window may have an actual span larger than requested when history is sparse; that span is always returned explicitly.
-- RepoScout does not use a newer-than-cutoff baseline to fake full-window coverage.
-- Missing history returns structured insufficiency rather than a synthetic zero or extrapolated delta.
-- Open-issue direction is not labeled positive/negative; it is only a signed factual change.
-- Trend reads are derived at request time and are not persisted as ranking scores.
-- Fresh daily coverage still depends on Phase 6D scheduled operations.
+- Scheduling is deployment-owned; RepoScout exposes one safe maintenance run rather than starting timers inside every API process.
+- The recommended cadence is once per UTC day because repository snapshots are daily buckets.
+- The advisory lock protects overlapping processes connected to the same PostgreSQL database.
+- It does not coordinate across different databases.
+- The maintenance runner intentionally refreshes listed repositories only; unlisted moderation candidates may still gain history through normal ingestion/handoff, but scheduled GitHub quota is reserved for public catalog history.
+- A GitHub provider-pressure result stops the remaining refresh batch instead of hammering the provider.
+- Fine-grained retry timestamps are surfaced in the report but are not persisted as a scheduler state machine.
+- Running the operation once daily naturally keeps retries conservative relative to the existing retry policy.
+- Phase 6 does not contain a repository quality or momentum ranking.
 
 ## Phase 6 breakdown
 
 - 6A — snapshot persistence foundation: complete.
 - 6B — snapshot capture + bounded backfill: complete.
 - 6C — deterministic deltas/trend reads: complete.
-- 6D — scheduled operations + retry/backfill orchestration: next.
+- 6D — scheduled operations + retry/backfill orchestration: complete.
+- Phase 6 — Historical snapshots: complete.
 
-## Next phase
+## Next product phase
 
-Phase 6D — Scheduled snapshot operations.
+Phase 7 — Hidden Gems and Rising.
 
-Add bounded scheduled refresh/capture orchestration, preserve GitHub rate-limit and retry behavior, make work selection observable/idempotent, and close Phase 6 without adding ranking logic.
+Phase 7 may consume measured metadata and Phase 6 trend history, but ranking must remain explainable, must not let raw popularity dominate Hidden Gems, and must not rewrite canonical measured history.
 
-Do not start Phase 7 Hidden Gems/Rising until Phase 6D is complete.
+Residual broad-production gates documented in Phase 5E.4 remain separate work.
