@@ -242,8 +242,9 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 7B — Hidden Gems v1 deterministic scoring: complete.
 - Phase 7C — Rising v1 deterministic scoring: complete.
 - Phase 7D — ranking explanation + public API: complete.
-- Phase 7E — ranking benchmark / evaluation / tuning: next.
-- Phase 7 — Hidden Gems and Rising: in progress.
+- Phase 7E — ranking benchmark / evaluation / tuning: complete.
+- Phase 7 — Hidden Gems and Rising: complete.
+- Phase 8 — Contribution discovery: next.
 
 </details>
 
