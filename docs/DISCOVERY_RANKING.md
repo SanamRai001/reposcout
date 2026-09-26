@@ -145,6 +145,159 @@ Potential abuse:
 
 The MVP does not need sophisticated fraud detection, but formulas should avoid over-rewarding metrics that are trivial to manipulate.
 
+
+
+## Phase 7A executable signal contract
+
+Phase 7A freezes the first deterministic ranking evidence schema before any formula or weight becomes canonical.
+
+Contract:
+
+~~~text
+ranking-signals-v1
+~~~
+
+Signal provenance classes:
+
+~~~text
+github_current
+github_evidence
+reposcout_derived_current
+reposcout_derived_history
+~~~
+
+These remain distinct from model assessments.
+
+### Current signal catalog
+
+#### Visibility
+
+- `visibility.stars_total`
+- `visibility.forks_total`
+
+These are measured lifetime/current popularity facts. They are not quality scores.
+
+#### Maintenance
+
+- `maintenance.days_since_push`
+
+This is a deterministic derivative of GitHub `pushed_at` at an explicit evaluation time.
+
+#### Documentation/community evidence
+
+- `documentation.readme_present`
+- `community.contributing_present`
+- `community.code_of_conduct_present`
+- `community.issue_template_present`
+- `community.pull_request_template_present`
+- `community.security_policy_present`
+
+A README that exists but is too large for RepoScout's content-ingestion limit still counts as present.
+
+Unsupported fork community evidence is `not_applicable`, not false.
+
+#### Historical momentum/context
+
+- `momentum.stars_delta_7d`
+- `momentum.stars_delta_30d`
+- `momentum.forks_delta_30d`
+- `context.open_issues_delta_30d`
+
+Historical observations preserve Phase 6 provenance:
+
+~~~text
+requestedWindowDays
+actualWindowDays
+baselineCapturedOn
+latestCapturedOn
+~~~
+
+Open-issue delta is context only. Its direction is not interpreted as inherently positive or negative.
+
+### Missing evidence
+
+The signal layer distinguishes:
+
+~~~text
+available value = 0
+~~~
+
+from:
+
+~~~text
+missing / not_collected
+missing / unavailable
+missing / not_applicable
+missing / insufficient_history
+~~~
+
+This distinction is mandatory for later ranking formulas.
+
+### Hidden Gems signal roles
+
+Contract:
+
+~~~text
+hidden-gems-signals-v1
+~~~
+
+Primary:
+- total stars as visibility/saturation input;
+- days since push;
+- README presence;
+- CONTRIBUTING presence.
+
+Supporting:
+- forks;
+- code of conduct;
+- issue/PR templates;
+- security policy;
+- 30-day star/fork momentum.
+
+Context:
+- 7-day star movement;
+- open-issue movement.
+
+No weight is defined in Phase 7A.
+
+### Rising signal roles
+
+Contract:
+
+~~~text
+rising-signals-v1
+~~~
+
+Primary:
+- 7-day star delta;
+- 30-day star delta;
+- 30-day fork delta.
+
+Supporting:
+- days since push;
+- total stars;
+- total forks.
+
+Context:
+- 30-day open-issue movement.
+
+Lifetime popularity is deliberately not primary Rising evidence.
+
+### No score in Phase 7A
+
+The signal snapshot has no `score` field.
+
+Phase 7A does not:
+- rank repositories;
+- define minimum thresholds;
+- choose weights;
+- normalize popularity;
+- expose a ranking endpoint;
+- persist ranking results;
+- invoke Jev.
+
+Those choices begin in the mode-specific scoring phases.
+
 ## Versioning
 
 Each derived ranking should have an internal version:
