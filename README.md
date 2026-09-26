@@ -251,7 +251,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 8 — Contribution discovery: complete.
 - Phase 9A — semantic document + retrieval benchmark foundation: complete.
 - Phase 9B — embedding provider contract + offline retrieval evaluation: complete.
-- Phase 9B.1 — retrieval benchmark hardening + real-provider evaluation: next.
+- Phase 9B.1A — hardened real-repository benchmark + OpenAI provider adapter: complete.
+- Phase 9B.1B — credentialed real-provider evaluation + adoption decision: next.
 - Phase 9 — Semantic discovery: in progress.
 
 </details>
