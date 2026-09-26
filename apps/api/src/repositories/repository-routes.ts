@@ -18,10 +18,18 @@ import {
   toRepositoryTrendResponse,
   type RepositoryTrendReader,
 } from './repository-trend.js';
+import {
+  encodeRepositoryRankingCursor,
+  parseRepositoryRankingCursor,
+  parseRepositoryRankingMode,
+  toRepositoryRankingResponseItem,
+  type RepositoryRankingReader,
+} from './repository-ranking.js';
 
 export function createRepositoryRouter(
   repositoryCatalog: RepositoryCatalogReader,
   repositoryTrend?: RepositoryTrendReader,
+  repositoryRanking?: RepositoryRankingReader,
 ) {
   const router = Router();
 
@@ -59,6 +67,91 @@ export function createRepositoryRouter(
       next(error);
     }
   });
+
+
+  if (repositoryRanking) {
+    router.get('/rankings/:mode', async (request, response, next) => {
+      try {
+        let mode;
+
+        try {
+          mode = parseRepositoryRankingMode(request.params.mode);
+        } catch (error) {
+          if (error instanceof Error) {
+            response.status(400).json({
+              error: 'invalid_ranking_mode',
+              message: error.message,
+            });
+            return;
+          }
+
+          throw error;
+        }
+
+        const limit = parseRepositoryPageLimit(request.query.limit);
+        let cursor;
+
+        try {
+          cursor = parseRepositoryRankingCursor(
+            request.query.cursor,
+            mode,
+          );
+        } catch (error) {
+          if (error instanceof Error) {
+            response.status(400).json({
+              error: 'invalid_ranking_cursor',
+              message: error.message,
+            });
+            return;
+          }
+
+          throw error;
+        }
+
+        const page = await repositoryRanking.rankPage({
+          mode,
+          limit,
+          cursor,
+        });
+
+        const nextCursor =
+          page.hasMore && page.items.length > 0
+            ? encodeRepositoryRankingCursor(
+                page.items[page.items.length - 1]!,
+                page.evaluatedAt,
+              )
+            : null;
+
+        response.status(200).json({
+          data: page.items.map(toRepositoryRankingResponseItem),
+          ranking: {
+            mode: page.mode,
+            formulaVersion: page.formulaVersion,
+            evaluatedAt: page.evaluatedAt.toISOString(),
+            evaluatedCount: page.evaluatedCount,
+            eligibleCount: page.eligibleCount,
+          },
+          pagination: {
+            limit,
+            nextCursor,
+          },
+        });
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message.startsWith('limit ')
+        ) {
+          response.status(400).json({
+            error: 'invalid_pagination',
+            message: error.message,
+          });
+          return;
+        }
+
+        next(error);
+      }
+    });
+  }
 
   router.get('/search', async (request, response, next) => {
     try {
