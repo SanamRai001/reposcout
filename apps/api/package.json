@@ -33,7 +33,9 @@
     "cleanup:submissions": "tsx src/cli/cleanup-terminal-submissions.ts",
     "test:snapshots": "vitest run src/repositories/repository-snapshot-store.integration.test.ts src/repositories/repository-snapshot-backfill.integration.test.ts src/repositories/repository-snapshot-maintenance-store.integration.test.ts src/repositories/repository-trend.integration.test.ts --maxWorkers=1",
     "backfill:snapshots": "tsx src/cli/backfill-repository-snapshots.ts",
-    "maintain:snapshots": "tsx src/cli/maintain-repository-snapshots.ts"
+    "maintain:snapshots": "tsx src/cli/maintain-repository-snapshots.ts",
+    "test:ranking": "vitest run src/evaluation/repository-ranking-evaluator.test.ts",
+    "eval:ranking": "tsx src/cli/evaluate-ranking.ts"
   },
   "dependencies": {
     "dotenv": "18.0.1",
