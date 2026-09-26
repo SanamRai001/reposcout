@@ -581,7 +581,7 @@ Model output remains advisory for permanent moderation decisions.
 
 ## Phase 6 — Historical snapshots
 
-Status: in progress
+Status: complete
 
 #### Phase 6A — Snapshot persistence foundation
 
@@ -633,15 +633,26 @@ Status: complete
 
 #### Phase 6D — Scheduled snapshot operations
 
-Next:
-- scheduled snapshot execution;
-- bounded batches;
-- safe retries;
-- backfill orchestration;
-- operational logging;
+Status: complete
+
+- scheduler-safe one-run maintenance command;
+- provider-free metadata backfill runs before provider refresh;
+- listed-only refresh candidate selection;
+- candidates require existing refresh eligibility and no current-UTC-day snapshot;
+- deterministic oldest-sync-first order;
+- refresh default 25 / maximum 100;
+- backfill default 100 / maximum 500;
+- PostgreSQL advisory lock prevents overlapping maintenance runs;
+- overlapping run returns a no-op `already_running` outcome;
+- sequential reuse of the existing refresh/ingestion path;
+- `retry_later` and `manual_review` halt remaining provider work;
+- retry timestamp surfaced in maintenance report;
+- unavailable repositories do not block unrelated candidates;
+- structured maintenance observability;
+- external scheduler ownership rather than an in-process API timer;
 - no ranking implementation.
 
-Phase 7 consumes Phase 6 history but remains a separate ranking phase.
+Phase 6 is complete. Phase 7 consumes Phase 6 history but remains a separate ranking phase.
 
 ## Phase 7 — Hidden Gems and Rising
 
