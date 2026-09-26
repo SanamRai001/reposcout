@@ -656,7 +656,7 @@ Phase 6 is complete. Phase 7 consumes Phase 6 history but remains a separate ran
 
 ## Phase 7 — Hidden Gems and Rising
 
-Status: in progress
+Status: complete
 
 #### Phase 7A — Ranking signal contract
 
@@ -735,14 +735,27 @@ Status: complete
 
 #### Phase 7E — Benchmark + tuning
 
-Next:
-- labeled/manual evaluation set;
-- compare formula revisions;
-- document every weight/threshold change;
-- check popularity dominance and anti-gaming failure modes;
-- model assistance only if it demonstrably improves bounded reranking.
+Status: complete
+
+- versioned offline benchmark: `ranking-benchmark-v1`;
+- 18 controlled synthetic cases;
+- 13 gating expectations across Hidden Gems and Rising;
+- 2 explicit non-gating risk probes;
+- alternate-scorer comparison support for future formula revisions;
+- machine-readable `eval:ranking` CLI;
+- dedicated `test:ranking` CI gate;
+- all 13 current gating expectations pass;
+- no v1 weight/threshold/tolerance changes justified by the controlled benchmark;
+- community-file checklist sensitivity documented as a signal-quality risk;
+- artificial star/fork burst sensitivity documented as an anti-abuse risk;
+- model-assisted reranking remains deferred;
+- future formula tuning requires a frozen real-observation benchmark or another explicit ground truth.
+
+Phase 7 is complete.
 
 ## Phase 8 — Contribution discovery
+
+Status: next
 
 - contribution signals;
 - good-first-issue discovery;
