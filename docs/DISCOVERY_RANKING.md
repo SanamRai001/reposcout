@@ -459,6 +459,129 @@ Phase 7E must evaluate/tune:
 - momentum targets;
 - behavior across ecosystems/languages.
 
+
+
+## Phase 7C Rising v1 formula
+
+Formula version:
+
+~~~text
+rising-v1
+~~~
+
+The scorer consumes only `ranking-signals-v1`.
+
+### Eligibility
+
+Required historical signals:
+
+~~~text
+momentum.stars_delta_7d
+momentum.stars_delta_30d
+momentum.forks_delta_30d
+~~~
+
+Any missing/insufficient primary signal makes the result ineligible.
+
+### Sparse-history boundary
+
+Phase 6 may return actual spans longer than the requested window.
+
+Rising v1 accepts only bounded overshoot:
+
+~~~text
+7-day request  -> maximum actual span 9 days
+30-day request -> maximum actual span 35 days
+~~~
+
+If the actual span stays within the bound:
+
+~~~text
+normalized_delta =
+  measured_delta * requested_days / actual_days
+~~~
+
+This prevents an 8/9-day or 31–35-day observation from being scored as if its full raw delta occurred inside exactly 7/30 days.
+
+Larger overshoot is ineligible.
+
+### Score weights
+
+~~~text
+7-day star momentum     max 45
+30-day star momentum    max 35
+30-day fork momentum    max 15
+maintenance support     max  5
+------------------------------
+total                   max 100
+~~~
+
+Measured historical momentum therefore controls 95% of the score.
+
+### Momentum targets
+
+Positive normalized momentum uses bounded logarithmic curves.
+
+v1 saturation targets:
+
+~~~text
++25 stars / 7d
++100 stars / 30d
++15 forks / 30d
+~~~
+
+Reaching or exceeding a target saturates that component.
+
+Zero/negative movement receives zero points for that component.
+
+### Maintenance
+
+Maintenance is supporting evidence only.
+
+~~~text
+fresh push -> up to 5 points
+90+ days   -> 0 points
+~~~
+
+Missing maintenance evidence does not make historically sufficient Rising evidence ineligible.
+
+### Lifetime popularity
+
+Current total stars/forks contribute:
+
+~~~text
+0 score points
+~~~
+
+They are returned only as visibility context.
+
+A repository cannot rank as Rising because it is already popular.
+
+### Output
+
+Eligible output includes:
+
+- formula/signal versions;
+- score;
+- component points/maxima;
+- normalized deltas;
+- exact historical provenance;
+- lifetime visibility context;
+- maintenance coverage.
+
+Ineligible output exposes missing primary signals or excessive sparse-window coverage.
+
+### Important limitation
+
+All weights/targets/tolerances are experimental v1 policy.
+
+Phase 7E must evaluate:
+- 45/35/15/5 weights;
+- +25/+100/+15 saturation targets;
+- 9-day and 35-day sparse-window limits;
+- behavior across small vs large ecosystems;
+- anti-gaming sensitivity to star/fork bursts.
+
 ## Versioning
 
 Each derived ranking should have an internal version:

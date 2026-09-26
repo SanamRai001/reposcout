@@ -1607,3 +1607,81 @@ The scorer is deterministic and recomputable from a versioned ranking-signal sna
 Scores are not persisted as canonical repository facts in Phase 7B.
 
 Public ordering, pagination, explanation transport, and ranking API integration remain Phase 7D work.
+
+
+## D-157 — Rising v1 is 95% measured historical momentum
+
+**Status:** Accepted
+
+`rising-v1` allocates:
+
+- 45 points to normalized 7-day star momentum;
+- 35 points to normalized 30-day star momentum;
+- 15 points to normalized 30-day fork momentum;
+- 5 points to optional maintenance support.
+
+Lifetime popularity contributes zero score points.
+
+This keeps Rising a growth ranking rather than a disguised popularity leaderboard.
+
+## D-158 — Rising v1 requires complete primary historical evidence
+
+**Status:** Accepted
+
+The scorer requires available:
+
+- `momentum.stars_delta_7d`;
+- `momentum.stars_delta_30d`;
+- `momentum.forks_delta_30d`.
+
+Missing or insufficient history returns an explicit ineligible result.
+
+Maintenance and lifetime visibility are not eligibility substitutes.
+
+## D-159 — Rising v1 bounds and normalizes sparse historical windows
+
+**Status:** Accepted
+
+A requested 7-day signal may have at most 9 actual days of coverage.
+
+A requested 30-day signal may have at most 35 actual days of coverage.
+
+Within those limits, the measured delta is normalized proportionally back to the requested duration before scoring.
+
+Coverage beyond those limits returns `history_window_too_sparse` rather than extrapolating an unreliable trend.
+
+## D-160 — Rising v1 uses bounded positive momentum curves
+
+**Status:** Accepted
+
+Positive normalized growth is mapped through bounded logarithmic curves.
+
+v1 saturation targets are:
+
+- +25 stars / 7d;
+- +100 stars / 30d;
+- +15 forks / 30d.
+
+Zero or negative movement receives zero momentum points.
+
+These targets are experimental ranking policy and require Phase 7E evaluation.
+
+## D-161 — Rising v1 keeps popularity as explanation context only
+
+**Status:** Accepted
+
+Current lifetime stars/forks are returned in the scorer output as visibility context.
+
+They do not add or subtract score points.
+
+This allows explanations to show scale without letting scale substitute for measured momentum.
+
+## D-162 — Rising v1 remains derived and non-canonical
+
+**Status:** Accepted
+
+The scorer is deterministic and recomputable from a versioned signal snapshot.
+
+Phase 7C persists no ranking score and exposes no public ordering.
+
+Public ranking transport/order remains Phase 7D.

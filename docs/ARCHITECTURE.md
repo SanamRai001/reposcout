@@ -785,6 +785,33 @@ Popularity is subtractive only; low star count cannot generate positive quality 
 
 Candidate retrieval/public ranking integration remains Phase 7D.
 
+
+
+## Phase 7C Rising scorer boundary
+
+Rising v1 remains a pure deterministic layer over Phase 7A historical signals:
+
+~~~text
+ranking-signals-v1
+        |
+required 7d + 30d momentum evidence
+        |
+sparse-window validation
+        |
+requested-window normalization
+        |
+bounded momentum components (95%)
+        + optional maintenance support (5%)
+        |
+rising-v1 result
+~~~
+
+The scorer performs no provider/database work and persists no ranking state.
+
+Lifetime stars/forks are returned only as context.
+
+Public ranking retrieval/order remains Phase 7D.
+
 ## Scaling rule
 
 Do not prematurely design for millions of repositories.
