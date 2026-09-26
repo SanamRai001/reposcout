@@ -698,15 +698,25 @@ Status: complete
 
 #### Phase 7C — Rising v1
 
-Next:
-- momentum-focused deterministic scorer;
-- sufficient-history requirement;
-- explicit handling of sparse actual windows;
-- measured growth must dominate lifetime popularity.
+Status: complete
+
+- versioned deterministic formula: `rising-v1`;
+- requires 7-day star, 30-day star, and 30-day fork history;
+- historical momentum contributes 95/100 possible points;
+- maintenance support contributes at most 5 points;
+- lifetime stars/forks contribute zero score points;
+- 7-day actual span capped at 9 days;
+- 30-day actual span capped at 35 days;
+- acceptable sparse windows normalized back to requested duration;
+- excessive sparse history returns ineligible;
+- positive growth uses bounded logarithmic curves;
+- zero/negative growth produces zero momentum points;
+- score output retains historical provenance and normalized deltas;
+- no public ranking API/persistence/model input.
 
 #### Phase 7D — Ranking explanation + public API
 
-Later:
+Next:
 - public named ranking modes;
 - stable explanation payload;
 - candidate ordering/pagination;
