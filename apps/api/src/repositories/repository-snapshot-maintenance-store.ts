@@ -1,5 +1,3 @@
-import type { PoolClient } from 'pg';
-
 import type { DatabasePool } from '../database/database.js';
 
 const SNAPSHOT_MAINTENANCE_LOCK_CLASS = 73_091;
