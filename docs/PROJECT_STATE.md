@@ -6,11 +6,11 @@ Complete historical repository intelligence through deterministic daily capture,
 
 ## Branch
 
-`feat/phase-6d-snapshot-operations`
+`main`
 
-Base: `main@87bf7f567f4ed37947e2a72cd4a68a6937d06177`
+Current verified merge: `03f17493a07def8e09d9fa1d872392953b75bad6`
 
-PR: #43
+PR #43: merged
 
 ## Completed phase
 
@@ -48,8 +48,10 @@ Phase 6 — Historical snapshots is now implementation-complete on this branch, 
 - Phase 6C verified on `main@87bf7f567f4ed37947e2a72cd4a68a6937d06177`.
 - Initial Phase 6D code head `9ea71248c59f140ad9e5703f95b481d2ef053a42`: CI run 198 found one unused import during lint.
 - Corrected Phase 6D code head `3c52c0321411b0a0625b483ebd03b17371c76263`: CI run 199 success.
-- CI run 199 verified lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, snapshot maintenance selection + advisory locking, existing snapshot/trend persistence, ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
+- Documentation-complete PR head `e9e2215ed16899028fbc4d47a5b4d67f767b1525`: CI run 202 success.
+- PR #43 merged as `03f17493a07def8e09d9fa1d872392953b75bad6`.
+- Post-merge `main` CI run 203: success.
+- CI verified lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, snapshot maintenance selection + advisory locking, existing snapshot/trend persistence, ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
 
 ## Decisions / risks
 
