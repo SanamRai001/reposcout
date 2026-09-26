@@ -883,6 +883,45 @@ The current benchmark does not justify a v2 formula.
 
 A future real-world benchmark should freeze measured observations and labels rather than querying mutable live provider state during CI.
 
+
+
+## Phase 8A contribution discovery signal boundary
+
+Contribution discovery begins with a deterministic evidence layer rather than a friendliness score:
+
+~~~text
+GitHub issue observation
+        +
+repository contribution evidence
+        |
+label normalization
+        |
+contribution-signals-v1
+        |
+        +-- entry hints
+        +-- repository process evidence
+        +-- issue availability
+        +-- issue age/update freshness
+        +-- discussion context
+        |
+future persistence/API/recommendation phases
+~~~
+
+The Phase 8A builder:
+- performs no GitHub request;
+- performs no database query;
+- invokes no model provider;
+- persists no score;
+- makes no beginner-friendly judgment.
+
+`good first issue` and `help wanted` are normalized hints only.
+
+Repository process evidence retains the existing OBSERVED vs UNSUPPORTED_FORK semantics.
+
+Issue age/freshness uses an explicit evaluation timestamp.
+
+GitHub issue collection/persistence begins in Phase 8B.
+
 ## Scaling rule
 
 Do not prematurely design for millions of repositories.
