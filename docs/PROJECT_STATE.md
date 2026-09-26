@@ -6,11 +6,11 @@ Implement the first deterministic Hidden Gems score over the versioned Phase 7A 
 
 ## Branch
 
-`feat/phase-7b-hidden-gems-v1`
+`main`
 
-Base: `main@4b2d36526aad284e02536ea31bff450ce3b3a61e`
+Current verified merge: `89f8dfc804f02816c6dd18baa308f934beb83a20`
 
-PR: #45
+PR #45: merged
 
 ## Completed phase
 
@@ -54,10 +54,11 @@ Phase 7 remains in progress.
 ## Verification
 
 - Phase 7A verified on `main@4b2d36526aad284e02536ea31bff450ce3b3a61e`.
-- Phase 7B code head `c44ff0b65910945b61ff7242979a3580b491d871`.
-- GitHub Actions CI run 214: success before documentation-only follow-up commits.
-- CI run 214 passed lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, repository/snapshot/history checks, ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
+- Phase 7B code head `c44ff0b65910945b61ff7242979a3580b491d871`: CI run 214 success.
+- Documentation-complete PR head `22c77055275f3d9e70b20b1c62b5c6ef5824916a`: CI run 220 success.
+- PR #45 merged as `89f8dfc804f02816c6dd18baa308f934beb83a20`.
+- Post-merge `main` CI run 221: success.
+- CI passed lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, repository/snapshot/history checks, ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
 
 ## Decisions / risks
 
