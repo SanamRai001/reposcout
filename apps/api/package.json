@@ -35,7 +35,9 @@
     "backfill:snapshots": "tsx src/cli/backfill-repository-snapshots.ts",
     "maintain:snapshots": "tsx src/cli/maintain-repository-snapshots.ts",
     "test:ranking": "vitest run src/evaluation/repository-ranking-evaluator.test.ts",
-    "eval:ranking": "tsx src/cli/evaluate-ranking.ts"
+    "eval:ranking": "tsx src/cli/evaluate-ranking.ts",
+    "test:contribution-issues": "vitest run src/repositories/repository-contribution-issue-store.integration.test.ts --maxWorkers=1",
+    "ingest:contribution-issues": "tsx src/cli/ingest-contribution-issues.ts"
   },
   "dependencies": {
     "dotenv": "18.0.1",
