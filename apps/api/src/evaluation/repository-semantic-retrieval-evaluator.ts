@@ -4,7 +4,7 @@ import {
 } from '../repositories/repository-embedding-provider.js';
 import {
   semanticRetrievalBenchmark,
-  type SemanticRetrievalBenchmark,
+  type SemanticRetrievalBenchmarkQuery,
   type SemanticRetrievalBenchmarkRepository,
 } from './repository-semantic-retrieval-benchmark.js';
 
@@ -41,6 +41,12 @@ export type SemanticRetrievalEvaluationReport = Readonly<{
     lexicalFirstRelevantRank: number | null;
     semanticFirstRelevantRank: number | null;
   }>[];
+}>;
+
+export type SemanticRetrievalEvaluationBenchmark = Readonly<{
+  version: string;
+  repositories: readonly SemanticRetrievalBenchmarkRepository[];
+  queries: readonly SemanticRetrievalBenchmarkQuery[];
 }>;
 
 type RankedRepository = Readonly<{
@@ -208,7 +214,7 @@ function calculateMetrics(
 
 export async function runSemanticRetrievalEvaluation(
   provider: RepositoryEmbeddingProvider,
-  benchmark: SemanticRetrievalBenchmark =
+  benchmark: SemanticRetrievalEvaluationBenchmark =
     semanticRetrievalBenchmark,
 ): Promise<SemanticRetrievalEvaluationReport> {
   const repositoryInputs = benchmark.repositories.map((repository) => ({
