@@ -7,6 +7,7 @@ import {
 import { logger } from './logger.js';
 import type { RepositoryCatalogReader } from './repositories/repository-catalog.js';
 import type { RepositoryTrendReader } from './repositories/repository-trend.js';
+import type { RepositoryRankingReader } from './repositories/repository-ranking.js';
 import { createRepositoryRouter } from './repositories/repository-routes.js';
 import type { RepositorySubmissionService } from './submissions/repository-submission-service.js';
 import { createRepositorySubmissionRouter } from './submissions/repository-submission-routes.js';
@@ -23,6 +24,7 @@ export type AppDependencies = Readonly<{
   checkReadiness?: () => Promise<void>;
   repositoryCatalog?: RepositoryCatalogReader;
   repositoryTrend?: RepositoryTrendReader;
+  repositoryRanking?: RepositoryRankingReader;
   repositorySubmissionService?: RepositorySubmissionService;
   repositorySubmissionRateLimiter?: RepositorySubmissionRateLimiter;
   repositoryModeration?: RepositoryModerationRouterDependencies;
@@ -83,6 +85,7 @@ export function createApp(dependencies: AppDependencies = {}) {
       createRepositoryRouter(
         dependencies.repositoryCatalog,
         dependencies.repositoryTrend,
+        dependencies.repositoryRanking,
       ),
     );
   }
