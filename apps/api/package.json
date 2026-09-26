@@ -41,7 +41,9 @@
     "test:contribution-discovery": "vitest run src/repositories/repository-contribution-discovery.integration.test.ts --maxWorkers=1",
     "test:contribution-recommendation": "vitest run src/evaluation/repository-contribution-recommendation-evaluator.test.ts",
     "eval:contribution-recommendation": "tsx src/cli/evaluate-contribution-recommendation.ts",
-    "test:semantic-foundation": "vitest run src/repositories/repository-semantic-document.test.ts src/evaluation/repository-semantic-retrieval-benchmark.test.ts"
+    "test:semantic-foundation": "vitest run src/repositories/repository-semantic-document.test.ts src/evaluation/repository-semantic-retrieval-benchmark.test.ts",
+    "test:semantic-evaluation": "vitest run src/repositories/repository-embedding-provider.test.ts src/evaluation/repository-semantic-retrieval-evaluator.test.ts",
+    "eval:semantic-retrieval": "tsx src/cli/evaluate-semantic-retrieval.ts"
   },
   "dependencies": {
     "dotenv": "18.0.1",
