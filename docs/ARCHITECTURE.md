@@ -747,6 +747,44 @@ The signal layer does not:
 
 This keeps future formula tuning recomputable and auditable.
 
+
+
+## Phase 7B Hidden Gems scorer boundary
+
+Hidden Gems v1 remains a pure deterministic layer over the Phase 7A signal snapshot:
+
+~~~text
+ranking-signals-v1
+        |
+required evidence check
+        |
+positive components
+        +-- maintenance
+        +-- README
+        +-- CONTRIBUTING
+        +-- community readiness
+        +-- optional 30d momentum
+        |
+bounded popularity penalty
+        |
+hidden-gem-v1 result
+~~~
+
+The scorer:
+- performs no database query;
+- performs no GitHub call;
+- invokes no model provider;
+- persists no score;
+- produces no public ordering.
+
+Missing required evidence returns `ineligible` rather than substituting zero.
+
+Historical momentum is optional and explicitly reports coverage.
+
+Popularity is subtractive only; low star count cannot generate positive quality points.
+
+Candidate retrieval/public ranking integration remains Phase 7D.
+
 ## Scaling rule
 
 Do not prematurely design for millions of repositories.
