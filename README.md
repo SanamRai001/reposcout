@@ -237,7 +237,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 6D — scheduled snapshot operations: complete.
 - Phase 6 — historical snapshots: complete.
 - Phase 7A — ranking signal contract: complete.
-- Phase 7B — Hidden Gems v1: next.
+- Phase 7B — Hidden Gems v1 deterministic scoring: complete.
+- Phase 7C — Rising v1: next.
 - Phase 7 — Hidden Gems and Rising: in progress.
 
 </details>
