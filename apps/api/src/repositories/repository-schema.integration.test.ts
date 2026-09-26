@@ -962,4 +962,111 @@ describe('repositories schema', () => {
     });
   });
 
+  it('creates measured contribution issue storage and lookup index', async () => {
+    const columns = await pool.query<{
+      column_name: string;
+      data_type: string;
+      is_nullable: 'YES' | 'NO';
+    }>(
+      `
+        SELECT column_name, data_type, is_nullable
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'repository_contribution_issues'
+        ORDER BY ordinal_position
+      `,
+    );
+
+    expect(columns.rows).toEqual([
+      { column_name: 'id', data_type: 'uuid', is_nullable: 'NO' },
+      { column_name: 'repository_id', data_type: 'uuid', is_nullable: 'NO' },
+      { column_name: 'github_issue_id', data_type: 'bigint', is_nullable: 'NO' },
+      { column_name: 'number', data_type: 'integer', is_nullable: 'NO' },
+      { column_name: 'title', data_type: 'text', is_nullable: 'NO' },
+      { column_name: 'github_url', data_type: 'text', is_nullable: 'NO' },
+      { column_name: 'state', data_type: 'text', is_nullable: 'NO' },
+      { column_name: 'locked', data_type: 'boolean', is_nullable: 'NO' },
+      { column_name: 'assignee_count', data_type: 'integer', is_nullable: 'NO' },
+      { column_name: 'comment_count', data_type: 'integer', is_nullable: 'NO' },
+      { column_name: 'labels', data_type: 'ARRAY', is_nullable: 'NO' },
+      {
+        column_name: 'created_at_github',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'updated_at_github',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'observed_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'created_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'updated_at',
+        data_type: 'timestamp with time zone',
+        is_nullable: 'NO',
+      },
+    ]);
+
+    const index = await pool.query<{ index_name: string | null }>(
+      `
+        SELECT to_regclass(
+          'public.repository_contribution_issues_repo_state_updated_idx'
+        )::text AS index_name
+      `,
+    );
+
+    expect(index.rows[0]?.index_name).toBe(
+      'repository_contribution_issues_repo_state_updated_idx',
+    );
+  });
+
+  it('enforces contribution issue identity and measured count constraints', async () => {
+    const repository = createRepositoryFixture({
+      githubRepositoryId: '787878787',
+    });
+    await insertRepository(repository);
+
+    await expect(
+      pool.query(
+        `
+          INSERT INTO repository_contribution_issues (
+            id,
+            repository_id,
+            github_issue_id,
+            number,
+            title,
+            github_url,
+            state,
+            locked,
+            assignee_count,
+            comment_count,
+            labels,
+            created_at_github,
+            updated_at_github,
+            observed_at
+          )
+          VALUES (
+            $1, $2, 42, 1, 'Issue',
+            'https://github.com/example/project/issues/1',
+            'open', false, -1, 0, '{}',
+            '2026-09-01T00:00:00Z',
+            '2026-09-02T00:00:00Z',
+            '2026-09-03T00:00:00Z'
+          )
+        `,
+        [randomUUID(), repository.id],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+  });
+
+
 });

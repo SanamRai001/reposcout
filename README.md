@@ -245,7 +245,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 7E — ranking benchmark / evaluation / tuning: complete.
 - Phase 7 — Hidden Gems and Rising: complete.
 - Phase 8A — contribution discovery signal contract: complete.
-- Phase 8B — GitHub issue ingestion + persistence: next.
+- Phase 8B — GitHub issue ingestion + persistence: complete.
+- Phase 8C — public contribution discovery + filters: next.
 - Phase 8 — Contribution discovery: in progress.
 
 </details>

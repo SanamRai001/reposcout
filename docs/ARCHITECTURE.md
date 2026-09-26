@@ -922,6 +922,45 @@ Issue age/freshness uses an explicit evaluation timestamp.
 
 GitHub issue collection/persistence begins in Phase 8B.
 
+
+
+## Phase 8B contribution issue ingestion boundary
+
+Measured contribution issue collection composes the existing listed catalog and GitHub retry boundary:
+
+~~~text
+listed repository catalog
+        |
+bounded repository batch
+        |
+RepositoryContributionIssueIngestionService
+        |
+GithubClient.fetchRepositoryIssues
+        |
+one page / state=all / updated desc
+        |
+exclude pull-request-shaped records
+        |
+strict measured issue parsing
+        |
+stale-safe repository_contribution_issues upsert
+~~~
+
+Persistence protects:
+- global GitHub issue identity;
+- repository-local issue number identity;
+- nonnegative measured counts;
+- open/closed state;
+- GitHub timestamp ordering;
+- stale-write rejection;
+- cross-repository identity movement.
+
+Batch behavior is bounded and sequential.
+
+Provider `retry_later` or `manual_review` halts remaining work; ordinary unavailable repositories may be skipped while advancing the resumable repository cursor.
+
+Phase 8B does not expose issue discovery publicly and assigns no contribution suitability score.
+
 ## Scaling rule
 
 Do not prematurely design for millions of repositories.

@@ -1921,3 +1921,87 @@ Phase 8 delivery order is:
 4. 8D — evidence-based recommendation/explanation + evaluation.
 
 Phase 9 semantic discovery remains separate.
+
+
+## D-181 — Phase 8B persists measured issue facts, not suitability judgments
+
+**Status:** Accepted
+
+`repository_contribution_issues` stores GitHub-observed issue identity, state, assignment/discussion counts, labels, and timestamps.
+
+It does not store:
+
+- beginner-friendly;
+- difficulty;
+- recommendation score;
+- maintainer-quality judgment;
+- model classification.
+
+Phase 8A remains responsible for deterministic signal semantics over these observations.
+
+## D-182 — Pull requests are excluded from contribution issue ingestion
+
+**Status:** Accepted
+
+GitHub's issues API can return pull-request-shaped records.
+
+Phase 8B excludes any item carrying the GitHub pull-request marker before issue parsing/persistence.
+
+RepoScout does not treat pull requests as contribution issues merely because the provider returns them from the same endpoint.
+
+## D-183 — Phase 8B intentionally fetches one bounded, recently-updated issue page
+
+**Status:** Accepted
+
+Each repository fetch is bounded to one page with a maximum of 100 issue records, requested as:
+
+- `state=all`;
+- sorted by `updated`;
+- descending direction.
+
+The MVP therefore prioritizes recently-changing contribution opportunities and does not claim complete historical issue ingestion.
+
+Broader pagination/backfill should be added only if Phase 8C/8D requirements demonstrate the need.
+
+## D-184 — Contribution issue persistence is stale-safe and identity-stable
+
+**Status:** Accepted
+
+A newer GitHub `updated_at` observation may update the stored issue.
+
+An older GitHub observation cannot overwrite newer state.
+
+For equal GitHub update times, a newer/equal RepoScout observation may refresh the record.
+
+A globally unique GitHub issue ID cannot be reassigned to another repository.
+
+These rules preserve last-known-good measured issue state under retries/out-of-order ingestion.
+
+## D-185 — Scheduled/batch issue ingestion is listed-only and resumable
+
+**Status:** Accepted
+
+Phase 8B resolves repositories through the existing listed catalog boundary before any provider request.
+
+Unlisted/unknown repositories perform no GitHub issue fetch.
+
+The bounded sequential batch returns a repository cursor so operations can resume after completed/skipped work.
+
+`retry_later` and `manual_review` halt remaining provider work conservatively.
+
+## D-186 — Phase 8B does not collect issue-body or contributor identity data
+
+**Status:** Accepted
+
+The first issue entity deliberately excludes:
+
+- issue body text;
+- commenter identities;
+- assignee identities;
+- contributor identities;
+- linked PR contributor outcomes;
+- maintainer response-time histories.
+
+Only assignee/comment counts are captured.
+
+Richer contribution-quality signals require explicit product/privacy semantics before additional collection.

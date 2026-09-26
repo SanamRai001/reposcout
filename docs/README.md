@@ -55,6 +55,7 @@ Start here if you are contributing to the project.
 - [PHASE_7D_PUBLIC_RANKING_API.md](PHASE_7D_PUBLIC_RANKING_API.md) — listed-only Hidden Gems/Rising endpoints, deterministic ordering, cursor semantics, and structured explanations.
 - [PHASE_7E_RANKING_BENCHMARK.md](PHASE_7E_RANKING_BENCHMARK.md) — deterministic ranking benchmark, invariant gates, risk probes, and evidence-backed no-change tuning decision.
 - [PHASE_8A_CONTRIBUTION_SIGNAL_CONTRACT.md](PHASE_8A_CONTRIBUTION_SIGNAL_CONTRACT.md) — versioned issue/repository contribution evidence, label-hint semantics, availability, and freshness context.
+- [PHASE_8B_CONTRIBUTION_ISSUE_INGESTION.md](PHASE_8B_CONTRIBUTION_ISSUE_INGESTION.md) — measured GitHub issue persistence, listed-only bounded ingestion, stale-safe updates, and provider-pressure behavior.
 - [PRIVACY.md](PRIVACY.md) — application privacy and data-handling behavior.
 - [PROJECT_STATE.md](PROJECT_STATE.md) — concise current branch, completed phase, verification, risks/decisions, and next checkpoint.
 
