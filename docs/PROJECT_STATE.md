@@ -2,81 +2,93 @@
 
 ## Objective
 
-Complete historical repository intelligence through deterministic daily capture, backfill, trend reads, and scheduler-safe operations while keeping ranking as a separate later phase.
+Define a versioned, explainable ranking-signal boundary before any Hidden Gems or Rising score is implemented.
 
 ## Branch
 
-`main`
+`feat/phase-7a-ranking-signal-contract`
 
-Current verified merge: `03f17493a07def8e09d9fa1d872392953b75bad6`
+Base: `main@5284df8855c42094494f41e70b69eddfb417caca`
 
-PR #43: merged
+PR: #44
 
 ## Completed phase
 
-Phase 6D — Scheduled snapshot operations.
+Phase 7A — Ranking signal contract.
 
-Phase 6 — Historical snapshots is now implementation-complete on this branch, pending documentation-complete and merged-state verification.
+Phase 7 remains in progress.
 
 ## Changes
 
-- Added a scheduler-safe one-run snapshot maintenance operation.
-- Maintenance order is:
-  1. provider-free stored-metadata backfill;
-  2. bounded refresh-candidate selection;
-  3. sequential refresh through the existing refresh/ingestion pipeline.
-- Added PostgreSQL advisory locking so overlapping maintenance invocations cannot run concurrently.
-- An overlapping invocation returns `already_running` and performs no backfill or GitHub work.
-- Refresh candidates are:
-  - publicly listed canonical repositories;
-  - older than the existing refresh eligibility interval;
-  - missing a snapshot for the current UTC day.
-- Candidate order is oldest `last_synced_at` first with deterministic repository-ID tie behavior.
-- Refresh default batch is 25; maximum is 100.
-- Backfill default batch is 100; maximum is 500.
-- Existing Phase 6B backfill can satisfy historical gaps before any provider work occurs.
-- Repositories already represented by today's UTC snapshot are excluded from provider refresh by this maintenance operation.
-- `retry_later` halts the remaining provider batch and exposes `retryAt`.
-- `manual_review` halts the remaining provider batch.
-- `unavailable` repositories are recorded while unrelated candidates may continue.
-- Added structured maintenance start/item/completion/failure events.
-- Added `maintain:snapshots` CLI intended for an external once-daily scheduler.
-- No in-process timer is embedded in the API server.
+- Added executable ranking signal contract version `ranking-signals-v1`.
+- Added source provenance classes:
+  - GitHub current facts;
+  - GitHub evidence facts;
+  - RepoScout deterministic current derivatives;
+  - RepoScout deterministic historical derivatives.
+- Added explicit signal roles:
+  - visibility;
+  - maintenance;
+  - documentation;
+  - community;
+  - momentum;
+  - context.
+- Added deterministic signal extraction from:
+  - current stars/forks;
+  - GitHub push timestamp;
+  - README evidence;
+  - contribution/community-file evidence;
+  - Phase 6 7-day and 30-day trend results.
+- Zero remains an available measured value rather than becoming missing data.
+- Missing values retain explicit reason:
+  - `not_collected`;
+  - `unavailable`;
+  - `not_applicable`;
+  - `insufficient_history`.
+- Historical signal observations retain requested window, actual covered window, baseline day, and latest day.
+- Added separate mode contracts:
+  - `hidden-gems-signals-v1`;
+  - `rising-signals-v1`.
+- Hidden Gems primary signals emphasize visibility saturation context, maintenance recency, README evidence, and contribution guidance.
+- Rising primary signals are historical momentum only:
+  - 7-day star delta;
+  - 30-day star delta;
+  - 30-day fork delta.
+- Raw popularity is supporting context for Rising, not primary momentum.
+- 30-day open-issue change remains context only.
+- No score, ranking order, endpoint, persisted ranking table, or model assessment was added.
 
 ## Verification
 
-- Phase 6C verified on `main@87bf7f567f4ed37947e2a72cd4a68a6937d06177`.
-- Initial Phase 6D code head `9ea71248c59f140ad9e5703f95b481d2ef053a42`: CI run 198 found one unused import during lint.
-- Corrected Phase 6D code head `3c52c0321411b0a0625b483ebd03b17371c76263`: CI run 199 success.
-- Documentation-complete PR head `e9e2215ed16899028fbc4d47a5b4d67f767b1525`: CI run 202 success.
-- PR #43 merged as `03f17493a07def8e09d9fa1d872392953b75bad6`.
-- Post-merge `main` CI run 203: success.
-- CI verified lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, snapshot maintenance selection + advisory locking, existing snapshot/trend persistence, ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Phase 6 verified on `main@5284df8855c42094494f41e70b69eddfb417caca`.
+- Initial Phase 7A head `28401b93260e1c4c0a42cca654942d596ff94dce`: CI run 206 failed TypeScript verification because two new test/array types were narrower/wider than intended.
+- Corrected Phase 7A code head `d928615830989ab18acc4255723b3cc0b254ad73`: CI run 207 success.
+- CI run 207 passed lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, repository/snapshot/history checks, ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
+- Documentation-complete PR head must remain green before merge.
 
 ## Decisions / risks
 
-- Scheduling is deployment-owned; RepoScout exposes one safe maintenance run rather than starting timers inside every API process.
-- The recommended cadence is once per UTC day because repository snapshots are daily buckets.
-- The advisory lock protects overlapping processes connected to the same PostgreSQL database.
-- It does not coordinate across different databases.
-- The maintenance runner intentionally refreshes listed repositories only; unlisted moderation candidates may still gain history through normal ingestion/handoff, but scheduled GitHub quota is reserved for public catalog history.
-- A GitHub provider-pressure result stops the remaining refresh batch instead of hammering the provider.
-- Fine-grained retry timestamps are surfaced in the report but are not persisted as a scheduler state machine.
-- Running the operation once daily naturally keeps retries conservative relative to the existing retry policy.
-- Phase 6 does not contain a repository quality or momentum ranking.
+- Phase 7A defines permitted deterministic evidence, not formulas or weights.
+- Hidden Gems and Rising are separate ranking modes with separate primary/supporting/context signal roles.
+- Missing evidence is never automatically converted to zero.
+- Sparse Phase 6 history keeps actual-window provenance; later scoring must not silently treat an 8-day observation as exact 7-day data.
+- Open-issue change is descriptive context, not a positive/negative quality direction.
+- Current stars/forks are measured visibility facts; they are not universal quality measurements.
+- Jev/model assessment is not part of the Phase 7A deterministic signal contract.
+- Signal contracts are versioned independently from future scoring formulas.
 
-## Phase 6 breakdown
+## Phase 7 breakdown
 
-- 6A — snapshot persistence foundation: complete.
-- 6B — snapshot capture + bounded backfill: complete.
-- 6C — deterministic deltas/trend reads: complete.
-- 6D — scheduled operations + retry/backfill orchestration: complete.
-- Phase 6 — Historical snapshots: complete.
+- 7A — ranking signal contract: complete.
+- 7B — Hidden Gems v1 deterministic scoring: next.
+- 7C — Rising v1 deterministic scoring.
+- 7D — explanation/public ranking API.
+- 7E — benchmark/evaluation + documented tuning.
 
-## Next product phase
+## Next phase
 
-Phase 7 — Hidden Gems and Rising.
+Phase 7B — Hidden Gems v1.
 
-Phase 7 may consume measured metadata and Phase 6 trend history, but ranking must remain explainable, must not let raw popularity dominate Hidden Gems, and must not rewrite canonical measured history.
+Implement the first deterministic Hidden Gems scorer over the versioned 7A signal snapshot, define minimum evidence/eligibility explicitly, prevent raw popularity from dominating, and keep every score component explainable.
 
-Residual broad-production gates documented in Phase 5E.4 remain separate work.
+Do not implement Rising v1 in the same phase.
