@@ -236,7 +236,9 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 6C — deterministic deltas + trend reads: complete.
 - Phase 6D — scheduled snapshot operations: complete.
 - Phase 6 — historical snapshots: complete.
-- Phase 7 — Hidden Gems and Rising: next.
+- Phase 7A — ranking signal contract: complete.
+- Phase 7B — Hidden Gems v1: next.
+- Phase 7 — Hidden Gems and Rising: in progress.
 
 </details>
 
