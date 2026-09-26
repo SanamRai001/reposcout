@@ -6,11 +6,11 @@ Start Phase 8 with a versioned deterministic contribution-discovery evidence con
 
 ## Branch
 
-`feat/phase-8a-contribution-signal-contract`
+`main`
 
-Base: `main@9233385a9b8a9cc0375393753a0d6cb5164943b2`
+Current verified merge: `118d97d224e25e928c79817a56b68954e7fb4738`
 
-PR: #49
+PR #49: merged
 
 ## Completed phase
 
@@ -69,8 +69,11 @@ Phase 8 remains in progress.
   - CI run 256 failed TypeScript because the test fixture inferred two evidence fields as always non-null.
 - Corrected Phase 8A code head `cb624fa359ea147bffc3d0ae7fd128974b2065b5`:
   - CI run 257 success.
-- CI run 257 passed application verification, production dependency audit, Jev harness, ranking benchmark, migration apply/rollback/reapply, repository/snapshot/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
+- Documentation-complete PR head `34bb061a2b09c80a61d352cf426c55223f366b95`:
+  - CI run 265 success.
+- PR #49 merged as `118d97d224e25e928c79817a56b68954e7fb4738`.
+- Post-merge `main` CI run 266: success.
+- CI passed application verification, production dependency audit, Jev harness, ranking benchmark, migration apply/rollback/reapply, repository/snapshot/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
 
 ## Decisions / risks
 
