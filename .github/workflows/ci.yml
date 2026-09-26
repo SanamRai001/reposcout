@@ -65,6 +65,12 @@ jobs:
       - name: Verify semantic retrieval evaluation
         run: npm run test:semantic-evaluation -w @reposcout/api
 
+      - name: Verify hardened semantic benchmark
+        run: npm run test:semantic-benchmark-v2 -w @reposcout/api
+
+      - name: Verify live embedding provider adapter
+        run: npm run test:semantic-provider-adapter -w @reposcout/api
+
       - name: Apply migrations
         run: npm run db:migrate -w @reposcout/api
 
