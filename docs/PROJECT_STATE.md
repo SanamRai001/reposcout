@@ -6,19 +6,19 @@ Help users triage measured open-source contribution opportunities with determini
 
 ## Branch
 
-`feat/phase-8d-contribution-recommendation-evaluation`
+`main`
 
-Base:
+Current verified merge:
 
-`main@8ed28ddc4fa6d231b554eaabe2d13eee37f34c43`
+`9f71bfd73e1bbf020dfece0985a0eed20e7295ce`
 
-PR #52: open.
+PR #52: merged.
 
 ## Completed phase
 
 Phase 8D — evidence-based contribution recommendation/explanation + evaluation.
 
-Phase 8 is implementation-complete on the PR branch and awaits merge/post-merge verification.
+Phase 8 is complete.
 
 ## Changes
 
@@ -64,7 +64,10 @@ Phase 8 is implementation-complete on the PR branch and awaits merge/post-merge 
 - Phase 8C merged in PR #51 as `cf32cbbf94a30ac5fab3adc87a60a9a2bf43896e`.
 - Phase 8C final project-state checkpoint: `main@8ed28ddc4fa6d231b554eaabe2d13eee37f34c43`.
 - Phase 8D implementation-complete head `abd3dcaa81ee81138597c9d19c098667e27dd28d`: CI #281 success.
-- CI #281 passed:
+- Phase 8D documentation-complete head `dab2c4e785e67816f55b7102440de994ff4e58e6`: CI #282 success.
+- PR #52 merged with the exact verified head as `9f71bfd73e1bbf020dfece0985a0eed20e7295ce`.
+- The current GitHub connector exposes PR-triggered workflow runs but not the push-triggered post-merge run for direct commit lookup; no separate post-merge CI result is claimed here.
+- CI #281 and #282 passed:
   - application lint/typecheck/unit tests/build;
   - production dependency audit;
   - Jev evaluation harness;
@@ -101,11 +104,9 @@ Phase 8 is implementation-complete on the PR branch and awaits merge/post-merge 
 - 8A — contribution discovery signal contract: complete.
 - 8B — GitHub issue ingestion + persistence: complete.
 - 8C — public contribution discovery + filters: complete.
-- 8D — evidence-based recommendation/explanation + evaluation: implementation complete; awaiting merge.
+- 8D — evidence-based recommendation/explanation + evaluation: complete.
 
 ## Next phase
-
-After PR #52 merges and post-merge CI is green:
 
 Phase 9 — semantic discovery.
 
