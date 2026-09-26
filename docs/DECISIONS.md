@@ -1398,3 +1398,65 @@ A positive or negative value is not labeled good or bad. In particular, open-iss
 Trend reads remain derived/recomputable and are not persisted as a universal repository score.
 
 Public trend access follows the existing listing boundary; internal history for unlisted repositories is not exposed by the public catalog API.
+
+
+## D-141 — Scheduled snapshot work runs outside the API request process
+
+**Status:** Accepted
+
+RepoScout provides a scheduler-safe one-run command rather than starting a recurring timer inside the API server.
+
+A deployment scheduler such as cron, cPanel cron, systemd timer, container platform scheduler, or equivalent should invoke the operation.
+
+This avoids duplicate timers when the API is horizontally scaled and keeps background operational ownership separate from HTTP serving.
+
+The recommended initial cadence is once per UTC day because the snapshot model stores one immutable row per repository per UTC day.
+
+## D-142 — Snapshot maintenance uses a PostgreSQL advisory lock
+
+**Status:** Accepted
+
+A maintenance run acquires a session-level PostgreSQL advisory lock before doing backfill or provider work.
+
+If another process already holds the lock, the second invocation returns `already_running` and performs no maintenance work.
+
+The lock is released in a `finally` path and is also released when the database session ends.
+
+This coordinates processes that share the same PostgreSQL database without introducing a new job-lock table.
+
+## D-143 — Daily maintenance spends GitHub quota only where history can change
+
+**Status:** Accepted
+
+The scheduled refresh candidate set is limited to listed repositories that:
+
+- satisfy the existing repository refresh interval;
+- do not already have a snapshot for the maintenance run's UTC day.
+
+Stored-metadata backfill runs first.
+
+A repository whose existing metadata can fill a historical gap may therefore be handled without a provider call.
+
+Unlisted repositories remain eligible for history through normal submission/handoff ingestion, but scheduled provider quota is reserved for repositories visible in the public catalog.
+
+## D-144 — Provider pressure halts the remaining scheduled refresh batch
+
+**Status:** Accepted
+
+Maintenance refreshes candidates sequentially through the existing `RepositoryRefreshService`.
+
+A `retry_later` result stops the remaining provider batch and surfaces the recommended retry timestamp.
+
+A `manual_review` result also stops the remaining provider batch because an invalid provider response may indicate a systemic contract change.
+
+An `unavailable` repository is recorded without halting unrelated repositories.
+
+The maintenance command does not implement a separate retry algorithm; it preserves the existing refresh/retry policy.
+
+## D-145 — Phase 6 history operations remain ranking-neutral
+
+**Status:** Accepted
+
+Snapshot maintenance, backfill, and trend reads do not compute or persist a Hidden Gem, Rising, momentum, or quality score.
+
+Phase 7 may consume these measured and derived historical signals, but it must remain a distinct explainable ranking layer.
