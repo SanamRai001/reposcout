@@ -4,6 +4,7 @@ import type { RepositoryTrendResult } from './repository-trend.js';
 import {
   buildRepositoryRankingSignalSnapshot,
   REPOSITORY_RANKING_SIGNAL_CONTRACT_VERSION,
+  REPOSITORY_RANKING_MODE_CONTRACTS,
   REPOSITORY_RANKING_SIGNAL_DEFINITIONS,
 } from './repository-ranking-signals.js';
 
@@ -299,4 +300,56 @@ describe('repository ranking signal contract', () => {
       provenance: null,
     });
   });
+  it('keeps Hidden Gems and Rising signal roles distinct', () => {
+    expect(REPOSITORY_RANKING_MODE_CONTRACTS.hidden_gems).toEqual(
+      expect.objectContaining({
+        mode: 'hidden_gems',
+        contractVersion: 'hidden-gems-signals-v1',
+      }),
+    );
+    expect(
+      REPOSITORY_RANKING_MODE_CONTRACTS.hidden_gems.primarySignals,
+    ).toContain('documentation.readme_present');
+    expect(
+      REPOSITORY_RANKING_MODE_CONTRACTS.hidden_gems.primarySignals,
+    ).not.toContain('momentum.stars_delta_7d');
+
+    expect(REPOSITORY_RANKING_MODE_CONTRACTS.rising).toEqual(
+      expect.objectContaining({
+        mode: 'rising',
+        contractVersion: 'rising-signals-v1',
+      }),
+    );
+    expect(
+      REPOSITORY_RANKING_MODE_CONTRACTS.rising.primarySignals,
+    ).toEqual([
+      'momentum.stars_delta_7d',
+      'momentum.stars_delta_30d',
+      'momentum.forks_delta_30d',
+    ]);
+    expect(
+      REPOSITORY_RANKING_MODE_CONTRACTS.rising.primarySignals,
+    ).not.toContain('visibility.stars_total');
+  });
+
+  it('references only catalogued signals from every mode contract', () => {
+    const knownSignals = new Set(
+      REPOSITORY_RANKING_SIGNAL_DEFINITIONS.map(
+        (definition) => definition.id,
+      ),
+    );
+
+    for (const contract of Object.values(
+      REPOSITORY_RANKING_MODE_CONTRACTS,
+    )) {
+      for (const signalId of [
+        ...contract.primarySignals,
+        ...contract.supportingSignals,
+        ...contract.contextSignals,
+      ]) {
+        expect(knownSignals.has(signalId)).toBe(true);
+      }
+    }
+  });
+
 });
