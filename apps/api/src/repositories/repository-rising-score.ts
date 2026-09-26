@@ -22,12 +22,6 @@ export const RISING_V1_POLICY = Object.freeze({
   maxActualWindowDays30d: 35,
 });
 
-const PRIMARY_SIGNAL_IDS = Object.freeze([
-  'momentum.stars_delta_7d',
-  'momentum.stars_delta_30d',
-  'momentum.forks_delta_30d',
-] satisfies RepositoryRankingSignalId[]);
-
 export type RisingIneligibility =
   | Readonly<{
       code: 'missing_primary_signal';
@@ -222,59 +216,6 @@ function positiveMomentumPoints(
       1,
     ) * maxPoints,
   );
-}
-
-function maintenanceComponent(
-  observation: RepositoryRankingSignalObservation,
-): Readonly<{
-  component: RisingScoreComponent;
-  coverage: RisingScoreResult extends infer _ ? never : never;
-}> {
-  if (observation.availability === 'missing') {
-    return {
-      component: {
-        id: 'maintenance_support',
-        points: 0,
-        maxPoints: RISING_V1_POLICY.maintenanceMaxPoints,
-        signalIds: ['maintenance.days_since_push'],
-        normalizedDelta: null,
-      },
-      coverage: undefined as never,
-    };
-  }
-
-  if (typeof observation.value !== 'number') {
-    throw new Error(
-      'maintenance.days_since_push must be numeric when available.',
-    );
-  }
-
-  const daysSincePush = observation.value;
-
-  if (!Number.isFinite(daysSincePush) || daysSincePush < 0) {
-    throw new Error(
-      'maintenance.days_since_push must be a finite nonnegative number.',
-    );
-  }
-
-  const freshness = clamp(
-    1 - daysSincePush / RISING_V1_POLICY.maintenanceHorizonDays,
-    0,
-    1,
-  );
-
-  return {
-    component: {
-      id: 'maintenance_support',
-      points: roundScore(
-        freshness * RISING_V1_POLICY.maintenanceMaxPoints,
-      ),
-      maxPoints: RISING_V1_POLICY.maintenanceMaxPoints,
-      signalIds: ['maintenance.days_since_push'],
-      normalizedDelta: null,
-    },
-    coverage: undefined as never,
-  };
 }
 
 export function scoreRisingV1(
