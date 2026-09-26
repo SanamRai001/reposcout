@@ -252,9 +252,12 @@ export function runRepositoryRankingBenchmark(
       hiddenGems: hiddenFormula,
       rising: risingFormula,
     },
-    caseResults: caseResults.map(
-      ({ formulaVersion: _formulaVersion, ...result }) => result,
-    ),
+    caseResults: caseResults.map((result) => ({
+      caseId: result.caseId,
+      mode: result.mode,
+      status: result.status,
+      score: result.score,
+    })),
     expectationResults,
     summary: {
       total,
