@@ -5,6 +5,7 @@ import {
   CONTRIBUTION_DISCOVERY_SIGNAL_CONTRACT_VERSION,
   CONTRIBUTION_DISCOVERY_SIGNAL_DEFINITIONS,
   normalizeContributionIssueLabel,
+  type BuildContributionDiscoverySignalInput,
 } from './repository-contribution-signals.js';
 
 const repositoryEvidence = {
@@ -29,13 +30,7 @@ function build(overrides: {
   locked?: boolean;
   assigneeCount?: number;
   commentCount?: number;
-  repositoryEvidence?: typeof repositoryEvidence | null | {
-    status: 'UNSUPPORTED_FORK';
-    contributing: null;
-    codeOfConduct: null;
-    issueTemplate: null;
-    pullRequestTemplate: null;
-  };
+  repositoryEvidence?: BuildContributionDiscoverySignalInput['repositoryEvidence'];
 } = {}) {
   return buildContributionDiscoverySignalSnapshot({
     repositoryId: '11111111-1111-4111-8111-111111111111',
