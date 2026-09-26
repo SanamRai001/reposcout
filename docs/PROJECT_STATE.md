@@ -6,11 +6,11 @@ Implement the first deterministic Rising score over the Phase 7A ranking-signal 
 
 ## Branch
 
-`feat/phase-7c-rising-v1`
+`main`
 
-Base: `main@7867c2b2beb2c1bd5a994321e3b2b0731e82595f`
+Current verified merge: `73bf1de498e7317a405cfb6fa1e4e7d9c44d8345`
 
-PR: #46
+PR #46: merged
 
 ## Completed phase
 
@@ -48,10 +48,11 @@ Phase 7 remains in progress.
 ## Verification
 
 - Phase 7B verified on `main@7867c2b2beb2c1bd5a994321e3b2b0731e82595f`.
-- Phase 7C code head `9aa7c3aa1d727bf4f5fa099cb70066a2bfb37061`.
-- GitHub Actions CI run 223: success before documentation-only follow-up commits.
-- CI run 223 passed lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, repository/snapshot/history checks, ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
+- Phase 7C code head `9aa7c3aa1d727bf4f5fa099cb70066a2bfb37061`: CI run 223 success.
+- Documentation-complete PR head `f0a9f80b21d4fb74b7e72d9a1083006466bf9ea7`: CI run 228 success.
+- PR #46 merged as `73bf1de498e7317a405cfb6fa1e4e7d9c44d8345`.
+- Post-merge `main` CI run 229: success.
+- CI passed lint/typecheck/tests/build, production dependency audit, Jev harness, migration apply/rollback/reapply, repository/snapshot/history checks, ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
 
 ## Decisions / risks
 
