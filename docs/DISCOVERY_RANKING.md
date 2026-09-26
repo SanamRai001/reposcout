@@ -298,6 +298,167 @@ Phase 7A does not:
 
 Those choices begin in the mode-specific scoring phases.
 
+
+
+## Phase 7B Hidden Gems v1 formula
+
+Formula version:
+
+~~~text
+hidden-gem-v1
+~~~
+
+The scorer consumes only `ranking-signals-v1`.
+
+### Eligibility
+
+Required observed signals:
+
+~~~text
+visibility.stars_total
+maintenance.days_since_push
+documentation.readme_present
+community.contributing_present
+community.code_of_conduct_present
+community.issue_template_present
+community.pull_request_template_present
+community.security_policy_present
+~~~
+
+If any required signal is missing, unavailable, or not applicable, the result is:
+
+~~~text
+status = ineligible
+~~~
+
+with explicit signal/reason entries.
+
+This is an evidence-coverage rule, not a negative quality judgment.
+
+### Positive evidence
+
+The v1 positive subtotal is bounded at 100:
+
+~~~text
+maintenance freshness        0..35
+README presence              0..20
+CONTRIBUTING presence        0..20
+community readiness          0..20
+optional 30-day momentum     0..5
+---------------------------------
+positive subtotal            0..100
+~~~
+
+Community readiness awards 5 points each for observed presence of:
+
+- code of conduct;
+- issue template;
+- pull request template;
+- security policy.
+
+### Maintenance
+
+`maintenance.days_since_push` decays linearly:
+
+~~~text
+0 days old      -> 35 points
+365+ days old   -> 0 points
+~~~
+
+No hard stale-project rejection is introduced in v1.
+
+### Popularity saturation
+
+Low stars do **not** award quality points.
+
+Instead:
+
+~~~text
+stars <= 250
+    -> penalty 0
+
+250 < stars < 50,000
+    -> logarithmically increasing penalty
+
+stars >= 50,000
+    -> penalty 25
+~~~
+
+Conceptually:
+
+~~~text
+score =
+    positive evidence
+  - popularity saturation
+~~~
+
+clamped to 0..100.
+
+This lets a low-visibility repository compete only when it has actual maintenance/documentation/community evidence.
+
+### Optional momentum
+
+30-day momentum can add at most 5 points:
+
+- star growth: max 3.5;
+- fork growth: max 1.5.
+
+Each uses a bounded logarithmic positive-growth curve.
+
+Targets at which the v1 bonus saturates:
+
+~~~text
++50 stars / 30d
++10 forks / 30d
+~~~
+
+Only positive changes produce a bonus.
+
+Negative movement is not penalized.
+
+Missing/insufficient history produces zero **bonus points**, but the output explicitly reports missing optional momentum coverage rather than claiming the measured delta is zero.
+
+### Formula output
+
+Eligible results expose:
+
+~~~text
+formulaVersion
+signalContractVersion
+repositoryId
+evaluatedAt
+score
+positivePoints
+components[]
+popularityPenalty
+optionalMomentumCoverage
+~~~
+
+Ineligible results expose:
+
+~~~text
+formulaVersion
+signalContractVersion
+repositoryId
+evaluatedAt
+reasons[]
+~~~
+
+### Important limitation
+
+The v1 numbers are experimental policy choices.
+
+Phase 7B verifies deterministic semantics and explainability, not that the chosen weights are optimal.
+
+Phase 7E must evaluate/tune:
+
+- 365-day maintenance horizon;
+- 250-star no-penalty band;
+- 50k saturation point;
+- 35/20/20/20/5 component weights;
+- momentum targets;
+- behavior across ecosystems/languages.
+
 ## Versioning
 
 Each derived ranking should have an internal version:

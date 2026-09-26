@@ -50,6 +50,7 @@ Start here if you are contributing to the project.
 - [PHASE_6C_DETERMINISTIC_TRENDS.md](PHASE_6C_DETERMINISTIC_TRENDS.md) — explicit historical windows, sparse-history semantics, signed deltas, and listed-only trend API.
 - [PHASE_6D_SCHEDULED_SNAPSHOT_OPERATIONS.md](PHASE_6D_SCHEDULED_SNAPSHOT_OPERATIONS.md) — bounded once-daily maintenance, advisory locking, backfill-first orchestration, and provider-pressure behavior.
 - [PHASE_7A_RANKING_SIGNAL_CONTRACT.md](PHASE_7A_RANKING_SIGNAL_CONTRACT.md) — versioned deterministic ranking evidence, missing-data semantics, and separate Hidden Gems/Rising signal roles.
+- [PHASE_7B_HIDDEN_GEMS_V1.md](PHASE_7B_HIDDEN_GEMS_V1.md) — deterministic Hidden Gems scoring, evidence eligibility, bounded popularity saturation, and explainable components.
 - [PRIVACY.md](PRIVACY.md) — application privacy and data-handling behavior.
 - [PROJECT_STATE.md](PROJECT_STATE.md) — concise current branch, completed phase, verification, risks/decisions, and next checkpoint.
 

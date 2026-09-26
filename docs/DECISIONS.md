@@ -1523,3 +1523,87 @@ Jev/model output remains a separate probabilistic information class.
 Phase 7A contains only GitHub-sourced facts/evidence and RepoScout deterministic derivatives.
 
 A later bounded model-assisted reranking experiment must use explicit provenance and must remain optional; it cannot overwrite measured ranking signals.
+
+
+## D-151 — Hidden Gems v1 rewards evidence and subtracts popularity saturation
+
+**Status:** Accepted
+
+`hidden-gem-v1` does not award positive points for low star count.
+
+Positive points come from maintenance, documentation/community evidence, and a small optional momentum bonus.
+
+Existing visibility contributes only a bounded popularity-saturation penalty.
+
+This prevents "few stars" from becoming synonymous with "high quality."
+
+## D-152 — Hidden Gems v1 requires complete current/community evidence but not historical momentum
+
+**Status:** Accepted
+
+The scorer requires observed:
+
+- stars;
+- days since push;
+- README state;
+- CONTRIBUTING state;
+- code of conduct state;
+- issue template state;
+- pull request template state;
+- security policy state.
+
+Missing or not-applicable required evidence returns an explicit ineligible result.
+
+30-day star/fork momentum is optional because repositories should not be excluded from Hidden Gems solely for lacking 30 days of history.
+
+Unsupported fork community evidence therefore makes v1 ineligible due to incomplete evidence scope, not because forks are judged lower quality.
+
+## D-153 — Hidden Gems v1 uses fixed explainable component bounds
+
+**Status:** Accepted
+
+Positive component maxima are:
+
+- maintenance: 35;
+- README: 20;
+- CONTRIBUTING: 20;
+- community readiness: 20;
+- optional momentum bonus: 5.
+
+The positive subtotal is therefore bounded at 100.
+
+Every component exposes its awarded points and maximum points.
+
+## D-154 — Hidden Gems v1 popularity saturation is bounded and logarithmic
+
+**Status:** Accepted
+
+Stars do not produce positive quality points.
+
+The v1 popularity penalty is:
+
+- 0 points through 250 stars;
+- logarithmically increasing above 250 stars;
+- capped at 25 points at 50,000 stars and above.
+
+These thresholds are experimental ranking policy, not repository facts, and must be evaluated/tuned in Phase 7E.
+
+## D-155 — Hidden Gems v1 does not penalize negative momentum
+
+**Status:** Accepted
+
+Only positive 30-day star/fork movement may contribute to the optional momentum bonus, capped at 5 points total.
+
+Negative movement receives no bonus but also no penalty.
+
+This preserves the distinction between Hidden Gems and Rising and avoids treating stable mature small projects as automatically worse.
+
+## D-156 — Hidden Gems v1 scores are derived and non-canonical
+
+**Status:** Accepted
+
+The scorer is deterministic and recomputable from a versioned ranking-signal snapshot.
+
+Scores are not persisted as canonical repository facts in Phase 7B.
+
+Public ordering, pagination, explanation transport, and ranking API integration remain Phase 7D work.

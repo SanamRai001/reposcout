@@ -675,16 +675,30 @@ Status: complete
 
 #### Phase 7B — Hidden Gems v1
 
-Next:
-- deterministic scorer over Phase 7A signals;
-- explicit minimum evidence and eligibility rules;
-- bounded popularity saturation influence;
-- explainable score components;
-- versioned formula.
+Status: complete
+
+- versioned deterministic formula: `hidden-gem-v1`;
+- consumes `ranking-signals-v1`;
+- explicit required-evidence eligibility;
+- missing/not-applicable required evidence returns ineligible;
+- maintenance freshness: maximum 35 points;
+- README evidence: maximum 20 points;
+- CONTRIBUTING evidence: maximum 20 points;
+- community-readiness evidence: maximum 20 points;
+- optional positive 30-day momentum bonus: maximum 5 points;
+- low stars add no quality points;
+- logarithmic popularity-saturation penalty only:
+  - zero through 250 stars;
+  - maximum 25 points at 50k+ stars;
+- maintenance freshness decays to zero over 365 days;
+- negative momentum is not penalized;
+- missing momentum history does not make a repository ineligible;
+- structured component/penalty/coverage output;
+- no public ordering/API and no ranking persistence.
 
 #### Phase 7C — Rising v1
 
-Later:
+Next:
 - momentum-focused deterministic scorer;
 - sufficient-history requirement;
 - explicit handling of sparse actual windows;
