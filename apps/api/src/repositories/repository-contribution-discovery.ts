@@ -1,4 +1,8 @@
 import type { RepositoryContributionIssueRecord } from './repository-contribution-issue.js';
+import {
+  buildContributionRecommendation,
+  toContributionRecommendationResponse,
+} from './repository-contribution-recommendation.js';
 import type { ContributionDiscoverySignalSnapshot } from './repository-contribution-signals.js';
 
 export const DEFAULT_CONTRIBUTION_DISCOVERY_PAGE_SIZE = 20;
@@ -379,5 +383,8 @@ export function toContributionDiscoveryResponseItem(
       normalizedLabels: item.signalSnapshot.normalizedLabels,
       signals: item.signalSnapshot.signals,
     },
+    recommendation: toContributionRecommendationResponse(
+      buildContributionRecommendation(item.signalSnapshot),
+    ),
   };
 }

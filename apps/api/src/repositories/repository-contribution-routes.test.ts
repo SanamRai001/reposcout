@@ -110,6 +110,12 @@ describe('public contribution discovery routes', () => {
           normalizedLabels: string[];
           signals: Record<string, unknown>;
         };
+        recommendation: {
+          contractVersion: string;
+          status: string;
+          cautionCodes?: string[];
+          cautions: Array<{ code: string }>;
+        };
       }>;
       discovery: {
         contractVersion: string;
@@ -141,6 +147,15 @@ describe('public contribution discovery routes', () => {
         issue: expect.objectContaining({ state: 'open' }),
         evidence: expect.objectContaining({
           normalizedLabels: ['good first issue', 'help wanted'],
+        }),
+        recommendation: expect.objectContaining({
+          contractVersion: 'contribution-recommendation-v1',
+          status: 'consider',
+          cautions: expect.arrayContaining([
+            expect.objectContaining({
+              code: 'contributing_evidence_missing',
+            }),
+          ]),
         }),
       }),
     );

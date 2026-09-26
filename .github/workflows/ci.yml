@@ -56,6 +56,9 @@ jobs:
       - name: Verify ranking benchmark
         run: npm run test:ranking -w @reposcout/api
 
+      - name: Verify contribution recommendation benchmark
+        run: npm run test:contribution-recommendation -w @reposcout/api
+
       - name: Apply migrations
         run: npm run db:migrate -w @reposcout/api
 
