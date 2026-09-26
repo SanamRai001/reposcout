@@ -40,7 +40,8 @@
     "ingest:contribution-issues": "tsx src/cli/ingest-contribution-issues.ts",
     "test:contribution-discovery": "vitest run src/repositories/repository-contribution-discovery.integration.test.ts --maxWorkers=1",
     "test:contribution-recommendation": "vitest run src/evaluation/repository-contribution-recommendation-evaluator.test.ts",
-    "eval:contribution-recommendation": "tsx src/cli/evaluate-contribution-recommendation.ts"
+    "eval:contribution-recommendation": "tsx src/cli/evaluate-contribution-recommendation.ts",
+    "test:semantic-foundation": "vitest run src/repositories/repository-semantic-document.test.ts src/evaluation/repository-semantic-retrieval-benchmark.test.ts"
   },
   "dependencies": {
     "dotenv": "18.0.1",
