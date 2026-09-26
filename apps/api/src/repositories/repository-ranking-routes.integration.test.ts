@@ -337,7 +337,11 @@ describe('repository ranking API with PostgreSQL', () => {
   it('rejects invalid modes and cross-mode cursors with stable errors', async () => {
     await seedRepository({
       githubRepositoryId: '990000001',
-      name: 'cursor-source',
+      name: 'cursor-source-a',
+    });
+    await seedRepository({
+      githubRepositoryId: '990000002',
+      name: 'cursor-source-b',
     });
     const baseUrl = await startApp();
 
