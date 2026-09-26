@@ -53,6 +53,9 @@ jobs:
       - name: Verify Jev evaluation harness
         run: npm run test:evaluation -w @reposcout/api
 
+      - name: Verify ranking benchmark
+        run: npm run test:ranking-benchmark -w @reposcout/api
+
       - name: Apply migrations
         run: npm run db:migrate -w @reposcout/api
 
