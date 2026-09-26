@@ -24,7 +24,7 @@ afterAll(async () => {
 });
 
 describe('latest migration rollback', () => {
-  it('removes only the repository snapshots table', async () => {
+  it('removes only the repository issues table', async () => {
     const result = await pool.query<{
       repository_submissions: string | null;
       validation_column_exists: boolean;
@@ -39,6 +39,7 @@ describe('latest migration rollback', () => {
       terminal_cooldown_index: string | null;
       cleanup_candidates_index: string | null;
       repository_snapshots: string | null;
+      repository_issues: string | null;
     }>(
       `
         SELECT
@@ -88,7 +89,9 @@ describe('latest migration rollback', () => {
             'public.repository_submissions_cleanup_candidates_idx'
           )::text AS cleanup_candidates_index,
           to_regclass('public.repository_snapshots')::text
-            AS repository_snapshots
+            AS repository_snapshots,
+          to_regclass('public.repository_issues')::text
+            AS repository_issues
       `,
     );
 
@@ -107,7 +110,8 @@ describe('latest migration rollback', () => {
         'repository_submissions_terminal_full_name_updated_idx',
       cleanup_candidates_index:
         'repository_submissions_cleanup_candidates_idx',
-      repository_snapshots: null,
+      repository_snapshots: 'repository_snapshots',
+      repository_issues: null,
     });
   });
 });
