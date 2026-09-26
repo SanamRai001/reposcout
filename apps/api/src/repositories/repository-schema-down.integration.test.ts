@@ -24,7 +24,7 @@ afterAll(async () => {
 });
 
 describe('latest migration rollback', () => {
-  it('removes only the repository contribution issues table', async () => {
+  it('removes only the Phase 8C contribution discovery index', async () => {
     const result = await pool.query<{
       repository_submissions: string | null;
       validation_column_exists: boolean;
@@ -40,6 +40,8 @@ describe('latest migration rollback', () => {
       cleanup_candidates_index: string | null;
       repository_snapshots: string | null;
       repository_contribution_issues: string | null;
+      contribution_issue_lookup_index: string | null;
+      contribution_discovery_index: string | null;
     }>(
       `
         SELECT
@@ -91,7 +93,13 @@ describe('latest migration rollback', () => {
           to_regclass('public.repository_snapshots')::text
             AS repository_snapshots,
           to_regclass('public.repository_contribution_issues')::text
-            AS repository_contribution_issues
+            AS repository_contribution_issues,
+          to_regclass(
+            'public.repository_contribution_issues_repo_state_updated_idx'
+          )::text AS contribution_issue_lookup_index,
+          to_regclass(
+            'public.repository_contribution_issues_discovery_updated_idx'
+          )::text AS contribution_discovery_index
       `,
     );
 
@@ -111,7 +119,10 @@ describe('latest migration rollback', () => {
       cleanup_candidates_index:
         'repository_submissions_cleanup_candidates_idx',
       repository_snapshots: 'repository_snapshots',
-      repository_contribution_issues: null,
+      repository_contribution_issues: 'repository_contribution_issues',
+      contribution_issue_lookup_index:
+        'repository_contribution_issues_repo_state_updated_idx',
+      contribution_discovery_index: null,
     });
   });
 });

@@ -366,6 +366,7 @@ export function toContributionDiscoveryResponseItem(
       number: item.issue.number,
       title: item.issue.title,
       githubUrl: item.issue.githubUrl,
+      state: item.issue.state,
       locked: item.issue.locked,
       assigneeCount: item.issue.assigneeCount,
       commentCount: item.issue.commentCount,
