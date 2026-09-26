@@ -6,11 +6,11 @@ Persist a narrow, measured GitHub issue entity for listed repositories so Phase 
 
 ## Branch
 
-`feat/phase-8b-contribution-issue-ingestion`
+`main`
 
-Base: `main@3162aeed98f057e06c92bed5ceab41aa76aef422`
+Current verified merge: `8a0ad13812a783bab3f5287e1e69b2bbeb3562e9`
 
-PR: #50
+PR #50: merged
 
 ## Completed phase
 
@@ -71,10 +71,11 @@ Phase 8 remains in progress.
 ## Verification
 
 - Phase 8A verified on `main@3162aeed98f057e06c92bed5ceab41aa76aef422`.
-- Phase 8B code head `2a88c76218f19825e0a6be7f8fb579590df3b770`.
-- GitHub Actions CI run 268: success before documentation-only follow-up commits.
-- CI run 268 passed application verification, dependency audit, Jev harness, ranking benchmark, migrations apply/rollback/reapply, contribution-issue schema/persistence, repository/snapshot/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
-- Documentation-complete PR head must remain green before merge.
+- Phase 8B code head `2a88c76218f19825e0a6be7f8fb579590df3b770`: CI run 268 success.
+- Documentation-complete PR head `b1c717cf27ba63d1f039532dc12d0e25fd27f084`: CI run 272 success.
+- PR #50 merged as `8a0ad13812a783bab3f5287e1e69b2bbeb3562e9`.
+- Post-merge `main` CI run 273: success.
+- CI passed application verification, dependency audit, Jev harness, ranking benchmark, migrations apply/rollback/reapply, contribution-issue schema/persistence, repository/snapshot/content/ingestion/catalog/search/submission regressions, and PostgreSQL connectivity.
 
 ## Decisions / risks
 
