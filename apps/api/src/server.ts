@@ -8,6 +8,7 @@ import {
 } from './database/database.js';
 import { logger } from './logger.js';
 import { RepositoryContributionEvidenceStore } from './repositories/repository-contribution-evidence-store.js';
+import { RepositoryContributionDiscoveryStore } from './repositories/repository-contribution-discovery-store.js';
 import { RepositoryRankingService } from './repositories/repository-ranking-service.js';
 import { RepositoryReadmeStore } from './repositories/repository-readme-store.js';
 import { RepositorySnapshotStore } from './repositories/repository-snapshot-store.js';
@@ -29,6 +30,8 @@ async function bootstrap(): Promise<void> {
   const repositoryReadmeStore = new RepositoryReadmeStore(databasePool);
   const repositoryContributionEvidenceStore =
     new RepositoryContributionEvidenceStore(databasePool);
+  const repositoryContributionDiscoveryStore =
+    new RepositoryContributionDiscoveryStore(databasePool);
   const repositoryRankingService = new RepositoryRankingService(
     repositoryStore,
     repositoryReadmeStore,
@@ -61,6 +64,7 @@ async function bootstrap(): Promise<void> {
   const app = createApp({
     checkReadiness: () => verifyDatabaseConnection(databasePool),
     repositoryCatalog: repositoryStore,
+    contributionDiscovery: repositoryContributionDiscoveryStore,
     repositoryTrend: repositorySnapshotStore,
     repositoryRanking: repositoryRankingService,
     repositorySubmissionService,
