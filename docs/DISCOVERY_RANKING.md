@@ -582,6 +582,119 @@ Phase 7E must evaluate:
 - behavior across small vs large ecosystems;
 - anti-gaming sensitivity to star/fork bursts.
 
+
+
+## Phase 7D public ranking API
+
+Public endpoint:
+
+~~~text
+GET /api/repositories/rankings/:mode
+~~~
+
+Supported modes:
+
+~~~text
+hidden_gems
+rising
+~~~
+
+### Candidate boundary
+
+The service walks the existing listed catalog.
+
+Unlisted canonical repositories prepared during moderation are not ranking candidates.
+
+For the curated MVP, the complete current listed catalog is evaluated before ordering. RepoScout does not preselect the "top N by stars" or another proxy because that could prevent a genuinely better Hidden Gem/Rising candidate from being evaluated.
+
+### Eligibility
+
+Phase 7B/7C eligibility remains authoritative.
+
+Ineligible repositories are omitted from public ranking results.
+
+The public list does not expose internal missing-evidence/ineligibility details.
+
+### Ordering
+
+Eligible items are ordered:
+
+~~~text
+score DESC
+repository UUID ASC
+~~~
+
+UUID is only a stable deterministic tie-breaker.
+
+It has no ranking meaning.
+
+### Cursor contract
+
+Ranking cursors bind:
+
+~~~text
+mode
+formulaVersion
+evaluatedAt
+last score
+last repositoryId
+~~~
+
+A cursor cannot be reused across Hidden Gems/Rising.
+
+A cursor created for an older formula version is invalid after the active formula changes.
+
+The original `evaluatedAt` is reused for later pages so maintenance freshness does not change just because the next request happened later.
+
+### Live pagination limitation
+
+The cursor is not a persisted ranking snapshot.
+
+Current metadata/evidence/history can change between requests.
+
+Therefore rankings can move around the cursor boundary while a user pages through a live changing dataset.
+
+Phase 7D intentionally accepts this MVP tradeoff rather than persisting derived ranking state.
+
+### Hidden Gems explanation payload
+
+Includes:
+
+- formula version;
+- final score;
+- component points/maxima;
+- positive subtotal;
+- popularity saturation penalty;
+- optional momentum coverage.
+
+### Rising explanation payload
+
+Includes:
+
+- formula version;
+- final score;
+- component points/maxima;
+- normalized deltas;
+- exact requested/actual historical coverage;
+- lifetime visibility context;
+- maintenance coverage.
+
+### No generated prose
+
+Explanations are structured and directly traceable to deterministic data/formulas.
+
+No Jev/model call occurs in the public ranking path.
+
+### Current scaling tradeoff
+
+The service reuses existing catalog, evidence, and trend readers.
+
+This avoids duplicating trusted persistence semantics but creates multiple reads per candidate.
+
+That is acceptable for the curated MVP.
+
+If measurements later show ranking latency/query volume is a bottleneck, optimize the read path without changing the public ranking semantics.
+
 ## Versioning
 
 Each derived ranking should have an internal version:

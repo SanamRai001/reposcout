@@ -179,7 +179,9 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 | Repository resubmission abuse guard | Complete |
 | Abuse controls / launch hardening | Complete |
 | Historical snapshot persistence | Complete |
-| Advanced ranking / hidden-gem scoring | Planned |
+| Hidden Gems / Rising deterministic scoring | Complete |
+| Public ranking API | Complete |
+| Ranking benchmark / tuning | In progress |
 
 <details>
 <summary><strong>Detailed implementation phases</strong></summary>
@@ -239,7 +241,8 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 - Phase 7A — ranking signal contract: complete.
 - Phase 7B — Hidden Gems v1 deterministic scoring: complete.
 - Phase 7C — Rising v1 deterministic scoring: complete.
-- Phase 7D — ranking explanation + public API: next.
+- Phase 7D — ranking explanation + public API: complete.
+- Phase 7E — ranking benchmark / evaluation / tuning: next.
 - Phase 7 — Hidden Gems and Rising: in progress.
 
 </details>
