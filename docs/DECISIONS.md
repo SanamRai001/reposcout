@@ -1685,3 +1685,82 @@ The scorer is deterministic and recomputable from a versioned signal snapshot.
 Phase 7C persists no ranking score and exposes no public ordering.
 
 Public ranking transport/order remains Phase 7D.
+
+
+## D-163 — Public ranking evaluates listed repositories only
+
+**Status:** Accepted
+
+Phase 7D ranking candidates come through the existing public catalog reader.
+
+Unlisted moderation candidates are not evaluated and cannot appear in ranking responses.
+
+For the current curated MVP, RepoScout evaluates the complete current listed catalog before sorting instead of selecting an arbitrary partial candidate subset.
+
+## D-164 — Public ranking order is score descending with UUID tie-breaking
+
+**Status:** Accepted
+
+Eligible repositories are ordered by:
+
+1. derived score descending;
+2. stable repository UUID ascending.
+
+Ineligible repositories are omitted from public ranking results.
+
+This produces deterministic ordering for a fixed evidence state without introducing popularity or hidden model tie-breakers.
+
+## D-165 — Ranking cursors bind mode, formula, evaluation time, score, and repository
+
+**Status:** Accepted
+
+Opaque Phase 7D cursors include:
+
+- ranking mode;
+- active formula version;
+- evaluation timestamp;
+- last score;
+- last repository UUID.
+
+Cross-mode and stale-formula cursors are rejected.
+
+Continuation reuses the cursor evaluation time so time-derived maintenance calculations do not drift merely because a user requests page two later.
+
+## D-166 — Phase 7D pagination is live, not a persisted ranking snapshot
+
+**Status:** Accepted
+
+Phase 7D persists no ranking result or candidate snapshot.
+
+If repository metadata, evidence, or history changes between page requests, a repository may move relative to the cursor boundary.
+
+RepoScout documents this limitation instead of claiming immutable snapshot pagination.
+
+A materialized ranking snapshot may be considered later only if product scale/consistency requirements justify the extra persistence and invalidation complexity.
+
+## D-167 — Ranking explanations are structured deterministic evidence
+
+**Status:** Accepted
+
+Hidden Gems exposes deterministic components, positive subtotal, popularity penalty, and momentum coverage.
+
+Rising exposes deterministic components, normalized deltas, exact history provenance, visibility context, and maintenance coverage.
+
+Phase 7D does not generate free-form AI explanation text.
+
+## D-168 — Ranking API reuses existing evidence/history readers before optimization
+
+**Status:** Accepted
+
+The Phase 7D service composes:
+
+- public catalog reader;
+- README evidence reader;
+- contribution evidence reader;
+- Phase 6 trend reader;
+- Phase 7A signal builder;
+- Phase 7B/7C scorers.
+
+This preserves established semantics at the cost of additional reads.
+
+Bulk ranking SQL/materialization is deferred until measurements show it is necessary.
