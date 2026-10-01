@@ -686,6 +686,7 @@ export function App() {
         >
           Rising
         </a>
+        <a href="/contribute">Find contributions</a>
       </nav>
 
       {rankingMode !== null ? (

@@ -286,7 +286,11 @@ async function assertAllDiscoveryTabsVisible(page, label) {
   });
 
   assert.ok(layout, label + ' must render ranking navigation');
-  assert.equal(layout.tabs.length, 3, label + ' must expose all three views');
+  assert.deepEqual(
+    layout.tabs.map((tab) => tab.label),
+    ['Explore catalog', 'Hidden Gems', 'Rising', 'Find contributions'],
+    label + ' must expose all four integrated discovery views',
+  );
   assert.ok(
     layout.scrollWidth <= layout.width + 1,
     label + ' must not hide a discovery view behind horizontal scrolling: ' + JSON.stringify(layout),

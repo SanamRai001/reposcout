@@ -1505,3 +1505,25 @@ button {
     animation-iteration-count: 1 !important;
   }
 }
+
+
+/* B2: four discovery paths remain visible at compact viewports. */
+@media (max-width: 540px) {
+  .discovery-view-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow-x: visible;
+    gap: 5px;
+    padding: 5px;
+  }
+
+  .discovery-view-nav a,
+  .discovery-view-nav a:first-child {
+    grid-column: auto;
+    min-width: 0;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    padding: 10px 6px;
+  }
+}
