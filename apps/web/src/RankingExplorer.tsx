@@ -218,10 +218,6 @@ export function RankingExplorer({
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true);
-    setErrorMessage(null);
-    setPageError(null);
-    setPage(null);
     void fetchRepositoryRankingPage({
       mode,
       limit: RANKING_PAGE_SIZE,
@@ -268,6 +264,11 @@ export function RankingExplorer({
       });
 
       if (controller.signal.aborted) return;
+      if (next.ranking.evaluatedAt !== page.ranking.evaluatedAt ||
+          next.ranking.formulaVersion !== page.ranking.formulaVersion) {
+        setPageError('Ranking evaluation changed. Refresh the view to continue.');
+        return;
+      }
       setPage((current) => {
         if (!current || current.ranking.mode !== mode ||
             current.pagination.nextCursor !== cursor ||
@@ -302,6 +303,15 @@ export function RankingExplorer({
     }
   }
 
+  function retryRanking(): void {
+    paginationController.current?.abort();
+    setLoading(true);
+    setErrorMessage(null);
+    setPageError(null);
+    setPage(null);
+    setReloadToken((value) => value + 1);
+  }
+
   const copy = descriptions[mode];
 
   return (
@@ -333,7 +343,7 @@ export function RankingExplorer({
             <button
               className="secondary-button"
               type="button"
-              onClick={() => setReloadToken((value) => value + 1)}
+              onClick={retryRanking}
             >
               Try again
             </button>
