@@ -182,6 +182,34 @@ try {
     await page.close();
   });
 
+  await run('Browser history restores catalog and contribution routes', async () => {
+    const page = await browser.newPage();
+    const clean = checkPageErrors(page);
+    await page.route((url) => url.pathname === '/api/repositories', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: [], pagination: { limit: 12, nextCursor: null } }),
+      });
+    });
+    await installApi(page, (params) => pageFor(params, [item(1)]));
+    await page.goto(ORIGIN + '/');
+    await page.getByRole('heading', { name: 'Discover open source worth knowing.' }).waitFor();
+    await page.evaluate(() => window.history.pushState(null, '', '/contribute'));
+    await page.goBack();
+    await page.getByRole('heading', { name: 'Discover open source worth knowing.' }).waitFor();
+    await page.goForward();
+    await page.getByRole('heading', { name: 'Find somewhere to contribute.' }).waitFor();
+    await waitForCards(page, 1);
+    await page.screenshot({
+      path: OUTPUT + '/contribution-route-history.png', fullPage: true,
+    });
+    await page.goBack();
+    await page.getByRole('heading', { name: 'Discover open source worth knowing.' }).waitFor();
+    clean();
+    await page.close();
+  });
+
   for (const [label, width, height] of [
     ['320px', 320, 700],
     ['375px', 375, 812],
