@@ -16,7 +16,7 @@ describe('manual semantic evaluation workflow safety', () => {
     expect(workflow).toContain('OPENAI_EMBEDDING_DIMENSIONS: ${{ inputs.dimensions }}');
     expect(workflow).toContain('EVALUATION_RUNS: ${{ inputs.runs }}');
 
-    const steps = workflow.split(/(?=^      - name: )/m).slice(1);
+    const steps = workflow.split(/(?=^ {6}- name: )/m).slice(1);
 
     for (const step of steps) {
       const runIndex = step.indexOf('\n        run:');
