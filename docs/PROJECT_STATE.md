@@ -9,7 +9,7 @@ Make RepoScout's existing evidence-backed discovery capabilities accessible in t
 - PR #59 parked Jev indefinitely. Jev is not a blocker or an active next phase.
 
 ## Completed phase
-Product track **A1 — ranking frontend transport and tests**: implementation committed on this branch; CI verification pending.
+Product track **A1 — ranking frontend transport and tests**: implemented and branch CI verified in PR #60.
 
 The established backend Phase 7D endpoint is reused without API or database changes:
 `GET /api/repositories/rankings/:mode` with `hidden_gems` or `rising`, bounded `limit`, opaque `cursor`, ranking evaluation metadata, and mode-specific explanation evidence.
@@ -28,7 +28,8 @@ The established backend Phase 7D endpoint is reused without API or database chan
 ## Verification
 - Inspected the actual `apps/api/src/repositories/repository-ranking.ts`, `repository-routes.ts`, score modules, and PostgreSQL ranking route test before writing the client.
 - Existing main checkpoint: PR #58 post-merge CI #36872757729 passed. PR #59 changed documentation only.
-- No local full test run: GitHub host resolution is unavailable from the execution container. Verify A1 using the branch pull-request CI (lint, typecheck, tests, build). Do not claim A1 green before it completes.
+- No local full test run: GitHub host resolution is unavailable from the execution container. PR #60 CI #321 (run ID 36878516237) completed successfully against implementation checkpoint `651c0ccd7c716820125ad06e0b228f8e30b54001`: 34 successful steps, including application lint/typecheck/unit tests/build and database integration checks.
+- This state-only documentation update follows that verified implementation commit; verify its resulting PR checks independently.
 
 ## Risks and decisions
 - Ranking scores are formula-specific discovery evidence, not universal repository-quality ratings.
