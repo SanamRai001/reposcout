@@ -240,13 +240,22 @@ async function waitForRealCard(page, label) {
 }
 
 async function assertNoHorizontalOverflow(page, label) {
-  const measures = await page.evaluate(() => ({
-    windowWidth: window.innerWidth,
-    documentWidth: document.documentElement.scrollWidth,
-  }));
+  const measures = await page.evaluate(() => {
+    const nav = document.querySelector('.discovery-view-nav');
+    return {
+      windowWidth: window.innerWidth,
+      documentWidth: document.documentElement.scrollWidth,
+      navWidth: nav?.clientWidth ?? 0,
+      navScrollWidth: nav?.scrollWidth ?? 0,
+    };
+  });
   assert.ok(
     measures.documentWidth <= measures.windowWidth + 1,
     label + ' has horizontal overflow: ' + JSON.stringify(measures),
+  );
+  assert.ok(
+    measures.navScrollWidth <= measures.navWidth + 2,
+    label + ' clips a discovery tab: ' + JSON.stringify(measures),
   );
 }
 
