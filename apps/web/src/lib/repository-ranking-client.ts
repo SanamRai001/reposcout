@@ -269,7 +269,7 @@ function parseRankingPage(
         isRankingItem(item, requestedMode, expectedVersion))
   ) throw invalid();
 
-  return value as RepositoryRankingPage;
+  return value as unknown as RepositoryRankingPage;
 }
 
 export async function fetchRepositoryRankingPage(input: Readonly<{
@@ -313,7 +313,7 @@ export async function fetchRepositoryRankingPage(input: Readonly<{
 
   const body: unknown = await response.json().catch(() => null);
   if (!response.ok) {
-    const error = isRecord(body) ? body : {};
+    const error: Record<string, unknown> = isRecord(body) ? body : {};
     throw new RepositoryRankingError(
       typeof error.message === 'string'
         ? error.message
