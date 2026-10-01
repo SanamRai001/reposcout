@@ -1460,6 +1460,18 @@ button {
   }
 }
 
+@media (max-width: 380px) {
+  .discovery-view-nav {
+    gap: 2px;
+    padding: 4px;
+  }
+
+  .discovery-view-nav a {
+    padding: 9px 8px;
+    font-size: 0.72rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
