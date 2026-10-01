@@ -101,9 +101,9 @@ RepoScout's intended intelligence stack separates:
 
 These sources must remain distinguishable. Model-assisted assessments must never be presented as GitHub facts.
 
-## Model-assisted intelligence direction
+## Parked model-assisted intelligence idea (not active)
 
-RepoScout is evaluating Jev as a future optional decision layer for constrained repository judgments such as:
+Jev was previously explored as a possible optional decision layer for constrained repository judgments such as the following. This is a **parked idea**, not current product work:
 - use-case/project-type classification;
 - tutorial/demo likelihood;
 - beginner contribution suitability;
