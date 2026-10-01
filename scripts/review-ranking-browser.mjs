@@ -259,6 +259,43 @@ async function assertNoHorizontalOverflow(page, label) {
   );
 }
 
+async function assertAllDiscoveryTabsVisible(page, label) {
+  const layout = await page.evaluate(() => {
+    const nav = document.querySelector('.discovery-view-nav');
+    if (!nav) return null;
+    const bounds = nav.getBoundingClientRect();
+    return {
+      width: nav.clientWidth,
+      scrollWidth: nav.scrollWidth,
+      left: bounds.left,
+      right: bounds.right,
+      tabs: Array.from(nav.querySelectorAll('a')).map((tab) => {
+        const rect = tab.getBoundingClientRect();
+        return {
+          label: tab.textContent?.trim(),
+          left: rect.left,
+          right: rect.right,
+          clientWidth: tab.clientWidth,
+          scrollWidth: tab.scrollWidth,
+        };
+      }),
+    };
+  });
+
+  assert.ok(layout, label + ' must render ranking navigation');
+  assert.equal(layout.tabs.length, 3, label + ' must expose all three views');
+  assert.ok(
+    layout.scrollWidth <= layout.width + 1,
+    label + ' must not hide a discovery view behind horizontal scrolling: ' + JSON.stringify(layout),
+  );
+  for (const tab of layout.tabs) {
+    assert.ok(tab.left >= layout.left - 1 && tab.right <= layout.right + 1,
+      label + ' tab must fit in the navigation viewport: ' + tab.label);
+    assert.ok(tab.scrollWidth <= tab.clientWidth + 1,
+      label + ' must show the complete tab label: ' + tab.label);
+  }
+}
+
 async function run(name, fn) {
   await fn();
   checks.push(name);
@@ -315,6 +352,7 @@ try {
       await page.goto(ORIGIN + '/?view=' + mode);
       await waitForRealCard(page, 'viewport');
       await assertNoHorizontalOverflow(page, label);
+      await assertAllDiscoveryTabsVisible(page, label);
       await page.locator('summary').first().click();
       assert.ok(await page.locator('details[open]').count() > 0);
       const explanation = await page.locator('details[open]').first().innerText();
