@@ -111,9 +111,9 @@ jobs:
           {
             echo "## Semantic retrieval evaluation"
             echo
-            printf -- '- Model: \`%s\`\n' "$OPENAI_EMBEDDING_MODEL"
-            printf -- '- Dimensions: \`%s\`\n' "$OPENAI_EMBEDDING_DIMENSIONS"
-            printf -- '- Repeated runs: \`%s\`\n' "$EVALUATION_RUNS"
+            printf -- '- Model: `%s`\n' "$OPENAI_EMBEDDING_MODEL"
+            printf -- '- Dimensions: `%s`\n' "$OPENAI_EMBEDDING_DIMENSIONS"
+            printf -- '- Repeated runs: `%s`\n' "$EVALUATION_RUNS"
             echo
             echo "\`summary.json\` and every raw run are attached as the workflow artifact."
             echo
