@@ -2,7 +2,7 @@
 
 ## Objective
 
-Harden semantic retrieval evaluation with real repository observations and a real-provider adapter while keeping production search deterministic until a credentialed evaluation justifies semantic persistence.
+Complete Phase 9B.1B with a repeatable credentialed semantic retrieval evaluation and an evidence-based ADOPT/DEFER decision while keeping production search deterministic until adoption is justified.
 
 ## Branch
 
@@ -14,11 +14,13 @@ Current verified merge:
 
 PR #55: merged.
 
-## Completed phase
+## Current phase
 
-Phase 9B.1A — hardened retrieval benchmark + real-provider adapter.
+Phase 9B.1B — credentialed real-provider evaluation + adoption decision.
 
-Phase 9B.1 remains in progress because the credentialed live provider evaluation has not run.
+Phase 9B.1A remains complete.
+
+The repeated-run/manual-workflow infrastructure for 9B.1B is now implemented on the active branch, but the credentialed provider result has not run yet.
 
 ## Changes
 
@@ -103,6 +105,8 @@ Phase 9B.1 remains in progress because the credentialed live provider evaluation
 
 A credentialed real OpenAI embeddings evaluation has **not** been executed.
 
+The repository now has a manual `Semantic Retrieval Live Evaluation` GitHub Actions workflow plus repeated-run JSON/summary artifacts, so the remaining blocker is only a valid evaluation credential and the resulting evidence review.
+
 Reason:
 
 - no `OPENAI_API_KEY` is available in the repository or this conversation.
@@ -141,10 +145,18 @@ No ADOPT/DEFER provider decision is claimed yet.
 - 9E — hybrid lexical + semantic discovery: later.
 - 9F — bounded natural-language query interpretation: later, only if still useful.
 
-## Next phase
+## Next action
 
-Phase 9B.1B — credentialed real-provider evaluation + adoption decision.
+Add `OPENAI_API_KEY` as a GitHub Actions repository secret, then manually run:
 
-Run the v2 benchmark through the live OpenAI adapter with an evaluation credential, capture retrieval metrics/latency/usage/repeatability, and make an explicit ADOPT or DEFER decision.
+~~~text
+Actions
+→ Semantic Retrieval Live Evaluation
+→ text-embedding-3-small
+→ 1536 dimensions
+→ 3 runs
+~~~
+
+Review the raw run artifacts and `summary.json`, calculate cost using current official provider pricing, document query-level improvements/regressions, and make an explicit ADOPT or DEFER decision.
 
 Do not create vector persistence or alter the public search endpoint before that decision.
