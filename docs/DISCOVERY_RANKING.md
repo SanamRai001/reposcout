@@ -846,7 +846,7 @@ Model systems may assist with:
 - beginner-suitability assessment;
 - submission triage support.
 
-RepoScout is evaluating Jev as a possible decision layer for these tasks.
+Jev was explored as a possible decision layer for these tasks but is **parked indefinitely**. It is not used in public ranking or active discovery development. Any future experiment requires a new decision.
 
 Rules:
 - retrieval happens before model reranking;
