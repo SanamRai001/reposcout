@@ -1,0 +1,47 @@
+name: OCI Deployment Smoke
+
+on:
+  pull_request:
+    paths:
+      - 'deploy/**'
+      - '.dockerignore'
+      - '.github/workflows/oci-deployment-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure disposable CI stack (HTTP only, no cloud credentials)
+        run: |
+          cp deploy/.env.example deploy/.env
+          sed -i 's/^SITE_ADDRESS=.*/SITE_ADDRESS=:80/' deploy/.env
+          sed -i 's/REPLACE_WITH_URLSAFE_RANDOM_SECRET/reposcout-ci-smoke-only/g' deploy/.env
+
+      - name: Validate Docker Compose
+        run: docker compose --env-file deploy/.env -f deploy/compose.yaml config --quiet
+
+      - name: Build API and static web images
+        run: docker compose --env-file deploy/.env -f deploy/compose.yaml build api web
+
+      - name: Start PostgreSQL, migrate and serve web/API
+        run: docker compose --env-file deploy/.env -f deploy/compose.yaml up --no-build -d --wait
+
+      - name: Check real HTTP, database and SPA deep-link rewrites
+        run: node deploy/smoke.mjs http://127.0.0.1
+
+      - name: Collect failure diagnostics
+        if: failure()
+        run: |
+          docker compose --env-file deploy/.env -f deploy/compose.yaml ps
+          docker compose --env-file deploy/.env -f deploy/compose.yaml logs --no-color --tail=70
+
+      - name: Clean disposable CI containers and data
+        if: always()
+        run: docker compose --env-file deploy/.env -f deploy/compose.yaml down -v --remove-orphans
