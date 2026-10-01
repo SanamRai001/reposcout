@@ -68,9 +68,9 @@ function issueItem() {
         message: 'The observed issue has an entry label hint.',
       }],
       cautions: [{
-        code: 'maintainer_context_required',
-        signalIds: ['activity.days_since_update'],
-        message: 'Check the live GitHub issue before contributing.',
+        code: 'contributing_evidence_missing',
+        signalIds: ['process.contributing_present'],
+        message: 'Contribution evidence has not yet been collected.',
       }],
       limitations: ['issue_complexity_not_measured'],
     },
