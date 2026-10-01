@@ -129,6 +129,8 @@ The long-term goal is to maintain structured and explainable repository intellig
 
 AI can become one interface over that data, but it is not the foundation of the product.
 
+**Future idea only:** Jev-assisted classification or reranking was explored, but further Jev work is parked indefinitely because provider access is unavailable. RepoScout does not need Jev to function, and this is not an active roadmap task.
+
 ## Architecture and stack
 
 RepoScout is a TypeScript monorepo with separate web and API applications.
@@ -207,9 +209,7 @@ RepoScout has moved beyond the initial documentation prototype and now has worki
 
 ### Evaluation and discovery
 
-- Phase 3E.1 — Jev evaluation harness: complete.
-- Phase 3E.2A — verified live Jev adapter: complete.
-- Phase 3E.2B / 3E.3 — deferred while provider access is unavailable.
+- Phase 3E — Jev exploratory work: historical harness and isolated adapter complete; remaining evaluation **parked indefinitely, not on the active roadmap**. See [future Jev idea](docs/JEV_INTELLIGENCE_ARCHITECTURE.md).
 - Phase 4A — deterministic lexical search API: complete.
 - Phase 4B.1 — scalar search filters: complete.
 - Phase 4B.2 — topic and star-range filters: complete.
