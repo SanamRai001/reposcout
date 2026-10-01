@@ -195,6 +195,13 @@ try {
     await installApi(page, (params) => pageFor(params, [item(1)]));
     await page.goto(ORIGIN + '/');
     await page.getByRole('heading', { name: 'Discover open source worth knowing.' }).waitFor();
+    await page.getByRole('link', { name: 'Find contributions' }).click();
+    await page.getByRole('heading', { name: 'Find somewhere to contribute.' }).waitFor();
+    await waitForCards(page, 1);
+    assert.equal(new URL(page.url()).pathname, '/contribute');
+    await page.goBack();
+    await page.getByRole('heading', { name: 'Discover open source worth knowing.' }).waitFor();
+    // Also exercise in-page history transitions without a full document navigation.
     await page.evaluate(() => window.history.pushState(null, '', '/contribute'));
     await page.goBack();
     await page.getByRole('heading', { name: 'Discover open source worth knowing.' }).waitFor();
@@ -206,6 +213,35 @@ try {
     });
     await page.goBack();
     await page.getByRole('heading', { name: 'Discover open source worth knowing.' }).waitFor();
+    clean();
+    await page.close();
+  });
+
+  await run('Integrated 320px homepage exposes four visible discovery paths', async () => {
+    const page = await browser.newPage({ viewport: { width: 320, height: 700 } });
+    const clean = checkPageErrors(page);
+    await page.route((url) => url.pathname === '/api/repositories', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: [], pagination: { limit: 12, nextCursor: null } }),
+      });
+    });
+    await page.goto(ORIGIN + '/');
+    await page.getByRole('heading', { name: 'Discover open source worth knowing.' }).waitFor();
+    for (const label of ['Explore catalog', 'Hidden Gems', 'Rising', 'Find contributions']) {
+      const link = page.getByRole('navigation', { name: 'Repository discovery views' })
+        .getByRole('link', { name: label, exact: true });
+      assert.ok(await link.isVisible(), label + ' must be visible at 320px');
+      const box = await link.boundingBox();
+      assert.ok(box && box.x >= -1 && box.x + box.width <= 321,
+        label + ' must fit the viewport without hidden scrolling');
+    }
+    await checkOverflow(page, 'Integrated 320px home');
+    await page.screenshot({
+      path: OUTPUT + '/integrated-home-320px.png',
+      fullPage: true,
+    });
     clean();
     await page.close();
   });
