@@ -1,3 +1,4 @@
+/* global console, URL, window, document */
 /**
  * A2 browser-review gate. Uses mock HTTP transport, NOT live repository data.
  * The actual production Vite bundle is served via vite preview by the workflow.
