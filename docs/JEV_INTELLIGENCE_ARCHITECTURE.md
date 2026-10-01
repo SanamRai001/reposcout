@@ -1,14 +1,16 @@
 # Jev / Model-Assisted Intelligence Architecture
 
-## Status
+## Status — parked future idea (not active work)
 
-**Experimental and deferred. Phase 3E.1 harness and Phase 3E.2A adapter are implemented, but live evaluation is paused until TypeSafe access becomes available. Production Jev integration is not enabled.**
+**Jev is not part of RepoScout's active roadmap. No API key acquisition, live evaluation, provider integration, adoption decision, or production use is scheduled.**
 
-RepoScout is evaluating Jev, TypeSafe AI's System One model, as a possible decision layer for repository classification, candidate reranking, contribution suitability, and submission analysis.
+This document preserves the original optional integration idea for reference. The earlier 3E.1 benchmark/evaluation harness and 3E.2A isolated adapter were implemented and tested offline. The credentialed live evaluation and real-repository adoption study were **not completed** because TypeSafe API access was unavailable; neither is a current blocker or next action.
 
-Jev is **not** a source of repository facts, not the primary search engine, and not a replacement for RepoScout's deterministic ranking/data pipeline.
+RepoScout is continuing with its existing deterministic discovery, historical signals, contribution discovery, and independently evaluated semantic-retrieval work. Jev is not necessary for those features.
 
-No production dependency on Jev exists yet.
+**Future reconsideration requires an explicit new product decision**, a concrete use case, available access, and measured benefit over existing methods. Receiving an API key alone does not automatically restart this project. Keep measured GitHub facts, deterministic signals, community judgments, and any future model inferences separate.
+
+The remaining sections below are a **historical design proposal**, not authorized implementation tasks.
 
 ## Why this may fit RepoScout
 
@@ -286,11 +288,11 @@ Thresholds must be evaluated using RepoScout's own labeled repository examples b
 
 ## Evaluation before adoption
 
-Phase 3E is an evaluation spike, not immediate production rollout.
+The original Phase 3E was designed as an evaluation spike, not immediate production rollout. It is now parked; the following describes what was planned historically.
 
 Phase 3E.1 provides a provider-neutral benchmark harness. Phase 3E.2A maps that harness to TypeSafe's published System One HTTP contract behind a credential-gated, non-production adapter.
 
-The live smoke step is currently deferred because provider access is unavailable. RepoScout therefore continues with deterministic discovery rather than blocking product development on Jev.
+Live smoke testing and adoption evaluation are unscheduled and are not current blockers. Do not resume them without an explicit new decision.
 
 Evaluate Jev on a labeled repository set for:
 
