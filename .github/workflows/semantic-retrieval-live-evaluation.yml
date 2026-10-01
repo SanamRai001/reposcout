@@ -1,0 +1,99 @@
+name: Semantic Retrieval Live Evaluation
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: OpenAI embedding model
+        required: true
+        default: text-embedding-3-small
+        type: choice
+        options:
+          - text-embedding-3-small
+          - text-embedding-3-large
+      dimensions:
+        description: Embedding dimensions (1536 small default; up to 3072 large)
+        required: true
+        default: "1536"
+        type: string
+      runs:
+        description: Repeated benchmark runs for consistency evidence
+        required: true
+        default: "3"
+        type: choice
+        options:
+          - "1"
+          - "3"
+          - "5"
+
+permissions:
+  contents: read
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_EMBEDDING_MODEL: ${{ inputs.model }}
+      OPENAI_EMBEDDING_DIMENSIONS: ${{ inputs.dimensions }}
+      OPENAI_EMBEDDING_TIMEOUT_MS: "15000"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Require evaluation credential
+        shell: bash
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::Repository secret OPENAI_API_KEY is required for the live semantic evaluation workflow."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify live provider adapter
+        run: npm run test:semantic-provider-adapter -w @reposcout/api
+
+      - name: Verify repeated-run summarizer
+        run: npm run test:semantic-live-runner -w @reposcout/api
+
+      - name: Run repeated live benchmark
+        run: >-
+          npm run eval:semantic-retrieval:live:batch -w @reposcout/api --
+          --runs "${{ inputs.runs }}"
+          --output-dir "artifacts/semantic-evaluation"
+
+      - name: Publish evaluation summary
+        shell: bash
+        run: |
+          {
+            echo "## Semantic retrieval evaluation"
+            echo
+            echo "- Model: \`${{ inputs.model }}\`"
+            echo "- Dimensions: \`${{ inputs.dimensions }}\`"
+            echo "- Repeated runs: \`${{ inputs.runs }}\`"
+            echo
+            echo "\`summary.json\` and every raw run are attached as the workflow artifact."
+            echo
+            echo "\`\`\`json"
+            cat artifacts/semantic-evaluation/summary.json
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload evaluation evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: semantic-retrieval-evaluation-${{ github.run_id }}
+          path: artifacts/semantic-evaluation/
+          if-no-files-found: error
+          retention-days: 30

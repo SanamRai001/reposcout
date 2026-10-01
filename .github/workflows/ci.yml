@@ -71,6 +71,9 @@ jobs:
       - name: Verify live embedding provider adapter
         run: npm run test:semantic-provider-adapter -w @reposcout/api
 
+      - name: Verify repeated semantic evaluation runner
+        run: npm run test:semantic-live-runner -w @reposcout/api
+
       - name: Apply migrations
         run: npm run db:migrate -w @reposcout/api
 

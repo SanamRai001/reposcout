@@ -56,6 +56,10 @@ Start here if you are contributing to the project.
 - [PHASE_7E_RANKING_BENCHMARK.md](PHASE_7E_RANKING_BENCHMARK.md) — deterministic ranking benchmark, invariant gates, risk probes, and evidence-backed no-change tuning decision.
 - [PHASE_8A_CONTRIBUTION_SIGNAL_CONTRACT.md](PHASE_8A_CONTRIBUTION_SIGNAL_CONTRACT.md) — versioned issue/repository contribution evidence, label-hint semantics, availability, and freshness context.
 - [PHASE_8B_CONTRIBUTION_ISSUE_INGESTION.md](PHASE_8B_CONTRIBUTION_ISSUE_INGESTION.md) — measured GitHub issue persistence, listed-only bounded ingestion, stale-safe updates, and provider-pressure behavior.
+- [PHASE_9A_SEMANTIC_DOCUMENT_CONTRACT.md](PHASE_9A_SEMANTIC_DOCUMENT_CONTRACT.md) — deterministic semantic document contract and benchmark foundation.
+- [PHASE_9B_EMBEDDING_EVALUATION.md](PHASE_9B_EMBEDDING_EVALUATION.md) — provider-neutral embedding evaluation and lexical-vs-semantic metrics.
+- [PHASE_9B1A_HARDENED_SEMANTIC_EVALUATION.md](PHASE_9B1A_HARDENED_SEMANTIC_EVALUATION.md) — hardened real-repository benchmark and credential-isolated OpenAI adapter.
+- [PHASE_9B1B_CREDENTIALED_SEMANTIC_EVALUATION.md](PHASE_9B1B_CREDENTIALED_SEMANTIC_EVALUATION.md) — repeated credentialed benchmark workflow, consistency summary, and adoption evidence contract.
 - [PRIVACY.md](PRIVACY.md) — application privacy and data-handling behavior.
 - [PROJECT_STATE.md](PROJECT_STATE.md) — concise current branch, completed phase, verification, risks/decisions, and next checkpoint.
 

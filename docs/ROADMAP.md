@@ -859,11 +859,24 @@ Status: complete
 
 ##### Phase 9B.1B — Credentialed real-provider evaluation + adoption decision
 
-Next:
+Status: in progress — evaluation runner ready; credentialed result pending
+
+Completed operational preparation:
+- repeated live benchmark runner with bounded 1–10 runs;
+- default three-run consistency evaluation;
+- per-run JSON evidence;
+- machine-readable consistency/latency/usage summary;
+- manual GitHub Actions workflow;
+- repository-secret-only credential boundary;
+- 30-day workflow artifact retention;
+- no automatic adoption verdict.
+
+Still required:
 - run `semantic-retrieval-benchmark-v2` with a valid evaluation credential;
 - record lexical vs real semantic Top-1, MRR, and Recall@3;
 - record actual model/dimensions, latency, usage, and repeat-run consistency;
-- document provider cost/rate-limit/failure observations;
+- calculate cost from current provider pricing at decision time;
+- document rate-limit/failure observations from the real account;
 - make an explicit ADOPT or DEFER decision.
 
 #### Phase 9C — Embedding persistence + bounded backfill
