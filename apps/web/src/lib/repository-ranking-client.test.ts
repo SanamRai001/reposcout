@@ -141,7 +141,7 @@ function rankingPage(mode: 'hidden_gems' | 'rising') {
   };
 }
 
-function respond(body: unknown, status = 200): typeof fetch {
+function respond(body: unknown, status = 200) {
   return vi.fn<typeof fetch>().mockResolvedValue(
     new Response(JSON.stringify(body), { status }),
   );
