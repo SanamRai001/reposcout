@@ -164,6 +164,8 @@ text-embedding-3-small
 text-embedding-3-large
 ~~~
 
+The workflow validates the manual model, dimensions, and run-count inputs before installing dependencies. Inputs enter shell commands through environment variables, rather than directly interpolating free-text workflow values into executable shell lines.
+
 The workflow:
 
 1. checks out the exact commit;
@@ -174,7 +176,9 @@ The workflow:
 6. reruns repeat-summary tests;
 7. executes the credentialed benchmark;
 8. publishes `summary.json` in the Actions job summary;
-9. uploads all raw runs and the summary as a 30-day artifact.
+9. uploads raw runs and the summary as a 30-day artifact when available.
+
+If a provider failure interrupts a repeated run, the artifact-upload step still attempts to retain any completed `run-XX.json` files. An incomplete run does not fabricate a `summary.json` or count as a completed evaluation.
 
 No API key is written to the artifact.
 

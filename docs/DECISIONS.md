@@ -2005,3 +2005,20 @@ The first issue entity deliberately excludes:
 Only assignee/comment counts are captured.
 
 Richer contribution-quality signals require explicit product/privacy semantics before additional collection.
+
+
+## D-187 — Manual semantic evaluation inputs must not become shell code
+
+**Status:** Accepted
+
+Workflow-dispatch values are passed through GitHub Actions environment variables, validated before execution, and referenced as quoted shell variables rather than directly interpolated into shell scripts.
+
+Supported embedding models, dimension limits, and run counts are checked before installing dependencies or requesting embeddings.
+
+## D-188 — Preserve partial live-evaluation evidence on provider failures
+
+**Status:** Accepted
+
+A failed later repetition must not discard already captured raw evaluation observations.
+
+The manual workflow attempts artifact upload even after a non-cancellation failure. Partial run files remain explicitly incomplete; absence of a final summary is not represented as a successful or adoptable evaluation.

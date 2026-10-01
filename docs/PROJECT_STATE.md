@@ -10,7 +10,7 @@ Complete Phase 9B.1B with a repeatable credentialed semantic retrieval evaluatio
 
 Current verified merge:
 
-`9a740941586eede659c304b6374f5b2a1a12356b`
+`2588d520a4465dcc2514d9e13a98619611c55e33`
 
 PR #56: merged.
 
@@ -20,7 +20,7 @@ Phase 9B.1B — credentialed real-provider evaluation + adoption decision.
 
 Phase 9B.1A remains complete.
 
-The repeated-run/manual-workflow infrastructure for 9B.1B is now merged and CI-green on `main`.
+The repeated-run/manual-workflow infrastructure for 9B.1B is merged and CI-green on `main`. The manual workflow is additionally being hardened to validate inputs before provider requests and retain partial artifacts following failures.
 
 The credentialed provider result and ADOPT/DEFER decision are still pending.
 
@@ -74,6 +74,7 @@ The credentialed provider result and ADOPT/DEFER decision are still pending.
   - live embedding provider adapter;
   - repeated semantic evaluation runner.
 - No API credential, vector persistence, pgvector, semantic HTTP route, hybrid public search, or public search change was added.
+- Manual workflow safety follow-up validates operator inputs and protects partial evaluation artifacts.
 - The live GitHub Actions workflow is manual and never runs as part of ordinary CI.
 
 ## Verification

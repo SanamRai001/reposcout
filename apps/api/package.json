@@ -47,7 +47,7 @@
     "test:semantic-benchmark-v2": "vitest run src/evaluation/repository-semantic-retrieval-benchmark-v2.test.ts",
     "test:semantic-provider-adapter": "vitest run src/evaluation/openai-embedding-env.test.ts src/evaluation/openai-embedding-provider.test.ts",
     "eval:semantic-retrieval:live": "tsx src/cli/run-live-semantic-retrieval.ts",
-    "test:semantic-live-runner": "vitest run src/evaluation/semantic-live-evaluation-summary.test.ts",
+    "test:semantic-live-runner": "vitest run src/evaluation/semantic-live-evaluation-summary.test.ts src/evaluation/semantic-live-workflow.test.ts",
     "eval:semantic-retrieval:live:batch": "tsx src/cli/run-live-semantic-retrieval-batch.ts"
   },
   "dependencies": {
