@@ -158,6 +158,6 @@ RepoScout must first establish:
 - deterministic search/filtering;
 - explainable signals.
 
-A later evaluation may test model-assisted classification and reranking. The deterministic product must remain usable without it.
+Jev-specific evaluation is parked indefinitely and is not an MVP follow-up task. The deterministic product must remain usable without any such integration.
 
 See [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md).
