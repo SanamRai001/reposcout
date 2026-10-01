@@ -1,0 +1,61 @@
+name: Contribution Browser Review
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/**'
+      - 'scripts/review-contribution-browser.mjs'
+      - '.github/workflows/contribution-browser-review.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci
+
+      - name: Install isolated browser review tooling
+        run: npm install --no-save --package-lock=false playwright@1.55.1
+
+      - name: Install Chromium and system dependencies
+        run: npx playwright install --with-deps chromium
+
+      - name: Build production web bundle
+        run: npm run build -w @reposcout/web
+
+      - name: Review Contribution Explorer in Chromium
+        shell: bash
+        run: |
+          npm run preview -w @reposcout/web -- --host 127.0.0.1 --port 4173 --strictPort > /tmp/reposcout-preview.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
+          node scripts/review-contribution-browser.mjs
+
+      - name: Upload review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contribution-browser-review
+          path: artifacts/contribution-browser-review/
+          if-no-files-found: warn
+          retention-days: 7
