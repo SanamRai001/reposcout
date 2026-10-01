@@ -2022,3 +2022,17 @@ Supported embedding models, dimension limits, and run counts are checked before 
 A failed later repetition must not discard already captured raw evaluation observations.
 
 The manual workflow attempts artifact upload even after a non-cancellation failure. Partial run files remain explicitly incomplete; absence of a final summary is not represented as a successful or adoptable evaluation.
+
+## D-189 — Jev is a parked future integration idea, not an active milestone
+
+**Status:** Accepted — 2026-10-01
+
+TypeSafe/Jev API access is unavailable. RepoScout will **not** pursue further Jev implementation, API keys, smoke tests, production assessment storage, reranking, moderation, or adoption evaluation as part of the current roadmap.
+
+Historical Phase 3E.1 evaluation harness and 3E.2A isolated TypeSafe adapter are retained for reference; 3E.2B and 3E.3 are unscheduled, not active blockers or next steps.
+
+The idea is preserved in [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md) under future possibilities. Jev should not appear as a dependency of active search, contribution discovery, Hidden Gems/Rising, or Phase 9 semantic discovery.
+
+Reconsideration requires **a new explicit user/product decision**, a concrete use case, provider availability, and a measurable advantage over RepoScout's existing capabilities. Access becoming available on its own does not restart the work.
+
+This updates the scheduling intent of D-039 and D-066 without erasing the history of their decisions.
