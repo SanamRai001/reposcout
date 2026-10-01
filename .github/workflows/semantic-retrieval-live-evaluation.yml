@@ -39,6 +39,7 @@ jobs:
       OPENAI_EMBEDDING_MODEL: ${{ inputs.model }}
       OPENAI_EMBEDDING_DIMENSIONS: ${{ inputs.dimensions }}
       OPENAI_EMBEDDING_TIMEOUT_MS: "15000"
+      EVALUATION_RUNS: ${{ inputs.runs }}
 
     steps:
       - name: Checkout
@@ -58,6 +59,37 @@ jobs:
             exit 1
           fi
 
+      - name: Validate workflow inputs
+        shell: bash
+        run: |
+          if ! [[ "$OPENAI_EMBEDDING_DIMENSIONS" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::Embedding dimensions must be a positive integer."
+            exit 1
+          fi
+
+          case "$OPENAI_EMBEDDING_MODEL" in
+            text-embedding-3-small) max_dimensions=1536 ;;
+            text-embedding-3-large) max_dimensions=3072 ;;
+            *)
+              echo "::error::Unsupported embedding model."
+              exit 1
+              ;;
+          esac
+
+          if [ "${#OPENAI_EMBEDDING_DIMENSIONS}" -gt 4 ] ||
+             [ "$OPENAI_EMBEDDING_DIMENSIONS" -gt "$max_dimensions" ]; then
+            echo "::error::Dimensions exceed the selected model's supported maximum."
+            exit 1
+          fi
+
+          case "$EVALUATION_RUNS" in
+            1|3|5) ;;
+            *)
+              echo "::error::Evaluation runs must be 1, 3, or 5."
+              exit 1
+              ;;
+          esac
+
       - name: Install dependencies
         run: npm ci
 
@@ -70,7 +102,7 @@ jobs:
       - name: Run repeated live benchmark
         run: >-
           npm run eval:semantic-retrieval:live:batch -w @reposcout/api --
-          --runs "${{ inputs.runs }}"
+          --runs "$EVALUATION_RUNS"
           --output-dir "artifacts/semantic-evaluation"
 
       - name: Publish evaluation summary
@@ -79,9 +111,9 @@ jobs:
           {
             echo "## Semantic retrieval evaluation"
             echo
-            echo "- Model: \`${{ inputs.model }}\`"
-            echo "- Dimensions: \`${{ inputs.dimensions }}\`"
-            echo "- Repeated runs: \`${{ inputs.runs }}\`"
+            printf -- '- Model: \`%s\`\n' "$OPENAI_EMBEDDING_MODEL"
+            printf -- '- Dimensions: \`%s\`\n' "$OPENAI_EMBEDDING_DIMENSIONS"
+            printf -- '- Repeated runs: \`%s\`\n' "$EVALUATION_RUNS"
             echo
             echo "\`summary.json\` and every raw run are attached as the workflow artifact."
             echo
@@ -91,9 +123,10 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload evaluation evidence
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: semantic-retrieval-evaluation-${{ github.run_id }}
           path: artifacts/semantic-evaluation/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
