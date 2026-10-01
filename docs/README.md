@@ -14,7 +14,6 @@ Start here if you are contributing to the project.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — current system direction and production concerns.
 - [DATA_MODEL.md](DATA_MODEL.md) — canonical repository, snapshot, submission, and moderation model.
 - [DISCOVERY_RANKING.md](DISCOVERY_RANKING.md) — discovery modes, explainability, and scoring constraints.
-- [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md) — Jev decision-layer evaluation, data ownership, fallback, moderation, and reranking boundaries.
 - [DECISIONS.md](DECISIONS.md) — project decision log.
 - [PHASE_1A_PROJECT_SKELETON.md](PHASE_1A_PROJECT_SKELETON.md) — application foundation checkpoint.
 - [PHASE_1B1_PERSISTENCE_FOUNDATION.md](PHASE_1B1_PERSISTENCE_FOUNDATION.md) — PostgreSQL connection, migrations, readiness, and reproducible installs.
@@ -62,6 +61,10 @@ Start here if you are contributing to the project.
 - [PHASE_9B1B_CREDENTIALED_SEMANTIC_EVALUATION.md](PHASE_9B1B_CREDENTIALED_SEMANTIC_EVALUATION.md) — repeated credentialed benchmark workflow, consistency summary, and adoption evidence contract.
 - [PRIVACY.md](PRIVACY.md) — application privacy and data-handling behavior.
 - [PROJECT_STATE.md](PROJECT_STATE.md) — concise current branch, completed phase, verification, risks/decisions, and next checkpoint.
+
+## Parked future ideas (not current work)
+
+- [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md) — historical Jev proposal; optional future classification/reranking idea, parked indefinitely. The existing harness/adapter do not imply an active integration plan.
 
 ## Community
 

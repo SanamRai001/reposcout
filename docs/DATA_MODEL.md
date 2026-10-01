@@ -304,7 +304,7 @@ Rules:
 - this entity is not canonical repository truth;
 - each assessment must be attributable to a specific provider/model/schema/input version;
 - model output must be validated before persistence;
-- do not create this table until the Jev evaluation phase proves a real product need.
+- do not create this table unless a new explicit product decision and evaluation establish a real need; Jev work is currently parked.
 
 ### Submission
 

@@ -94,7 +94,7 @@ A broader account/role system remains deferred.
 
 ### Model-assisted submission analysis
 
-RepoScout may later use Jev or another model to support submission triage after deterministic checks and repository metadata/content collection.
+Historical future idea only (not active): Jev or another model could potentially support submission triage after deterministic checks and repository metadata/content collection. No such integration is scheduled; reopening it requires a new explicit decision.
 
 Potential model-assisted signals include:
 - project/use-case classification;

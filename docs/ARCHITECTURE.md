@@ -285,11 +285,11 @@ The ingestion system must:
 - distinguish temporary fetch failure from repository deletion/private conversion;
 - never hammer GitHub from per-page browser requests.
 
-## Planned model-assisted intelligence layer
+## Parked model-assisted intelligence proposal (not active)
 
 This layer is **not implemented yet**.
 
-RepoScout is evaluating Jev as an optional decision component after authoritative data/content collection and after normal candidate retrieval.
+Historical proposal only: Jev was considered as an optional decision component after authoritative data/content collection and normal candidate retrieval. **No Jev implementation work is scheduled.** Existing offline harness/adapter code is retained solely for reference.
 
 Planned flow:
 
@@ -316,7 +316,7 @@ Architectural rules:
 - model/provider failures must degrade to deterministic RepoScout behavior;
 - high-impact moderation decisions require human review;
 - model assessment provenance/versioning must be stored if assessments become persistent;
-- no Jev table/service should be added until the planned evaluation phase proves value.
+- no Jev table/service should be added without an explicit new product decision and evaluation demonstrating value.
 
 See [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md).
 

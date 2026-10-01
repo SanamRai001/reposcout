@@ -1,5 +1,7 @@
 # Phase 3E.2 — Live Jev Adapter + Controlled Smoke Evaluation
 
+> **Historical implementation note (updated 2026-10-01):** 3E.2A adapter was implemented and tested offline, but the live 3E.2B smoke evaluation and follow-on 3E.3 adoption study are now **parked indefinitely, not pending as an active milestone**. TypeSafe access is unavailable. No API key acquisition or further Jev work is scheduled. See [Jev architecture status](JEV_INTELLIGENCE_ARCHITECTURE.md) and decision D-189.
+
 ## Goal
 
 Connect RepoScout's provider-neutral Phase 3E.1 harness to TypeSafe System One / Jev without introducing any production ranking, moderation, or persistence dependency.
@@ -269,7 +271,7 @@ The adapter passed application verification, all offline TypeSafe wire-contract 
 
 ### Phase 3E.2B — Controlled live smoke
 
-Deferred — external access unavailable.
+Parked indefinitely — external access unavailable; no next action scheduled.
 
 The codebase supports a controlled live run, but TypeSafe access is currently unavailable. RepoScout will not pause product development waiting for provider access.
 
