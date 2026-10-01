@@ -1323,24 +1323,26 @@ button {
   }
 }
 
-/* At the narrowest supported viewport, show all discovery destinations at once. */
-@media (max-width: 380px) {
+/* Two readable rows are preferable to shrinking or hiding tabs at 320px. */
+@media (max-width: 340px) {
   .discovery-view-nav {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 2px;
-    padding: 4px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 5px;
     overflow-x: visible;
   }
 
   .discovery-view-nav a {
     min-width: 0;
-    padding: 10px 3px;
-    font-size: 0.69rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    padding: 10px 8px;
+    font-size: 0.75rem;
     white-space: nowrap;
     text-align: center;
+  }
+
+  .discovery-view-nav a:first-child {
+    grid-column: 1 / -1;
   }
 }
 
