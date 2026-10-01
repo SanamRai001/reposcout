@@ -52,8 +52,25 @@ export type ContributionSignal =
       reason: 'not_collected' | 'not_applicable';
     }>;
 
-export type ContributionExplanation = Readonly<{
-  code: string;
+export type ContributionEvidenceCode =
+  | 'issue_open' | 'issue_unassigned' | 'discussion_unlocked'
+  | 'good_first_issue_hint' | 'help_wanted_hint'
+  | 'recently_updated' | 'contributing_guidance_present';
+
+export type ContributionCautionCode =
+  | 'issue_closed' | 'issue_assigned' | 'discussion_locked' | 'no_entry_hint'
+  | 'stale_update' | 'contributing_guidance_absent'
+  | 'contributing_evidence_missing' | 'contributing_not_applicable';
+
+export type ContributionLimitationCode =
+  | 'issue_complexity_not_measured'
+  | 'maintainer_responsiveness_not_measured'
+  | 'linked_pr_outcomes_not_measured'
+  | 'external_contributor_success_not_measured'
+  | 'required_domain_expertise_not_measured';
+
+export type ContributionExplanation<TCode extends string> = Readonly<{
+  code: TCode;
   signalIds: ContributionSignalId[];
   message: string;
 }>;
@@ -86,9 +103,9 @@ export type ContributionDiscoveryItem = Readonly<{
   recommendation: Readonly<{
     contractVersion: 'contribution-recommendation-v1';
     status: 'consider' | 'needs_review';
-    evidence: ContributionExplanation[];
-    cautions: ContributionExplanation[];
-    limitations: string[];
+    evidence: ContributionExplanation<ContributionEvidenceCode>[];
+    cautions: ContributionExplanation<ContributionCautionCode>[];
+    limitations: ContributionLimitationCode[];
   }>;
 }>;
 
@@ -136,6 +153,26 @@ const NUMERIC_SIGNALS: readonly string[] = [
   'activity.issue_age_days',
   'activity.days_since_update',
   'discussion.comment_count',
+];
+
+const EVIDENCE_CODES: readonly ContributionEvidenceCode[] = [
+  'issue_open', 'issue_unassigned', 'discussion_unlocked',
+  'good_first_issue_hint', 'help_wanted_hint', 'recently_updated',
+  'contributing_guidance_present',
+];
+
+const CAUTION_CODES: readonly ContributionCautionCode[] = [
+  'issue_closed', 'issue_assigned', 'discussion_locked', 'no_entry_hint',
+  'stale_update', 'contributing_guidance_absent', 'contributing_evidence_missing',
+  'contributing_not_applicable',
+];
+
+const LIMITATION_CODES: readonly ContributionLimitationCode[] = [
+  'issue_complexity_not_measured',
+  'maintainer_responsiveness_not_measured',
+  'linked_pr_outcomes_not_measured',
+  'external_contributor_success_not_measured',
+  'required_domain_expertise_not_measured',
 ];
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -218,11 +255,15 @@ function isSignal(value: unknown, key: ContributionSignalId): value is Contribut
     : typeof value.value === 'boolean';
 }
 
-function isExplanation(value: unknown): value is ContributionExplanation {
-  return record(value) && text(value.code) && text(value.message) &&
-    Array.isArray(value.signalIds) &&
+function isExplanation<TCode extends string>(
+  value: unknown,
+  acceptedCodes: readonly TCode[],
+): value is ContributionExplanation<TCode> {
+  return record(value) && acceptedCodes.includes(value.code as TCode) &&
+    text(value.message) && Array.isArray(value.signalIds) &&
     value.signalIds.length > 0 &&
-    value.signalIds.every((id: unknown) => SIGNAL_IDS.includes(id as ContributionSignalId));
+    value.signalIds.every((id: unknown) =>
+      SIGNAL_IDS.includes(id as ContributionSignalId));
 }
 
 function isContributionItem(value: unknown): value is ContributionDiscoveryItem {
@@ -247,9 +288,13 @@ function isContributionItem(value: unknown): value is ContributionDiscoveryItem 
     SIGNAL_IDS.every((id) => isSignal((evidence.signals as Record<string, unknown>)[id], id)) &&
     rec.contractVersion === 'contribution-recommendation-v1' &&
     (rec.status === 'consider' || rec.status === 'needs_review') &&
-    Array.isArray(rec.evidence) && rec.evidence.every(isExplanation) &&
-    Array.isArray(rec.cautions) && rec.cautions.every(isExplanation) &&
-    Array.isArray(rec.limitations) && rec.limitations.every(text);
+    Array.isArray(rec.evidence) &&
+    rec.evidence.every((value: unknown) => isExplanation(value, EVIDENCE_CODES)) &&
+    Array.isArray(rec.cautions) &&
+    rec.cautions.every((value: unknown) => isExplanation(value, CAUTION_CODES)) &&
+    Array.isArray(rec.limitations) &&
+    rec.limitations.every((value: unknown) =>
+      LIMITATION_CODES.includes(value as ContributionLimitationCode));
 }
 
 function invalidResponse(): ContributionDiscoveryError {
