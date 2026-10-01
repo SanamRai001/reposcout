@@ -34,6 +34,13 @@ Bounded page size 1–50, opaque cursor bound to filters and a fixed evaluation 
 - Reviewed saved 320, 375, 768, and 1440px captures: filters, cards, evidence disclosure and footer display without visible horizontal clipping. Browser test explicitly checked no document overflow.
 - This documentation follow-up is not itself a tested implementation commit; confirm its own final-head checks before marking PR #62 ready.
 
+## B2 follow-up: route restoration
+- Browser-history audit found that `main.tsx` initially chose the top-level view only at startup. Added `RouteSwitch`, which restores the catalog or `/contribute` when a cross-route `popstate` fires.
+- Added the corresponding cross-route Back/Forward case to `scripts/review-contribution-browser.mjs` (eleven browser cases total when green).
+- Updated implementation head: `dac1bcde5aeafcfd0ce727385c74e2f78c24a398`; CI #354, run `36885975958`, **success**, all 34 steps.
+- Expanded Chromium Review #4, run `36885975951`, **pending at this checkpoint** (installing Chromium dependencies; no test failure recorded yet). Do not mark this latest test run green or mark PR #62 ready until its exact result is checked.
+- This state-only documentation update is subsequent to the above implementation commit and has its own checks.
+
 ## Important limitations
 - Browser fixtures are controlled synthetic contract examples, **not** a claim that the live public catalog has issue inventory. Real Phase 8 API remains covered by its independent PostgreSQL integration gates.
 - The B2 route is directly accessible at `/contribute`. A discovery-page navigation link is intentionally deferred until PR #60 is merged, to avoid editing the same `App.tsx` in two parallel PRs.
