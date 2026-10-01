@@ -1,3 +1,4 @@
+/* global console, process, fetch, URL, AbortSignal */
 #!/usr/bin/env node
 /**
  * Real deployment HTTP check, without fixture data or nonempty-catalog assumptions.
