@@ -1,0 +1,88 @@
+name: reposcout
+
+x-api-env: &api-env
+  NODE_ENV: production
+  PORT: "4000"
+  TRUST_PROXY_HOPS: "1"
+  DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in deploy/.env}
+  DATABASE_SSL: "false"
+  GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+  MODERATION_REVIEWERS_JSON: ${MODERATION_REVIEWERS_JSON:-}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: reposcout
+      POSTGRES_USER: reposcout
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in deploy/.env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reposcout -d reposcout"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  migrate:
+    image: reposcout-api:local
+    restart: "no"
+    environment: *api-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [internal]
+    command: ["npm", "run", "db:migrate", "-w", "@reposcout/api"]
+
+  api:
+    image: reposcout-api:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: api
+    restart: unless-stopped
+    environment: *api-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    expose: ["4000"]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  web:
+    image: reposcout-web:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: web
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?Set SITE_ADDRESS in deploy/.env}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+      - "443:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [internal]
+
+networks:
+  internal:
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
