@@ -201,14 +201,14 @@ try {
     await mockApi(page, (mode) => responsePage(mode, [item(mode, 1)]), counters);
     await page.goto(ORIGIN + '/?view=hidden_gems');
     await page.getByRole('heading', { name: 'Explore Hidden Gems.' }).waitFor();
-    await page.locator('.ranked-card').first().waitFor();
+    await page.locator('.ranked-card:not(.repository-card-skeleton)').first().waitFor();
     assert.equal(counters.catalog, 0, 'Ranking view must not request catalog pages');
     assert.equal(await page.locator('a[aria-current="page"]').innerText(), 'Hidden Gems');
     await page.screenshot({ path: OUTPUT + '/hidden-gems-desktop.png', fullPage: true });
 
     await page.getByRole('link', { name: 'Rising', exact: true }).click();
     await page.getByRole('heading', { name: 'See what is gaining momentum.' }).waitFor();
-    await page.locator('.ranked-card').first().waitFor();
+    await page.locator('.ranked-card:not(.repository-card-skeleton)').first().waitFor();
     assert.match(page.url(), /view=rising/);
     await page.screenshot({ path: OUTPUT + '/rising-desktop.png', fullPage: true });
 
@@ -238,7 +238,7 @@ try {
       await mockApi(page, (requestedMode) =>
         responsePage(requestedMode, [item(requestedMode, 1)]));
       await page.goto(ORIGIN + '/?view=' + mode);
-      await page.locator('.ranked-card').first().waitFor();
+      await page.locator('.ranked-card:not(.repository-card-skeleton)').first().waitFor();
       await assertNoHorizontalOverflow(page, label);
       await page.locator('summary').first().click();
       assert.ok(await page.locator('details[open]').count() > 0);
@@ -261,7 +261,7 @@ try {
     await mockApi(page, (mode) => responsePage(mode, [], null, 0));
     await page.goto(ORIGIN + '/?view=rising');
     await page.getByRole('heading', { name: 'No eligible repositories yet' }).waitFor();
-    assert.equal(await page.locator('.ranked-card').count(), 0);
+    assert.equal(await page.locator('.ranked-card:not(.repository-card-skeleton)').count(), 0);
     assert.ok(await page.getByText(/7- and 30-day snapshots/).isVisible());
     await page.screenshot({ path: OUTPUT + '/rising-empty.png', fullPage: true });
     clean();
@@ -280,8 +280,8 @@ try {
     await page.screenshot({ path: OUTPUT + '/ranking-error.png', fullPage: true });
     unavailable = false;
     await page.getByRole('button', { name: 'Try again', exact: true }).click();
-    await page.locator('.ranked-card').first().waitFor();
-    assert.equal(await page.locator('.ranked-card').count(), 1);
+    await page.locator('.ranked-card:not(.repository-card-skeleton)').first().waitFor();
+    assert.equal(await page.locator('.ranked-card:not(.repository-card-skeleton)').count(), 1);
     clean();
     await page.close();
   });
@@ -301,11 +301,11 @@ try {
       return responsePage(mode, [item(mode, 12), item(mode, 13)], null, 13);
     });
     await page.goto(ORIGIN + '/?view=hidden_gems');
-    await page.waitForFunction(() => document.querySelectorAll('.ranked-card').length === 12);
+    await page.waitForFunction(() => document.querySelectorAll('.ranked-card:not(.repository-card-skeleton)').length === 12);
     await page.getByRole('button', { name: 'Load more ranked repositories' }).click();
-    await page.waitForFunction(() => document.querySelectorAll('.ranked-card').length === 13);
+    await page.waitForFunction(() => document.querySelectorAll('.ranked-card:not(.repository-card-skeleton)').length === 13);
     assert.equal(receivedCursor, 'opaque+one');
-    assert.equal(await page.locator('.ranked-card').count(), 13);
+    assert.equal(await page.locator('.ranked-card:not(.repository-card-skeleton)').count(), 13);
     assert.ok(await page.getByText('End of eligible repositories in this view.').isVisible());
     await page.screenshot({ path: OUTPUT + '/ranking-pagination.png', fullPage: true });
     clean();
@@ -319,13 +319,13 @@ try {
       ? responsePage(mode, Array.from({ length: 12 }, (_, i) => item(mode, i + 1)), 'cursor-1', 13)
       : { __httpError: 503 });
     await page.goto(ORIGIN + '/?view=hidden_gems');
-    await page.waitForFunction(() => document.querySelectorAll('.ranked-card').length === 12);
+    await page.waitForFunction(() => document.querySelectorAll('.ranked-card:not(.repository-card-skeleton)').length === 12);
     await page.getByRole('button', { name: 'Load more ranked repositories' }).click();
     await page.getByRole('button', { name: 'Restart ranking' }).waitFor();
-    assert.equal(await page.locator('.ranked-card').count(), 12);
+    assert.equal(await page.locator('.ranked-card:not(.repository-card-skeleton)').count(), 12);
     await page.screenshot({ path: OUTPUT + '/ranking-pagination-error.png', fullPage: true });
     await page.getByRole('button', { name: 'Restart ranking' }).click();
-    await page.waitForFunction(() => document.querySelectorAll('.ranked-card').length === 12);
+    await page.waitForFunction(() => document.querySelectorAll('.ranked-card:not(.repository-card-skeleton)').length === 12);
     clean();
     await page.close();
   });
