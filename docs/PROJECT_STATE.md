@@ -8,11 +8,13 @@ Complete Phase 9B.1B with a repeatable credentialed semantic retrieval evaluatio
 
 `main`
 
-Current verified merge:
+Latest verified implementation checkpoint:
 
-`2588d520a4465dcc2514d9e13a98619611c55e33`
+`27352b352ed2c06bf615bac06901f5c66730b35d`
 
-PR #56: merged.
+PR #58: merged. Post-merge CI run #36872757729: success.
+
+PR #56 supplied the repeated runner; PR #58 hardened its manual workflow.
 
 ## Current phase
 
@@ -20,7 +22,7 @@ Phase 9B.1B — credentialed real-provider evaluation + adoption decision.
 
 Phase 9B.1A remains complete.
 
-The repeated-run/manual-workflow infrastructure for 9B.1B is merged and CI-green on `main`. The manual workflow is additionally being hardened to validate inputs before provider requests and retain partial artifacts following failures.
+The repeated-run/manual-workflow infrastructure for 9B.1B is merged and CI-green on `main`. Workflow inputs are validated before provider requests, shell code uses environment variables instead of interpolated free-text inputs, and partial raw-run evidence is retained following non-cancellation failures.
 
 The credentialed provider result and ADOPT/DEFER decision are still pending.
 
@@ -74,7 +76,7 @@ The credentialed provider result and ADOPT/DEFER decision are still pending.
   - live embedding provider adapter;
   - repeated semantic evaluation runner.
 - No API credential, vector persistence, pgvector, semantic HTTP route, hybrid public search, or public search change was added.
-- Manual workflow safety follow-up validates operator inputs and protects partial evaluation artifacts.
+- PR #58 completed manual workflow input validation, environment-variable safety, and partial evaluation artifact retention; all offline and existing regression gates passed on its exact merge commit.
 - The live GitHub Actions workflow is manual and never runs as part of ordinary CI.
 
 ## Verification
@@ -86,6 +88,7 @@ The credentialed provider result and ADOPT/DEFER decision are still pending.
 - Phase 9B.1B runner PR #56 branch head `dc24230936b361dcbd6aedb83b7a9bdc47844ae7`: CI #310 success.
 - PR #56 squash-merged as `9a740941586eede659c304b6374f5b2a1a12356b`.
 - Post-merge `main` CI #311 passed on that exact squash commit.
+- PR #58 merged as `27352b352ed2c06bf615bac06901f5c66730b35d`; post-merge CI #36872757729 passed all gates (including the new workflow-safety regression test).
 - CI #310 and #311 passed:
   - application lint/typecheck/unit tests/build;
   - production dependency audit;
