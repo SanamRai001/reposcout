@@ -1,5 +1,5 @@
-/* global console, process, fetch, URL, AbortSignal */
 #!/usr/bin/env node
+/* global console, process, fetch, URL, AbortSignal */
 /**
  * Real deployment HTTP check, without fixture data or nonempty-catalog assumptions.
  * node deploy/smoke.mjs https://your-reposcout-host.example
