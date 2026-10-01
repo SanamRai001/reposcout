@@ -147,6 +147,12 @@ No ADOPT/DEFER provider decision is claimed yet.
 - Public `GET /api/repositories/search` remains unchanged.
 - No personal/contributor data was added.
 
+## Parked future integration — Jev (not an active blocker)
+
+TypeSafe/Jev is **removed from the active roadmap**, because API access is unavailable and the project should not depend on that provider. The offline evaluation harness and isolated adapter remain as historical work, but credentialed smoke testing, further implementation, and adoption evaluation are **not scheduled**. Do not request a Jev key or resume this work during an ordinary "continue" turn.
+
+The original idea remains in [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md). Reopening it requires an explicit new product decision and evidence of a concrete benefit. The Phase 9 semantic/embedding evaluation described here is separate from Jev; its current status is unchanged.
+
 ## Phase 9 breakdown
 
 - 9A — semantic document + retrieval benchmark foundation: complete.
