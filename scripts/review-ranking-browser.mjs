@@ -131,7 +131,7 @@ function responsePage(mode, data, cursor = null, eligibleCount = data.length) {
 }
 
 async function mockApi(page, resolveRanking, counters = { catalog: 0, rank: 0 }) {
-  await page.route('**/api/repositories**', async (route) => {
+  await page.route((url) => url.pathname.startsWith('/api/repositories'), async (route) => {
     const url = new URL(route.request().url());
     const ranking = url.pathname.match(/^\/api\/repositories\/rankings\/(hidden_gems|rising)$/);
     let result;
