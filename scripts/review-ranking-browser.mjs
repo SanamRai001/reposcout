@@ -31,7 +31,7 @@ function repository(id) {
     createdAt: observedAt,
     updatedAt: observedAt,
     metadata: {
-      stars: 120,
+      stars: 473,
       forks: 20,
       openIssues: 4,
       primaryLanguage: 'TypeScript',
@@ -54,18 +54,44 @@ function trend(days) {
 function item(mode, id) {
   const explanation = mode === 'hidden_gems'
     ? {
-        components: [{
-          id: 'maintenance',
-          points: 30,
-          maxPoints: 35,
-          signalIds: ['maintenance.days_since_push'],
-        }],
-        positivePoints: 65,
+        components: [
+          {
+            id: 'maintenance',
+            points: 30,
+            maxPoints: 35,
+            signalIds: ['maintenance.days_since_push'],
+          },
+          {
+            id: 'documentation',
+            points: 20,
+            maxPoints: 20,
+            signalIds: ['documentation.readme_present'],
+          },
+          {
+            id: 'contribution_guidance',
+            points: 0,
+            maxPoints: 20,
+            signalIds: ['community.contributing_present'],
+          },
+          {
+            id: 'community_readiness',
+            points: 10,
+            maxPoints: 20,
+            signalIds: ['community.code_of_conduct_present'],
+          },
+          {
+            id: 'momentum_bonus',
+            points: 3.5,
+            maxPoints: 5,
+            signalIds: ['momentum.stars_delta_30d'],
+          },
+        ],
+        positivePoints: 63.5,
         popularityPenalty: {
           id: 'popularity_saturation',
           points: 3,
           maxPoints: 25,
-          stars: 120,
+          stars: 473,
           freeStars: 250,
           saturationStars: 50000,
         },
@@ -76,13 +102,36 @@ function item(mode, id) {
         },
       }
     : {
-        components: [{
-          id: 'stars_7d_momentum',
-          points: 35,
-          maxPoints: 45,
-          signalIds: ['momentum.stars_delta_7d'],
-          normalizedDelta: 8,
-        }],
+        components: [
+          {
+            id: 'stars_7d_momentum',
+            points: 35.43,
+            maxPoints: 45,
+            signalIds: ['momentum.stars_delta_7d'],
+            normalizedDelta: 12,
+          },
+          {
+            id: 'stars_30d_momentum',
+            points: 0,
+            maxPoints: 35,
+            signalIds: ['momentum.stars_delta_30d'],
+            normalizedDelta: 0,
+          },
+          {
+            id: 'forks_30d_momentum',
+            points: 0,
+            maxPoints: 15,
+            signalIds: ['momentum.forks_delta_30d'],
+            normalizedDelta: 0,
+          },
+          {
+            id: 'maintenance_support',
+            points: 5,
+            maxPoints: 5,
+            signalIds: ['maintenance.days_since_push'],
+            normalizedDelta: null,
+          },
+        ],
         historyCoverage: {
           stars7d: trend(7),
           stars30d: trend(30),
@@ -92,7 +141,7 @@ function item(mode, id) {
           stars: {
             id: 'visibility.stars_total',
             availability: 'available',
-            value: 120,
+            value: 473,
             provenance: null,
           },
           forks: {
@@ -110,7 +159,7 @@ function item(mode, id) {
     ranking: {
       mode,
       formulaVersion: mode === 'hidden_gems' ? 'hidden-gem-v1' : 'rising-v1',
-      score: mode === 'hidden_gems' ? 62 : 35,
+      score: mode === 'hidden_gems' ? 60.5 : 40.43,
       explanation,
     },
   };
