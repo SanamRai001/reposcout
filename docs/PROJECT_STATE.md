@@ -10,7 +10,7 @@ Expose existing evidence-backed discovery capabilities to RepoScout visitors. Pr
 
 ## Completed phase / current checkpoint
 - **A1: ranking frontend transport and tests** — implemented, GitHub CI #321 success; documentation-only follow-up CI #322 success.
-- **A2: ranking discovery UI** — implementation committed in the same draft PR; CI and responsive browser review pending.
+- **A2: ranking discovery UI** — implemented; PR CI #328 completed successfully against `0a0231590bd55cd1b9d8d8a3281f69393bb1a710`. Responsive browser review remains pending.
 
 ## A2 changes
 - Added `repository-ranking-navigation.ts` and tests for explicit URL modes:
@@ -27,7 +27,7 @@ Expose existing evidence-backed discovery capabilities to RepoScout visitors. Pr
 - Read backend Phase 7D ranking response and score/evidence contracts and current frontend source before implementing.
 - A1 PR #60 CI #321 run ID `36878516237`: success (34 successful steps).
 - A1 state-only follow-up CI #322 run ID `36878732057`: success.
-- A2 GitHub CI: **pending verification** on latest implementation/doc checkpoint; do not claim green before exact-head checks finish.
+- A2 PR CI #328 (run ID `36879664941`): **success**, 34 successful workflow steps and no failed steps on `0a0231590bd55cd1b9d8d8a3281f69393bb1a710` (including this file's prior version). This final state-only documentation follow-up is a new commit; its checks are tracked separately.
 - Browser interaction/responsive screenshot verification has **not** been run; static rendering tests are not a replacement.
 - PR remains a draft and is **not merged**.
 
@@ -46,7 +46,7 @@ Expose existing evidence-backed discovery capabilities to RepoScout visitors. Pr
 - To evaluate later: GitHub Actions repository secret `OPENAI_API_KEY`; manual `Semantic Retrieval Live Evaluation` with `text-embedding-3-small`, 1536 dimensions, three runs. Never put credential text in chat. Jev is not to be resumed automatically.
 
 ## Exact next phase
-1. Verify A2 PR #60 CI against final head; address any failures in this branch.
+1. Ensure the final state-only documentation commit remains CI-green, addressing any regression if found.
 2. Review ranking UI at mobile/tablet/desktop in a real browser, including deep-link and Back/Forward, error/empty states, load-more cursor and keyboard navigation.
 3. Decide whether to merge PR #60 only after checks/review. Do not auto-merge.
 4. After that, Product track B: Contribution Explorer frontend using the completed Phase 8 API (separate branch).
