@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { App } from './App';
+import { ContributionExplorer } from './ContributionExplorer';
 import './styles.css';
 
 const root = document.getElementById('root');
@@ -12,6 +13,8 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    {/^\/contribute\/?$/.test(window.location.pathname)
+      ? <ContributionExplorer />
+      : <App />}
   </StrictMode>,
 );
