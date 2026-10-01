@@ -112,7 +112,7 @@ function isRepositoryMetadata(value: unknown): boolean {
   );
 }
 
-function isCatalogItem(value: unknown): value is RepositoryCatalogItem {
+export function isCatalogItem(value: unknown): value is RepositoryCatalogItem {
   if (!value || typeof value !== 'object') {
     return false;
   }
