@@ -378,7 +378,14 @@ export function RankingExplorer({
                   type="button"
                   onClick={() => void loadMore()}
                 >
-                  Retry
+                  Retry page
+                </button>
+                <button
+                  className="ranking-inline-retry"
+                  type="button"
+                  onClick={retryRanking}
+                >
+                  Restart ranking
                 </button>
               </div>
             ) : null}
