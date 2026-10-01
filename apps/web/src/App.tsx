@@ -18,6 +18,12 @@ import {
   submitRepository,
   type RepositorySubmission,
 } from './lib/repository-submission-client';
+import { RankingExplorer } from './RankingExplorer';
+import {
+  rankingModeFromSearch,
+  rankingModeToSearch,
+} from './lib/repository-ranking-navigation';
+import type { RepositoryRankingMode } from './lib/repository-ranking-client';
 
 const PAGE_SIZE = 12;
 
@@ -361,6 +367,11 @@ function CatalogSkeleton() {
 
 export function App() {
   const initialScope = browserScope();
+  const [rankingMode, setRankingMode] = useState<RepositoryRankingMode | null>(
+    () => typeof window === 'undefined'
+      ? null
+      : rankingModeFromSearch(window.location.search),
+  );
   const [activeScope, setActiveScope] =
     useState<RepositoryDiscoveryScope | null>(initialScope);
   const [form, setForm] = useState<DiscoveryFormState>(
@@ -379,6 +390,8 @@ export function App() {
   });
 
   useEffect(() => {
+    if (rankingMode !== null) return;
+
     const controller = new AbortController();
     const request = activeScope
       ? fetchRepositoryDiscoveryPage({
@@ -418,11 +431,14 @@ export function App() {
       });
 
     return () => controller.abort();
-  }, [activeScope, reloadToken]);
+  }, [activeScope, reloadToken, rankingMode]);
 
   useEffect(() => {
     const handlePopState = () => {
       const scope = browserScope();
+      setRankingMode(
+        rankingModeFromSearch(window.location.search),
+      );
       setInitialLoading(true);
       setLoadingMore(false);
       setErrorMessage(null);
@@ -439,6 +455,7 @@ export function App() {
 
   function commitScope(scope: RepositoryDiscoveryScope | null): void {
     updateBrowserScope(scope);
+    setRankingMode(null);
     setInitialLoading(true);
     setLoadingMore(false);
     setErrorMessage(null);
@@ -447,6 +464,25 @@ export function App() {
     setNextCursor(null);
     setActiveScope(scope);
     setForm(formFromScope(scope));
+  }
+
+  function selectRankingMode(mode: RepositoryRankingMode | null): void {
+    if (mode === rankingMode || typeof window === 'undefined') return;
+    const search = rankingModeToSearch(mode);
+    window.history.pushState(
+      null,
+      '',
+      window.location.pathname + (search ? '?' + search : ''),
+    );
+    setRankingMode(mode);
+    setInitialLoading(true);
+    setLoadingMore(false);
+    setErrorMessage(null);
+    setFormError(null);
+    setRepositories([]);
+    setNextCursor(null);
+    setActiveScope(null);
+    setForm(formFromScope(null));
   }
 
   function submitDiscovery(event: FormEvent<HTMLFormElement>): void {
@@ -610,7 +646,7 @@ export function App() {
           <a className="header-link" href="#add-repository">
             Add a repository
           </a>
-          <span className="phase-badge">Community · Phase 5D</span>
+          <span className="phase-badge">Curated · Community</span>
         </div>
       </header>
 
@@ -621,13 +657,43 @@ export function App() {
             <h1 id="catalog-title">Discover open source worth knowing.</h1>
           </div>
           <p>
-            Search canonical repository text or narrow the index with measured
-            language, license, topic, star, fork, and archive filters. Results
-            are deterministic matches—not an AI score or hidden relevance rank.
+            Browse by measured repository facts, or explore explainable Hidden
+            Gems and Rising signals. Formula-based discovery is distinct from
+            search matching—not an AI verdict or universal quality rating.
           </p>
         </div>
       </section>
 
+      <nav className="discovery-view-nav" aria-label="Repository discovery views">
+        <a
+          href="/"
+          aria-current={rankingMode === null ? 'page' : undefined}
+          onClick={(event) => { event.preventDefault(); selectRankingMode(null); }}
+        >
+          Explore catalog
+        </a>
+        <a
+          href="?view=hidden_gems"
+          aria-current={rankingMode === 'hidden_gems' ? 'page' : undefined}
+          onClick={(event) => { event.preventDefault(); selectRankingMode('hidden_gems'); }}
+        >
+          Hidden Gems
+        </a>
+        <a
+          href="?view=rising"
+          aria-current={rankingMode === 'rising' ? 'page' : undefined}
+          onClick={(event) => { event.preventDefault(); selectRankingMode('rising'); }}
+        >
+          Rising
+        </a>
+        <a href="/contribute">Find contributions</a>
+      </nav>
+
+      {rankingMode !== null ? (
+        <RankingExplorer key={rankingMode} mode={rankingMode} />
+      ) : null}
+
+      {rankingMode === null ? (
       <section
         className="discovery-section"
         aria-labelledby="discovery-heading"
@@ -815,6 +881,7 @@ export function App() {
           </div>
         ) : null}
       </section>
+      ) : null}
 
       <section
         className="submission-section"
@@ -1008,6 +1075,7 @@ export function App() {
         </div>
       </section>
 
+      {rankingMode === null ? (
       <section className="catalog-section" aria-labelledby="catalog-heading">
         <div className="catalog-heading-row">
           <div>
@@ -1124,8 +1192,10 @@ export function App() {
         </div>
       </section>
 
+      ) : null}
+
       <footer className="catalog-footer">
-        <span>Deterministic search and filters. No hidden ranking.</span>
+        <span>Deterministic search · Evidence-backed formula views · No hidden AI scoring.</span>
         <span>RepoScout · open-source repository intelligence</span>
       </footer>
     </main>
