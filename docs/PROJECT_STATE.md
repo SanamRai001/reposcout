@@ -1,181 +1,35 @@
 # RepoScout Project State
 
-## Objective
+## Product objective
+Help visitors discover open-source repositories worth knowing and identify observed public contribution opportunities through factual, explainable signals and community submissions.
 
-Complete Phase 9B.1B with a repeatable credentialed semantic retrieval evaluation and an evidence-based ADOPT/DEFER decision while keeping production search deterministic until adoption is justified.
+## Delivery checkpoint (2026-10-01)
+- **A1–A2 / PR #60:** merged into main as `8507a3f4fc076fa96de199f02e87e89a20feac8c`. Explainable Hidden Gems and Rising, deep links, loading/error/empty/pagination, measured evidence; CI #344 and ranking Chromium Review #13 successful.
+- **B1 / PR #61:** merged into main as `d9bb7b8ec3dce6afbc024f8af5ff29f81f9ddafd` using a regular merge (B2 ancestry preserved). Typed Phase 8 contribution frontend client, filters, provenance and transport tests; CI #348 successful.
+- **B2 / PR #62:** integrated `/contribute` visitor UI and visible catalog navigation on `feat/contribution-explorer-ui-b2`; retargeted to main. Verify post-integration CI + Chromium at the exact branch head before merge; then verify post-merge main.
+- B2's underlying standalone implementation CI #354 and Chromium #4 passed all 11 cases; previous docs-only CI #355/Chromium #5 also passed. The integrated four-link navigation introduces one extra 320px browser review.
+- No live production deployment or populated public issue inventory is claimed from mocked browser fixtures.
 
-## Branch
+## User-visible capabilities
+- Existing catalog, lexical search/filter-only discovery, shareable query scopes and community repository submission.
+- Hidden Gems and Rising based on stored deterministic formula evidence, not universal judgments. Rising needs observed historical snapshots.
+- Contribution Explorer: URL-backed evidence filters and observed open GitHub issues with source metadata, cautions, limitations, and a direct live GitHub issue link. `consider` is a formula evidence flag, not proof an issue is beginner-friendly.
+- All four discoverable paths stay readable at 320px: catalog, Hidden Gems, Rising, Find contributions.
+- Production `/contribute` route requires the web host's SPA fallback/rewrite to `index.html`.
 
-`main`
+## Verification and risk boundaries
+- Normal CI: lint, TypeScript, frontend/backend tests, build, security audit, benchmark checks, PostgreSQL migration and persistence/integration gates.
+- Chromium smoke suites use mocked API fixtures and save screenshots; they validate UI, not actual freshness or quantity of the live public catalog.
+- No B2 backend API/schema/migration change or external model call.
+- No automatic prediction of issue difficulty, maintainer responsiveness or contribution success.
+- Existing moderation publication and data provenance boundaries must remain intact.
 
-Latest verified implementation checkpoint:
+## Separate technical track
+- Phase 9A, 9B, 9B.1A complete; 9B.1B credentialed live OpenAI embedding benchmark/adoption decision still pending.
+- Phase 9C+ blocked until credible real-provider evaluation justifies adoption. Deterministic public search remains unchanged.
+- TypeSafe/Jev experiment is parked indefinitely; do not resume it automatically. Do not paste credentials into chat.
 
-`27352b352ed2c06bf615bac06901f5c66730b35d`
-
-PR #58: merged. Post-merge CI run #36872757729: success.
-
-PR #56 supplied the repeated runner; PR #58 hardened its manual workflow.
-
-## Current phase
-
-Phase 9B.1B — credentialed real-provider evaluation + adoption decision.
-
-Phase 9B.1A remains complete.
-
-The repeated-run/manual-workflow infrastructure for 9B.1B is merged and CI-green on `main`. Workflow inputs are validated before provider requests, shell code uses environment variables instead of interpolated free-text inputs, and partial raw-run evidence is retained following non-cancellation failures.
-
-The credentialed provider result and ADOPT/DEFER decision are still pending.
-
-## Changes
-
-- Added `semantic-retrieval-benchmark-v2`.
-- Kept `semantic-retrieval-benchmark-v1` frozen and unchanged.
-- V2 freezes six real public repositories observed on 2026-09-26:
-  - `immich-app/immich`;
-  - `n8n-io/n8n`;
-  - `pgvector/pgvector`;
-  - `shadcn-ui/ui`;
-  - `fastapi/fastapi`;
-  - `supabase/supabase`.
-- Recorded README ref + exact README blob SHA for every real benchmark repository.
-- Added 10 harder natural-language queries:
-  - 6 lexical-hard cases;
-  - 4 intentionally ambiguous cases with multi-repository relevance where appropriate.
-- Added a benchmark gate requiring the lexical v2 baseline to be below perfect Top-1/MRR, proving v2 is materially harder than v1.
-- Generalized the semantic evaluator to accept versioned benchmark contracts without rewriting v1.
-- Added a credential-isolated OpenAI embedding evaluation adapter behind the existing provider-neutral contract.
-- Supported current evaluation models:
-  - `text-embedding-3-small`;
-  - `text-embedding-3-large`.
-- Default live evaluation:
-  - model `text-embedding-3-small`;
-  - 1536 dimensions;
-  - 15-second request timeout.
-- Added strict live response validation for:
-  - fixed API origin;
-  - Bearer authentication;
-  - returned model provenance;
-  - response index coverage;
-  - vector mapping;
-  - usage token counts;
-  - malformed/incomplete provider responses;
-  - unauthorized/rate-limit/validation/server failures.
-- Added live telemetry:
-  - provider request latency;
-  - total evaluation elapsed time;
-  - prompt/total token usage.
-- Added command:
-  - `npm run eval:semantic-retrieval:live -w @reposcout/api`.
-- Added evaluation-only env examples:
-  - `OPENAI_API_KEY`;
-  - `OPENAI_EMBEDDING_MODEL`;
-  - `OPENAI_EMBEDDING_DIMENSIONS`;
-  - `OPENAI_EMBEDDING_TIMEOUT_MS`.
-- Added dedicated CI gates:
-  - hardened semantic benchmark;
-  - live embedding provider adapter;
-  - repeated semantic evaluation runner.
-- No API credential, vector persistence, pgvector, semantic HTTP route, hybrid public search, or public search change was added.
-- PR #58 completed manual workflow input validation, environment-variable safety, and partial evaluation artifact retention; all offline and existing regression gates passed on its exact merge commit.
-- The live GitHub Actions workflow is manual and never runs as part of ordinary CI.
-
-## Verification
-
-- Phase 9B final checkpoint: `main@dff7022b501c9697acb311683c9dc89dbc631b64`.
-- Phase 9B.1A implementation head `1565149a05aa329b203ada17d27860fbee94f269`: CI #301 success.
-- Phase 9B.1A documentation-complete head `8504301148e1c1437abec14b5f21929729b63878`: CI #306 success.
-- PR #55 merged with the exact CI-green head as `b7baf53b0fe0383ed474618a2dbde1ab80c787f4`.
-- Phase 9B.1B runner PR #56 branch head `dc24230936b361dcbd6aedb83b7a9bdc47844ae7`: CI #310 success.
-- PR #56 squash-merged as `9a740941586eede659c304b6374f5b2a1a12356b`.
-- Post-merge `main` CI #311 passed on that exact squash commit.
-- PR #58 merged as `27352b352ed2c06bf615bac06901f5c66730b35d`; post-merge CI #36872757729 passed all gates (including the new workflow-safety regression test).
-- CI #310 and #311 passed:
-  - application lint/typecheck/unit tests/build;
-  - production dependency audit;
-  - Jev evaluation harness;
-  - repository ranking benchmark;
-  - contribution recommendation benchmark;
-  - semantic discovery foundation;
-  - semantic retrieval evaluation;
-  - hardened semantic benchmark;
-  - live embedding provider adapter;
-  - repeated semantic evaluation runner;
-  - migration apply/rollback/reapply;
-  - repository schema checks;
-  - repository persistence;
-  - snapshot persistence/trends;
-  - repository content evidence;
-  - GitHub ingestion;
-  - contribution-issue persistence;
-  - contribution discovery;
-  - catalog;
-  - lexical search;
-  - submission workflows;
-  - PostgreSQL connectivity.
-
-## Live evaluation status
-
-A credentialed real OpenAI embeddings evaluation has **not** been executed.
-
-The repository now has a manual `Semantic Retrieval Live Evaluation` GitHub Actions workflow plus repeated-run JSON/summary artifacts, so the remaining blocker is only a valid evaluation credential and the resulting evidence review.
-
-Current blocker:
-
-- no successful credentialed `Semantic Retrieval Live Evaluation` workflow run has been recorded yet;
-- the current conversation does not contain an OpenAI API credential, and no credential value should be pasted into chat.
-
-Therefore RepoScout does not yet have real measured:
-
-- semantic retrieval quality on v2 from an external embedding model;
-- actual provider latency;
-- provider usage/cost;
-- real-account rate-limit behavior;
-- repeat-run consistency.
-
-No ADOPT/DEFER provider decision is claimed yet.
-
-## Decisions / risks
-
-- V2 uses real repository observations and explicit README provenance, but it is still a small curated benchmark rather than broad ground truth.
-- Lexical-hard queries are designed to reduce exact-token advantage without intentionally making lexical search fail every case.
-- Ambiguous queries permit multiple relevant results instead of forcing false single-winner labels.
-- The OpenAI adapter is isolated from normal application startup and does not make an API credential a production requirement.
-- Mocked HTTP tests validate protocol and error handling only; they are not provider-quality evidence.
-- Official OpenAI embeddings behavior was re-verified before implementing the adapter.
-- The live evaluation command is observational and does not change application data.
-- Phase 9C remains blocked.
-- Public `GET /api/repositories/search` remains unchanged.
-- No personal/contributor data was added.
-
-## Parked future integration — Jev (not an active blocker)
-
-TypeSafe/Jev is **removed from the active roadmap**, because API access is unavailable and the project should not depend on that provider. The offline evaluation harness and isolated adapter remain as historical work, but credentialed smoke testing, further implementation, and adoption evaluation are **not scheduled**. Do not request a Jev key or resume this work during an ordinary "continue" turn.
-
-The original idea remains in [JEV_INTELLIGENCE_ARCHITECTURE.md](JEV_INTELLIGENCE_ARCHITECTURE.md). Reopening it requires an explicit new product decision and evidence of a concrete benefit. The Phase 9 semantic/embedding evaluation described here is separate from Jev; its current status is unchanged.
-
-## Phase 9 breakdown
-
-- 9A — semantic document + retrieval benchmark foundation: complete.
-- 9B — embedding provider contract + offline retrieval evaluation: complete.
-- 9B.1A — hardened real-repository benchmark + real-provider adapter: complete.
-- 9B.1B — credentialed real-provider evaluation + adoption decision: in progress; runner/workflow complete, live result pending.
-- 9C — embedding persistence + bounded backfill: blocked until 9B.1B justifies adoption.
-- 9D — semantic similarity API: later.
-- 9E — hybrid lexical + semantic discovery: later.
-- 9F — bounded natural-language query interpretation: later, only if still useful.
-
-## Next action
-
-If not already configured, add `OPENAI_API_KEY` as a GitHub Actions repository secret, then manually run:
-
-~~~text
-Actions
-→ Semantic Retrieval Live Evaluation
-→ text-embedding-3-small
-→ 1536 dimensions
-→ 3 runs
-~~~
-
-Review the raw run artifacts and `summary.json`, calculate cost using current official provider pricing, document query-level improvements/regressions, and make an explicit ADOPT or DEFER decision.
-
-Do not create vector persistence or alter the public search endpoint before that decision.
+## Next after B2 verification
+1. Merge PR #62 only with green exact-head CI and contribution Chromium checks.
+2. Verify GitHub main post-merge CI and confirm all four paths and `/contribute` through the production SPA rewrite after deployment.
+3. Assess live data collection/snapshot coverage and prioritize follow-up UX from real visitor feedback.
