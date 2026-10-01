@@ -10,9 +10,9 @@ Complete Phase 9B.1B with a repeatable credentialed semantic retrieval evaluatio
 
 Current verified merge:
 
-`b7baf53b0fe0383ed474618a2dbde1ab80c787f4`
+`9a740941586eede659c304b6374f5b2a1a12356b`
 
-PR #55: merged.
+PR #56: merged.
 
 ## Current phase
 
@@ -20,7 +20,9 @@ Phase 9B.1B — credentialed real-provider evaluation + adoption decision.
 
 Phase 9B.1A remains complete.
 
-The repeated-run/manual-workflow infrastructure for 9B.1B is now implemented on the active branch, but the credentialed provider result has not run yet.
+The repeated-run/manual-workflow infrastructure for 9B.1B is now merged and CI-green on `main`.
+
+The credentialed provider result and ADOPT/DEFER decision are still pending.
 
 ## Changes
 
@@ -69,8 +71,10 @@ The repeated-run/manual-workflow infrastructure for 9B.1B is now implemented on 
   - `OPENAI_EMBEDDING_TIMEOUT_MS`.
 - Added dedicated CI gates:
   - hardened semantic benchmark;
-  - live embedding provider adapter.
+  - live embedding provider adapter;
+  - repeated semantic evaluation runner.
 - No API credential, vector persistence, pgvector, semantic HTTP route, hybrid public search, or public search change was added.
+- The live GitHub Actions workflow is manual and never runs as part of ordinary CI.
 
 ## Verification
 
@@ -78,7 +82,10 @@ The repeated-run/manual-workflow infrastructure for 9B.1B is now implemented on 
 - Phase 9B.1A implementation head `1565149a05aa329b203ada17d27860fbee94f269`: CI #301 success.
 - Phase 9B.1A documentation-complete head `8504301148e1c1437abec14b5f21929729b63878`: CI #306 success.
 - PR #55 merged with the exact CI-green head as `b7baf53b0fe0383ed474618a2dbde1ab80c787f4`.
-- CI #301 and #306 passed:
+- Phase 9B.1B runner PR #56 branch head `dc24230936b361dcbd6aedb83b7a9bdc47844ae7`: CI #310 success.
+- PR #56 squash-merged as `9a740941586eede659c304b6374f5b2a1a12356b`.
+- Post-merge `main` CI #311 passed on that exact squash commit.
+- CI #310 and #311 passed:
   - application lint/typecheck/unit tests/build;
   - production dependency audit;
   - Jev evaluation harness;
@@ -88,6 +95,7 @@ The repeated-run/manual-workflow infrastructure for 9B.1B is now implemented on 
   - semantic retrieval evaluation;
   - hardened semantic benchmark;
   - live embedding provider adapter;
+  - repeated semantic evaluation runner;
   - migration apply/rollback/reapply;
   - repository schema checks;
   - repository persistence;
@@ -107,9 +115,10 @@ A credentialed real OpenAI embeddings evaluation has **not** been executed.
 
 The repository now has a manual `Semantic Retrieval Live Evaluation` GitHub Actions workflow plus repeated-run JSON/summary artifacts, so the remaining blocker is only a valid evaluation credential and the resulting evidence review.
 
-Reason:
+Current blocker:
 
-- no `OPENAI_API_KEY` is available in the repository or this conversation.
+- no successful credentialed `Semantic Retrieval Live Evaluation` workflow run has been recorded yet;
+- the current conversation does not contain an OpenAI API credential, and no credential value should be pasted into chat.
 
 Therefore RepoScout does not yet have real measured:
 
@@ -139,7 +148,7 @@ No ADOPT/DEFER provider decision is claimed yet.
 - 9A — semantic document + retrieval benchmark foundation: complete.
 - 9B — embedding provider contract + offline retrieval evaluation: complete.
 - 9B.1A — hardened real-repository benchmark + real-provider adapter: complete.
-- 9B.1B — credentialed real-provider evaluation + adoption decision: next.
+- 9B.1B — credentialed real-provider evaluation + adoption decision: in progress; runner/workflow complete, live result pending.
 - 9C — embedding persistence + bounded backfill: blocked until 9B.1B justifies adoption.
 - 9D — semantic similarity API: later.
 - 9E — hybrid lexical + semantic discovery: later.
@@ -147,7 +156,7 @@ No ADOPT/DEFER provider decision is claimed yet.
 
 ## Next action
 
-Add `OPENAI_API_KEY` as a GitHub Actions repository secret, then manually run:
+If not already configured, add `OPENAI_API_KEY` as a GitHub Actions repository secret, then manually run:
 
 ~~~text
 Actions
