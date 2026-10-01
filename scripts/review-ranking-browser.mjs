@@ -174,6 +174,22 @@ function trackErrors(page) {
   return () => assert.deepEqual(errors, [], 'No uncaught browser runtime errors');
 }
 
+async function waitForRealCard(page, label) {
+  try {
+    await page.locator('.ranked-card:not(.repository-card-skeleton)').first().waitFor({
+      timeout: 10000,
+    });
+  } catch (error) {
+    console.error('RANKING UI DIAGNOSTIC (' + label + ') URL=' + page.url());
+    console.error(await page.locator('main').innerText());
+    await page.screenshot({
+      path: OUTPUT + '/diagnostic-' + label + '.png',
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
 async function assertNoHorizontalOverflow(page, label) {
   const measures = await page.evaluate(() => ({
     windowWidth: window.innerWidth,
@@ -201,14 +217,14 @@ try {
     await mockApi(page, (mode) => responsePage(mode, [item(mode, 1)]), counters);
     await page.goto(ORIGIN + '/?view=hidden_gems');
     await page.getByRole('heading', { name: 'Explore Hidden Gems.' }).waitFor();
-    await page.locator('.ranked-card:not(.repository-card-skeleton)').first().waitFor();
+    await waitForRealCard(page, 'hidden-deeplink');
     assert.equal(counters.catalog, 0, 'Ranking view must not request catalog pages');
     assert.equal(await page.locator('a[aria-current="page"]').innerText(), 'Hidden Gems');
     await page.screenshot({ path: OUTPUT + '/hidden-gems-desktop.png', fullPage: true });
 
     await page.getByRole('link', { name: 'Rising', exact: true }).click();
     await page.getByRole('heading', { name: 'See what is gaining momentum.' }).waitFor();
-    await page.locator('.ranked-card:not(.repository-card-skeleton)').first().waitFor();
+    await waitForRealCard(page, 'rising-after-navigation');
     assert.match(page.url(), /view=rising/);
     await page.screenshot({ path: OUTPUT + '/rising-desktop.png', fullPage: true });
 
@@ -238,7 +254,7 @@ try {
       await mockApi(page, (requestedMode) =>
         responsePage(requestedMode, [item(requestedMode, 1)]));
       await page.goto(ORIGIN + '/?view=' + mode);
-      await page.locator('.ranked-card:not(.repository-card-skeleton)').first().waitFor();
+      await waitForRealCard(page, 'viewport');
       await assertNoHorizontalOverflow(page, label);
       await page.locator('summary').first().click();
       assert.ok(await page.locator('details[open]').count() > 0);
@@ -280,7 +296,7 @@ try {
     await page.screenshot({ path: OUTPUT + '/ranking-error.png', fullPage: true });
     unavailable = false;
     await page.getByRole('button', { name: 'Try again', exact: true }).click();
-    await page.locator('.ranked-card:not(.repository-card-skeleton)').first().waitFor();
+    await waitForRealCard(page, 'error-retry');
     assert.equal(await page.locator('.ranked-card:not(.repository-card-skeleton)').count(), 1);
     clean();
     await page.close();
