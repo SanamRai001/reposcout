@@ -1,49 +1,52 @@
 # RepoScout Project State
 
 ## Objective
-Make RepoScout's existing evidence-backed discovery capabilities accessible in the web product, beginning with Hidden Gems and Rising. Preserve the existing deterministic catalog and search behavior while the separate semantic evaluation remains pending.
+Expose existing evidence-backed discovery capabilities to RepoScout visitors. Product track A: Hidden Gems and Rising using the established Phase 7D deterministic ranking API, without replacing existing catalog/search or changing backend scoring.
 
-## Branch and base
-- Working branch: `feat/discovery-ranking-client-a1`
-- Branched from `main@387936acfe45eced56eb33a4092183ea525fbfd1` (merged PR #59, 2026-10-01).
-- PR #59 parked Jev indefinitely. Jev is not a blocker or an active next phase.
+## Branch
+- Working branch: `feat/discovery-ranking-client-a1`; draft PR #60 against `main`.
+- Branch base: `main@387936acfe45eced56eb33a4092183ea525fbfd1` (merged PR #59, 2026-10-01).
+- Jev (TypeSafe) is parked indefinitely; not an active dependency or blocker.
 
-## Completed phase
-Product track **A1 — ranking frontend transport and tests**: implemented and branch CI verified in PR #60.
+## Completed phase / current checkpoint
+- **A1: ranking frontend transport and tests** — implemented, GitHub CI #321 success; documentation-only follow-up CI #322 success.
+- **A2: ranking discovery UI** — implementation committed in the same draft PR; CI and responsive browser review pending.
 
-The established backend Phase 7D endpoint is reused without API or database changes:
-`GET /api/repositories/rankings/:mode` with `hidden_gems` or `rising`, bounded `limit`, opaque `cursor`, ranking evaluation metadata, and mode-specific explanation evidence.
-
-## Changes in A1
-- Exported the existing web catalog item validator for reuse; catalog behavior unchanged.
-- Added `apps/web/src/lib/repository-ranking-client.ts`:
-  - typed modes, ranked items, score explanations, evidence and pagination;
-  - same-origin request and safe parameter encoding;
-  - mode/formula alignment and runtime validation of returned evidence;
-  - HTTP code/status, malformed-response and network-error handling;
-  - AbortSignal propagation and a client-side page-size guard.
-- Added `apps/web/src/lib/repository-ranking-client.test.ts` for both modes, explanations, pagination, request headers/encoding, abort, API/network failures and malformed payloads.
-- The existing `App.tsx` and user-visible discovery experience are intentionally unchanged.
+## A2 changes
+- Added `repository-ranking-navigation.ts` and tests for explicit URL modes:
+  `?view=hidden_gems`, `?view=rising`, with missing/unknown modes falling back to catalog.
+- Added responsive navigation in `App.tsx`, with browser history/popstate restoration.
+- Existing catalog search and submission form remain available; catalog requests are suspended while ranking views are active.
+- Added `RankingExplorer.tsx`: mode-specific headings; real ranking scores and detailed formula components; Hidden Gems popularity adjustment and optional momentum coverage; Rising window/provenance explanations; measured eligibility/evaluation metadata; loading, empty, initial-error/retry and paginated load-more/error/retry states.
+- Initial requests and load-more requests are abortable; page results deduplicated by repository ID, and mismatched evaluation/formula pagination rejected.
+- Added responsive ranking styles, visible keyboard focus and reduced-motion-compatible transitions.
+- Added static presentation tests for both ranking modes and cards, plus URL navigation tests.
+- No API/schema/migration/dependency/formula/semantic search change. No API token or production AI call.
 
 ## Verification
-- Inspected the actual `apps/api/src/repositories/repository-ranking.ts`, `repository-routes.ts`, score modules, and PostgreSQL ranking route test before writing the client.
-- Existing main checkpoint: PR #58 post-merge CI #36872757729 passed. PR #59 changed documentation only.
-- No local full test run: GitHub host resolution is unavailable from the execution container. PR #60 CI #321 (run ID 36878516237) completed successfully against implementation checkpoint `651c0ccd7c716820125ad06e0b228f8e30b54001`: 34 successful steps, including application lint/typecheck/unit tests/build and database integration checks.
-- This state-only documentation update follows that verified implementation commit; verify its resulting PR checks independently.
+- Read backend Phase 7D ranking response and score/evidence contracts and current frontend source before implementing.
+- A1 PR #60 CI #321 run ID `36878516237`: success (34 successful steps).
+- A1 state-only follow-up CI #322 run ID `36878732057`: success.
+- A2 GitHub CI: **pending verification** on latest implementation/doc checkpoint; do not claim green before exact-head checks finish.
+- Browser interaction/responsive screenshot verification has **not** been run; static rendering tests are not a replacement.
+- PR remains a draft and is **not merged**.
 
-## Risks and decisions
-- Ranking scores are formula-specific discovery evidence, not universal repository-quality ratings.
-- Rising requires historical snapshots; a new/under-observed catalog can legitimately return an empty ranking.
-- Ranking cursor freezes evaluation time, not repository metadata; content refresh between pages can change ordering.
-- Current Phase 7D scores the entire listed curated catalog and performs multiple database reads per repository; profile latency as the catalog grows.
-- No API ranking formula changes, search replacement, vector persistence, credentials, or production AI calls in A1.
-- Historical Jev integration stays parked.
+## Risks / decisions
+- Ranking scores are explicit, formula-specific discovery signals, not universal repository quality.
+- Rising needs real historical snapshot windows. A freshly seeded catalog can produce an honest zero-eligible empty view.
+- Cursor evaluation time is fixed by backend; source repository evidence is not an immutable snapshot. Data refresh can move results between pages.
+- Ranking service makes several database reads per listed repository; profile latency with real catalog volume.
+- No synthetic repo values are presented as live data.
+- Existing search/filters and moderation publication boundaries are unchanged.
 
-## Parallel technical track
-- Phase 9A, 9B, 9B.1A: complete.
-- Phase 9B.1B: manual workflow and repeated runner merged, **credentialed live evaluation and ADOPT/DEFER decision pending**.
-- Phase 9C onward: blocked/deferred until evidence justifies adoption; public lexical search stays unchanged.
-- Benchmark next action (independent of product work): configure `OPENAI_API_KEY` as a GitHub Actions repository secret (do not paste in chat), run `Semantic Retrieval Live Evaluation` with `text-embedding-3-small` / 1536 dimensions / 3 runs, and evaluate the artifacts.
+## Parallel technical track (unchanged)
+- Phase 9A, 9B, 9B.1A complete.
+- Phase 9B.1B real OpenAI embedding benchmark and ADOPT/DEFER decision remain pending.
+- Phase 9C onward blocked/deferred until evidence justifies adoption; deterministic public search stays unchanged.
+- To evaluate later: GitHub Actions repository secret `OPENAI_API_KEY`; manual `Semantic Retrieval Live Evaluation` with `text-embedding-3-small`, 1536 dimensions, three runs. Never put credential text in chat. Jev is not to be resumed automatically.
 
 ## Exact next phase
-**A2 — Hidden Gems and Rising web experience.** After A1 CI passes, add an explicit mode selector and URL-backed state, consume this client, provide loading/empty/error/retry/load-more, explain scores accessibly with evidence and eligibility context, and test the UI. Review the layout before merging. Do not expand into Phase B contribution discovery or resume Jev automatically.
+1. Verify A2 PR #60 CI against final head; address any failures in this branch.
+2. Review ranking UI at mobile/tablet/desktop in a real browser, including deep-link and Back/Forward, error/empty states, load-more cursor and keyboard navigation.
+3. Decide whether to merge PR #60 only after checks/review. Do not auto-merge.
+4. After that, Product track B: Contribution Explorer frontend using the completed Phase 8 API (separate branch).
