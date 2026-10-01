@@ -3,8 +3,8 @@
 ## Integrated delivery (2026-10-01)
 - A1–A2 Hidden Gems and Rising: PR #60 merged into main as `8507a3f4fc076fa96de199f02e87e89a20feac8c`. Final PR CI #344 and ranking Chromium #13 passed.
 - B1 Contribution Discovery transport: PR #61 merged **with a merge commit**, preserving B2 ancestry, as `d9bb7b8ec3dce6afbc024f8af5ff29f81f9ddafd`. CI #347 and #348 passed.
-- B2 Contribution Explorer: PR #62 retargeted to `main`. Implements standalone `/contribute`, integrates a visible catalog "Find contributions" link, and uses a 320px-accessible four-choice navigation. Await exact integrated-branch checks before merging.
-- The integration branch should include the up-to-date merged `main` tree as a true merge parent. Do not drop A2/B1 files or repeat old commits as a squash.
+- B2 Contribution Explorer: PR #62 merged into `main` as `02e947470da22e730a62aec3a63eb455b9a292b7`. Adds `/contribute`, the visible catalog "Find contributions" link, and a 320px-accessible four-choice navigation.
+- Integration preserved A2 and B1 history through regular merge commits; GitHub verified that `main` includes all three PRs #60, #61 and #62.
 
 ## Existing public backend
 - `GET /api/contributions/issues` returns **stored observations of open GitHub issues**, not current-live GitHub search.
@@ -30,11 +30,12 @@
 ## Verification record
 - B2 baseline CI #354: success (34 steps); Chromium Review #4: success (11 cases).
 - B2 prior documentation-head CI #355 and Chromium Review #5: success.
-- Latest integrated branch includes merged A2/B1 plus catalog-to-contribution discovery navigation and its additional compact-screen browser check. Verify its own exact-head CI and Chromium workflow *after* the main-tree merge and before PR #62 merge.
+- Final integrated PR #62 implementation head `149324fb34772985682be92462d618bb02534f33`: normal CI #359 passed all 34 steps, Ranking Browser Review #15 succeeded with four-link navigation, and Contribution Browser Review #7 passed 12 cases including 320px, filters, cross-route history, errors and cursor pagination.
+- PR #62 merged as `02e947470da22e730a62aec3a63eb455b9a292b7`; **post-merge push CI #360 (run `36889528582`) succeeded**, 34 successful steps and zero failures.
 - Browser fixtures are deterministic mocked Phase 8 responses. Real API/PostgreSQL gates are independently included in normal CI; the browser fixture alone is not live production-data verification.
 
 ## Operations and deferred follow-up
-- Deploy only after merge and post-merge CI. SPA web hosting must rewrite `/contribute` to `index.html`; Vite preview supports this fallback.
+- All three feature PRs are merged and post-merge CI is green. Production deployment is a separate action. SPA web hosting must rewrite `/contribute` to `index.html`; Vite preview supports this fallback.
 - Populate/refresh curated repository and issue observations to expose real visitor data. Rising likewise requires 7/30-day snapshots; honest empty states are supported.
 - Jev remains parked. Phase 9B.1B real embedding evaluation is still pending credentials/evidence and is not part of B2.
 - After product integration, consider repository-level issue views and stronger ingestion/snapshot operations only when verified by user need.
