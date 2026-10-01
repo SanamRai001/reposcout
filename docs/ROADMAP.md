@@ -201,79 +201,24 @@ Status: complete
 - no recursive repository crawling;
 - no contribution-document body storage.
 
-Phase 3D should provide the evidence Jev or other classifiers may later evaluate.
+Phase 3D provides source evidence for repository intelligence; any future model use is a separately approved experiment.
 
-### Phase 3E — Jev evaluation spike
+### Phase 3E — Jev exploratory spike (historical, now parked)
 
-Status: deferred / experimental
+**Status: parked indefinitely; removed from the active delivery roadmap.**
 
-Jev evaluation is intentionally paused because live TypeSafe access is currently unavailable. The completed adapter and harness remain in place, but RepoScout product development does not wait on provider access.
+Completed historical work:
+- 3E.1: provider-neutral labeled evaluation harness and offline tests;
+- 3E.2A: isolated TypeSafe/Jev adapter and credential-gated smoke-test tooling.
 
-#### Phase 3E.1 — Evaluation harness
+Not completed and **not scheduled**:
+- 3E.2B: credentialed live smoke evaluation;
+- 3E.3: real-repository model assessment and adoption decision.
 
-Status: complete
+TypeSafe access is not currently available. Do not seek an API key, schedule more Jev tasks, create Jev production storage, or block other RepoScout phases on it. Keep existing experimental code and detailed [Jev architecture notes](JEV_INTELLIGENCE_ARCHITECTURE.md) as a possible future integration idea, not as a prerequisite or next action.
 
-- provider-neutral evaluation boundary;
-- benchmark versioning;
-- 6 synthetic labeled repository cases;
-- 5 bounded query-relevance cases;
-- project-type accuracy;
-- tutorial/demo accuracy + Brier score;
-- beginner-suitability MAE;
-- relevance MAE;
-- confidence and latency reporting;
-- runtime validation for replayed provider output;
-- CLI benchmark/replay commands;
-- no live model dependency;
-- no production persistence.
+Revisit only if a future product decision explicitly chooses to reopen it and a concrete RepoScout use case, provider access, and an evaluation plan justify doing so. This is **not** automatic when an API key becomes available.
 
-The synthetic benchmark validates the harness and task definitions. It is not evidence of Jev quality.
-
-#### Phase 3E.2 — Live Jev adapter + controlled smoke evaluation
-
-Status: in progress
-
-##### Phase 3E.2A — Verified TypeSafe/Jev adapter
-
-Status: complete
-
-- current TypeSafe OpenAPI contract verified;
-- fixed TypeSafe API origin and Bearer auth boundary;
-- model discovery through `GET /v1/models`;
-- System One adapter through `POST /v1/systemone`;
-- native Noul / Choice / Score benchmark mapping;
-- zero-based Jev score to one-based RepoScout scale conversion;
-- requested + resolved model provenance;
-- inconsistent model-resolution rejection;
-- credential-gated live smoke command;
-- TypeSafe config isolated from normal application startup;
-- offline mocked provider tests in CI;
-- no production persistence/ranking/moderation integration.
-
-##### Phase 3E.2B — Controlled live smoke evaluation
-
-Status: deferred — external access unavailable
-
-Resume only when TypeSafe access becomes available.
-
-A real live smoke result is only considered complete when a valid TypeSafe credential is supplied and the command succeeds.
-
-#### Phase 3E.3 — Real RepoScout evaluation + adoption decision
-
-Status: deferred until 3E.2B can run
-
-Later:
-- label real indexed repositories;
-- add difficult/ambiguous examples;
-- repeat runs for consistency;
-- evaluate confidence/calibration, latency, and cost;
-- compare with deterministic baselines;
-- document failure cases;
-- decide which tasks, if any, justify production Jev integration.
-
-Do not create production assessment persistence unless evaluation proves value.
-
-Repository detail UI remains deferred until there is enough intelligence to justify a dedicated page.
 
 ## Phase 4 — Discovery
 
@@ -364,11 +309,9 @@ Later Phase 4 work:
 - transparent deterministic sorting;
 - shareable query URLs;
 - bounded candidate retrieval;
-- optional Jev-assisted reranking only if Phase 3E proves useful.
+- no Jev dependency or active Jev reranking work.
 
-Normal search/filtering must work without Jev.
-
-Verify deterministic discovery first. Model-assisted reranking should improve an existing discovery engine, not substitute for one.
+Search and filters remain deterministic. Any future model-assisted reranking would require a separate decision and benchmark.
 
 ## Phase 5 — Community submission
 
@@ -916,6 +859,7 @@ Later, only if still useful:
 ## Later possibilities
 
 Not committed:
+- Jev-assisted classification or bounded reranking — **parked future idea, no scheduled work**; see [Jev architecture notes](JEV_INTELLIGENCE_ARCHITECTURE.md);
 - repository comparisons;
 - alternatives graph;
 - community collections;
