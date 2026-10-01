@@ -271,12 +271,15 @@ async function assertAllDiscoveryTabsVisible(page, label) {
       right: bounds.right,
       tabs: Array.from(nav.querySelectorAll('a')).map((tab) => {
         const rect = tab.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(tab);
+        const textRect = range.getBoundingClientRect();
         return {
           label: tab.textContent?.trim(),
           left: rect.left,
           right: rect.right,
-          clientWidth: tab.clientWidth,
-          scrollWidth: tab.scrollWidth,
+          textLeft: textRect.left,
+          textRight: textRect.right,
         };
       }),
     };
@@ -291,8 +294,10 @@ async function assertAllDiscoveryTabsVisible(page, label) {
   for (const tab of layout.tabs) {
     assert.ok(tab.left >= layout.left - 1 && tab.right <= layout.right + 1,
       label + ' tab must fit in the navigation viewport: ' + tab.label);
-    assert.ok(tab.scrollWidth <= tab.clientWidth + 1,
-      label + ' must show the complete tab label: ' + tab.label);
+    assert.ok(
+      tab.textLeft >= tab.left - 1 && tab.textRight <= tab.right + 1,
+      label + ' must show complete tab text: ' + JSON.stringify(tab),
+    );
   }
 }
 
