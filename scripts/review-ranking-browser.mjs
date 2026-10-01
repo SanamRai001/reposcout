@@ -293,6 +293,7 @@ try {
   });
 
   for (const [label, width, height, mode] of [
+    ['compact-mobile', 320, 700, 'hidden_gems'],
     ['mobile', 375, 812, 'hidden_gems'],
     ['tablet', 768, 1024, 'rising'],
     ['desktop', 1440, 900, 'hidden_gems'],
@@ -311,6 +312,13 @@ try {
       assert.match(explanation, mode === 'hidden_gems'
         ? /Popularity adjustment/
         : /Historical measurement coverage/);
+      // A native disclosure must remain operable without a pointer.
+      const summary = page.locator('details summary').first();
+      await summary.focus();
+      await page.keyboard.press('Enter');
+      assert.equal(await page.locator('details[open]').count(), 0);
+      await page.keyboard.press('Enter');
+      assert.equal(await page.locator('details[open]').count(), 1);
       await page.screenshot({
         path: OUTPUT + '/ranking-' + label + '-expanded.png',
         fullPage: true,
