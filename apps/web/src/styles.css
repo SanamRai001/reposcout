@@ -1323,6 +1323,27 @@ button {
   }
 }
 
+/* At the narrowest supported viewport, show all discovery destinations at once. */
+@media (max-width: 380px) {
+  .discovery-view-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+    padding: 4px;
+    overflow-x: visible;
+  }
+
+  .discovery-view-nav a {
+    min-width: 0;
+    padding: 10px 3px;
+    font-size: 0.69rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    text-align: center;
+  }
+}
+
 @keyframes skeleton-scan {
   from {
     background-position: 180% 0;
