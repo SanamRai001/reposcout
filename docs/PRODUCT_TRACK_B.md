@@ -1,54 +1,40 @@
 # RepoScout Product Track B — Contribution Explorer
 
-## Delivery topology (2026-10-01)
+## Integrated delivery (2026-10-01)
+- A1–A2 Hidden Gems and Rising: PR #60 merged into main as `8507a3f4fc076fa96de199f02e87e89a20feac8c`. Final PR CI #344 and ranking Chromium #13 passed.
+- B1 Contribution Discovery transport: PR #61 merged **with a merge commit**, preserving B2 ancestry, as `d9bb7b8ec3dce6afbc024f8af5ff29f81f9ddafd`. CI #347 and #348 passed.
+- B2 Contribution Explorer: PR #62 retargeted to `main`. Implements standalone `/contribute`, integrates a visible catalog "Find contributions" link, and uses a 320px-accessible four-choice navigation. Await exact integrated-branch checks before merging.
+- The integration branch should include the up-to-date merged `main` tree as a true merge parent. Do not drop A2/B1 files or repeat old commits as a squash.
 
-- A1–A2: [PR #60](https://github.com/SanamRai001/reposcout/pull/60), ready for review; independent ranking UI.
-- **B1 transport:** [PR #61](https://github.com/SanamRai001/reposcout/pull/61), `feat/contribution-explorer-client-b1` from `main@387936acfe45eced56eb33a4092183ea525fbfd1`. CI #347 and final documentation-head CI #348 both successful. PR ready for review, **unmerged**.
-- **B2 UI:** [stacked PR #62](https://github.com/SanamRai001/reposcout/pull/62), `feat/contribution-explorer-ui-b2` with base `feat/contribution-explorer-client-b1`; it contains only B2 changes in its PR diff. No changes to existing `App.tsx` or public search/ranking API. Awaiting review and appropriate merge sequence.
-- Do not merge PRs silently. First approve/merge #60 and #61 independently, then retarget #62 to updated `main` and reverify. This B2 implementation's standalone route intentionally avoids a conflict with #60.
+## Existing public backend
+- `GET /api/contributions/issues` returns **stored observations of open GitHub issues**, not current-live GitHub search.
+- Nullable filters: `unassigned`, `unlocked`, `goodFirstIssue`, `helpWanted`, `language`, `updatedWithinDays`, `contributing`.
+- Filter-bound opaque pagination (max 50), fixed `evaluatedAt`; response contract `contribution-signals-v1`, `contribution-recommendation-v1`.
+- Recommendation statuses `consider` and `needs_review` are evidence flags, not assertions of ease/suitability. Missing evidence is distinct from observed absence.
 
-## Backend contract (inspected before implementation)
-Public `GET /api/contributions/issues` is mounted by `apps/api/src/app.ts`; it returns stored open GitHub issues from the listed curated catalog. Optional filters:
-- `unassigned`, `unlocked`, `goodFirstIssue`, `helpWanted`: nullable booleans.
-- `language`: normalized max 64 chars.
-- `updatedWithinDays`: 1–3650.
-- `contributing`: `present`, `absent`, `missing`, `not_applicable`.
+## B1 functionality
+- `apps/web/src/lib/contribution-discovery-client.ts`: runtime response validation; safe normalization, filter echo, error and abort handling.
+- `apps/web/src/lib/contribution-discovery-client.test.ts`: transport and validation coverage; no provider token or application backend changes.
 
-Bounded page size 1–50, opaque cursor bound to filters and a fixed evaluation timestamp. Each item contains repository/issue facts, `contribution-signals-v1` with explicit missing-source observations, plus `contribution-recommendation-v1` evidence, cautions and limitations. `consider` and `needs_review` are evidence flags, **not suitability or easiness guarantees**. Data is an observed snapshot; the live GitHub issue may have changed.
+## B2 functionality
+- `/contribute`: public standalone contribution discovery experience.
+- Seven query-backed filters with strict shared-URL parsing and browser Back/Forward handling.
+- Evidence-first cards: issue details, original GitHub link, labels, observed updates, guidance availability, cautions, and unmeasured limitations.
+- Loading, true empty, error/retry, cursor pagination, deduplication, stale-cursor restart and abortable requests.
+- `RouteSwitch` returns between catalog and contribution page on `popstate`.
+- The catalog's discovery navigation links to `/contribute`; at narrow widths all four discovery links use a readable two-column grid rather than clipping/hidden scrolling.
+- Responsiveness, keyboard access, React/unit tests and Chromium workflow screenshots are included.
+- Existing ranked discovery, search, filters and community submission remain.
+- No DB/API/schema, scoring formula, payment, secrets or third-party AI changes.
 
-## Phase B1 — complete, ready for review
-- `apps/web/src/lib/contribution-discovery-client.ts`: typed transport, runtime contract validation for open issues and signal/recommendation vocabulary, filter/cursor encoding, abort, safe errors.
-- `apps/web/src/lib/contribution-discovery-client.test.ts`: normal, empty, filtered, malformed, missing-source, cursor, error and cancellation cases.
-- CI #347 (`36884147633`) passed all 34 verification steps. Documentation-only CI #348 also passed.
-- No backend, DB, vendor account or production AI changes.
+## Verification record
+- B2 baseline CI #354: success (34 steps); Chromium Review #4: success (11 cases).
+- B2 prior documentation-head CI #355 and Chromium Review #5: success.
+- Latest integrated branch includes merged A2/B1 plus catalog-to-contribution discovery navigation and its additional compact-screen browser check. Verify its own exact-head CI and Chromium workflow *after* the main-tree merge and before PR #62 merge.
+- Browser fixtures are deterministic mocked Phase 8 responses. Real API/PostgreSQL gates are independently included in normal CI; the browser fixture alone is not live production-data verification.
 
-## Phase B2 — implemented in stacked PR #62
-- `/contribute`: dedicated public web page selected by `main.tsx` (no library/router dependency).
-- `contribution-navigation.ts` and tests: round-trip seven explicit URL filters, reject malformed shared links instead of silently broadening scope.
-- `ContributionExplorer.tsx` and `contribution.css`: accessible Apply/Clear form, Back/Forward restore, issue cards with observed state and timestamps, evidence, cautions and unmeasured factors, and direct GitHub issue links.
-- Aborted initial/paginated requests, genuine empty/error/retry, load-more by opaque filter-bound cursor, deduplicated repository/issue IDs, and restart when evaluation snapshot changes or paging fails.
-- UI makes no score, guarantee of beginner suitability, or inferred maintainer responsiveness claim.
-- `ContributionExplorer.test.tsx`: static rendering and language/caution/missing-signal tests.
-- `scripts/review-contribution-browser.mjs` + `.github/workflows/contribution-browser-review.yml`: production Vite preview tested in actual Chromium with mocked Phase 8 transport; screenshot artifact retained.
-- Normal CI #351 (run `36885162287`) **success**, 34 steps; Contribution Browser Review #1 (run `36885162356`) **success**, ten tests, screenshot artifact `11175036093`: https://github.com/SanamRai001/reposcout/actions/runs/36885162356/artifacts/11175036093
-- Reviewed saved 320, 375, 768, and 1440px captures: filters, cards, evidence disclosure and footer display without visible horizontal clipping. Browser test explicitly checked no document overflow.
-- This documentation follow-up is not itself a tested implementation commit; confirm its own final-head checks before marking PR #62 ready.
-
-## B2 follow-up: route restoration
-- Browser-history audit found that `main.tsx` initially chose the top-level view only at startup. Added `RouteSwitch`, which restores the catalog or `/contribute` when a cross-route `popstate` fires.
-- Added the corresponding cross-route Back/Forward case to `scripts/review-contribution-browser.mjs` (eleven browser cases total when green).
-- Updated implementation head: `dac1bcde5aeafcfd0ce727385c74e2f78c24a398`; CI #354, run `36885975958`, **success**, all 34 steps.
-- Expanded Chromium Review #4, run `36885975951`, **pending at this checkpoint** (installing Chromium dependencies; no test failure recorded yet). Do not mark this latest test run green or mark PR #62 ready until its exact result is checked.
-- This state-only documentation update is subsequent to the above implementation commit and has its own checks.
-
-## Important limitations
-- Browser fixtures are controlled synthetic contract examples, **not** a claim that the live public catalog has issue inventory. Real Phase 8 API remains covered by its independent PostgreSQL integration gates.
-- The B2 route is directly accessible at `/contribute`. A discovery-page navigation link is intentionally deferred until PR #60 is merged, to avoid editing the same `App.tsx` in two parallel PRs.
-- Production SPA hosting must rewrite `/contribute` to the web app's `index.html`; Vite preview's fallback was tested.
-- No model calls or secrets introduced. Jev remains parked, and Phase 9B.1B live evaluation remains separate and pending.
-
-## Exact next actions
-1. Verify PR #62 final documentation-head checks.
-2. Have #60 and #61 reviewed/merged when approved; ensure post-merge CI on `main`.
-3. Retarget #62 onto updated main, verify the standalone route and rerun Chromium/CI before merge.
-4. Add a small discovery navigation link to `/contribute` in a follow-up (after A2 lands), then consider a richer per-repository issue detail view if useful.
+## Operations and deferred follow-up
+- Deploy only after merge and post-merge CI. SPA web hosting must rewrite `/contribute` to `index.html`; Vite preview supports this fallback.
+- Populate/refresh curated repository and issue observations to expose real visitor data. Rising likewise requires 7/30-day snapshots; honest empty states are supported.
+- Jev remains parked. Phase 9B.1B real embedding evaluation is still pending credentials/evidence and is not part of B2.
+- After product integration, consider repository-level issue views and stronger ingestion/snapshot operations only when verified by user need.
