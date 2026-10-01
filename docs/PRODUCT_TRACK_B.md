@@ -20,7 +20,7 @@
 - No API changes, frontend route/UI, migration, provider credentials or production model calls.
 
 ## Verification checkpoint
-- B1 feature branch CI pending. Ordinary root CI includes lint, typecheck, tests, build, and backend integration gates.
+- B1 implementation CI #347 (run `36884147633`) **success**, 34 steps passed, zero failures on `1dc9a6e9ccf9433c40440b69e0f7a0dfa9ee8fab` (lint/typecheck/test/build + API/PostgreSQL integrations). This documentation-only follow-up requires its own CI.
 - No unverified claim of production API availability or live issue freshness.
 - B1 changes should remain isolated until CI passes; do not merge either PR automatically.
 
