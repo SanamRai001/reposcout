@@ -9,6 +9,11 @@ Start here if you are contributing to the project.
 - [ROADMAP.md](ROADMAP.md) — phased delivery plan.
 - [BRAND_GUIDE.md](BRAND_GUIDE.md) — visual identity, voice, color, motion, and UI guardrails.
 
+## Quality review and improvement plan
+
+- [REPOSCOUT_AUDIT_2026-10-29.md](REPOSCOUT_AUDIT_2026-10-29.md) — source-backed audit covering the product idea, UI/UX, architecture, search, ranking, data quality, security, operations and verification limits.
+- [QUALITY_IMPROVEMENT_PLAN_2026-10-29.md](QUALITY_IMPROVEMENT_PLAN_2026-10-29.md) — phased corrective roadmap with acceptance criteria, regression tests, trade-offs, and open-source reuse options.
+
 ## Engineering
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — current system direction and production concerns.
